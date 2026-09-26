@@ -1,0 +1,80 @@
+filters:
+  and:
+    - file.hasTag("book")
+formulas:
+  age: if(published, today().year - published.year, null)
+  decade: if(published, (published.year / 10).floor() * 10, null)
+properties:
+  note.rating:
+    displayName: Rating
+  note.pages:
+    displayName: Pages
+  formula.age:
+    displayName: Age (years)
+views:
+  - type: table
+    name: Table
+    order:
+      - file.name
+      - author
+      - genre
+      - rating
+      - pages
+      - published
+      - formula.age
+      - formula.decade
+    sort:
+      - property: rating
+        direction: DESC
+  - type: agate
+    name: Ratings
+    order:
+      - file.name
+      - rating
+      - genre
+    sort:
+      - property: genre
+        direction: DESC
+    specFile: charts/ratings-by-genre.vl.json
+  - type: agate
+    name: Scatter
+    filters:
+      and:
+        - rating > 4
+    order:
+      - file.name
+      - author
+      - genre
+      - rating
+      - pages
+    specFile: charts/pages-vs-rating.vl.json
+  - type: agate
+    name: Timeline
+    order:
+      - file.name
+      - genre
+      - published
+      - formula.decade
+    specFile: charts/published-by-decade.vl.json
+  - type: agate
+    name: Histogram (Vega)
+    order:
+      - file.name
+      - rating
+    specFile: charts/ratings-histogram.vg.json
+  - type: agate
+    name: Grouped
+    groupBy:
+      property: genre
+      direction: ASC
+    order:
+      - file.name
+      - genre
+      - rating
+    specFile: charts/grouped-rating-strip.vl.json
+  - type: agate
+    name: Inline spec
+    order:
+      - file.name
+      - status
+    spec: '{"mark": {"type": "bar", "tooltip": true}, "encoding": {"x": {"field": "note.status", "type": "nominal", "title": "Status"}, "y": {"aggregate": "count", "title": "Books"}}, "height": 160}'

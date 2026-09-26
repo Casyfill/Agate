@@ -1,0 +1,23 @@
+{
+  "$schema": "https://vega.github.io/schema/vega-lite/v6.json",
+  "description": "Uses the `group` field Agate adds when the Bases view has a groupBy.",
+  "data": { "name": "base" },
+  "transform": [{ "filter": "isValid(datum.note.rating)" }],
+  "mark": { "type": "tick", "thickness": 3, "tooltip": true },
+  "encoding": {
+    "y": { "field": "group", "type": "nominal", "title": "Group (from Bases groupBy)" },
+    "x": {
+      "field": "note.rating",
+      "type": "quantitative",
+      "title": "Rating",
+      "scale": { "domain": [0, 5.5] },
+      "axis": { "tickMinStep": 1 }
+    },
+    "color": { "field": "group", "type": "nominal", "legend": null },
+    "tooltip": [
+      { "field": "file.name", "title": "Book" },
+      { "field": "note.rating", "title": "Rating" }
+    ]
+  },
+  "height": { "step": 30 }
+}

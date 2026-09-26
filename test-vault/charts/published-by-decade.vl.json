@@ -1,0 +1,16 @@
+{
+  "$schema": "https://vega.github.io/schema/vega-lite/v6.json",
+  "description": "Books per decade. Uses the ISO date string Agate emits for note.published and a Vega expression to bucket it.",
+  "data": { "name": "base" },
+  "transform": [
+    { "filter": "isValid(datum.note.published)" },
+    { "calculate": "floor(year(toDate(datum.note.published)) / 10) * 10", "as": "decade" }
+  ],
+  "mark": { "type": "bar", "tooltip": true },
+  "encoding": {
+    "x": { "field": "decade", "type": "ordinal", "title": "Decade", "axis": { "labelAngle": 0 } },
+    "y": { "aggregate": "count", "title": "Books", "axis": { "tickMinStep": 1 } },
+    "color": { "field": "note.genre", "type": "nominal", "title": "Genre" }
+  },
+  "height": 220
+}

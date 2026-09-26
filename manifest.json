@@ -1,0 +1,10 @@
+{
+  "id": "agate",
+  "name": "Agate",
+  "version": "0.0.1",
+  "minAppVersion": "1.10.2",
+  "description": "Vega and Vega-Lite charts over Obsidian Bases.",
+  "author": "Philipp",
+  "authorUrl": "",
+  "isDesktopOnly": false
+}

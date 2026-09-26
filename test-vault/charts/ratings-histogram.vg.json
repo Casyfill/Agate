@@ -1,0 +1,52 @@
+{
+  "$schema": "https://vega.github.io/schema/vega/v6.json",
+  "description": "A plain Vega spec (not Vega-Lite). Counts books per rating from the injected `base` dataset.",
+  "width": 420,
+  "height": 200,
+  "padding": 5,
+  "autosize": { "type": "fit", "contains": "padding" },
+  "data": [
+    { "name": "base" },
+    {
+      "name": "counts",
+      "source": "base",
+      "transform": [
+        { "type": "formula", "expr": "datum.note.rating", "as": "rating" },
+        { "type": "filter", "expr": "isValid(datum.rating)" },
+        { "type": "aggregate", "groupby": ["rating"], "ops": ["count"], "as": ["n"] }
+      ]
+    }
+  ],
+  "scales": [
+    { "name": "x", "type": "band", "domain": [1, 2, 3, 4, 5], "range": "width", "padding": 0.25 },
+    {
+      "name": "y",
+      "type": "linear",
+      "domain": { "data": "counts", "field": "n" },
+      "range": "height",
+      "nice": true,
+      "zero": true
+    }
+  ],
+  "axes": [
+    { "orient": "bottom", "scale": "x", "title": "Rating" },
+    { "orient": "left", "scale": "y", "title": "Books", "tickMinStep": 1 }
+  ],
+  "marks": [
+    {
+      "type": "rect",
+      "from": { "data": "counts" },
+      "encode": {
+        "enter": {
+          "x": { "scale": "x", "field": "rating" },
+          "width": { "scale": "x", "band": 1 },
+          "y": { "scale": "y", "field": "n" },
+          "y2": { "scale": "y", "value": 0 },
+          "tooltip": { "signal": "{'Rating': datum.rating, 'Books': datum.n}" }
+        },
+        "update": { "fill": { "value": "#7c3aed" } },
+        "hover": { "fill": { "value": "#e93147" } }
+      }
+    }
+  ]
+}

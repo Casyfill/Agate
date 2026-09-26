@@ -1,0 +1,15 @@
+{
+  "$schema": "https://vega.github.io/schema/vega-lite/v6.json",
+  "description": "Geo without any add-on: geoshape + a projection Vega ships + TopoJSON loaded from the vault through Agate's loader.",
+  "width": "container",
+  "height": 320,
+  "data": {
+    "url": "geo/world-110m.json",
+    "format": { "type": "topojson", "feature": "countries" }
+  },
+  "projection": { "type": "naturalEarth1" },
+  "mark": { "type": "geoshape", "fill": "#7c3aed", "fillOpacity": 0.55, "stroke": "#ffffff", "strokeWidth": 0.4 },
+  "encoding": {
+    "tooltip": { "field": "properties.name", "type": "nominal", "title": "Country" }
+  }
+}

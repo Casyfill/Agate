@@ -1,0 +1,19 @@
+{
+  "$schema": "https://vega.github.io/schema/vega-lite/v6.json",
+  "description": "Average rating per genre. Rows come from the Bases query as the `base` dataset. sort:null keeps the order rows arrive in, so the Bases sort menu controls the bar order.",
+  "data": { "name": "base" },
+  "transform": [{ "filter": "isValid(datum.note.rating) && isValid(datum.note.genre)" }],
+  "mark": { "type": "bar", "tooltip": true, "cornerRadiusEnd": 3 },
+  "encoding": {
+    "y": { "field": "note.genre", "type": "nominal", "title": "Genre", "sort": null },
+    "x": {
+      "aggregate": "mean",
+      "field": "note.rating",
+      "type": "quantitative",
+      "title": "Average rating",
+      "scale": { "domain": [0, 5] }
+    },
+    "color": { "field": "note.genre", "type": "nominal", "legend": null }
+  },
+  "height": { "step": 28 }
+}

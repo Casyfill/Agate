@@ -1,0 +1,141 @@
+/* Agate: Vega and Vega-Lite charts over Obsidian Bases */
+
+.agate-host {
+  width: 100%;
+}
+
+/* vega-embed adds .vega-embed to the host element itself and puts the view in .chart-wrapper.
+   It defaults to inline-block; a block that fills its parent is what makes width:"container" work. */
+.agate-chart,
+.agate-chart.vega-embed {
+  display: block;
+  width: 100%;
+  overflow-x: auto;
+}
+
+.agate-chart .chart-wrapper {
+  width: 100%;
+}
+
+.agate-chart.vega-embed summary {
+  background: var(--background-secondary);
+  border: 1px solid var(--background-modifier-border);
+  box-shadow: none;
+  opacity: 0.6;
+}
+
+.agate-chart.vega-embed .vega-actions {
+  background: var(--background-primary);
+  border: 1px solid var(--background-modifier-border);
+  box-shadow: var(--shadow-s);
+  color: var(--text-normal);
+}
+
+.agate-chart.vega-embed .vega-actions a {
+  color: var(--text-normal);
+}
+
+.agate-chart.vega-embed .vega-actions a:hover {
+  background: var(--background-modifier-hover);
+}
+
+.agate-chart.vega-embed .vega-actions::before,
+.agate-chart.vega-embed .vega-actions::after {
+  display: none;
+}
+
+/* Vega-Lite `params` with `bind` render input widgets below the chart */
+.agate-chart .vega-bindings {
+  color: var(--text-muted);
+  font-size: var(--font-ui-small);
+  margin-top: var(--size-4-2);
+}
+
+.agate-chart .vega-bindings input,
+.agate-chart .vega-bindings select {
+  font-family: var(--font-interface);
+}
+
+/* Bases view container */
+.agate-bases-view {
+  padding: var(--size-4-3);
+  height: 100%;
+  overflow: auto;
+}
+
+/* Code block that delegated to a synthesized ```base block */
+.agate-base-host {
+  width: 100%;
+}
+
+/* Errors and placeholders */
+.agate-error {
+  border: 1px solid var(--background-modifier-error);
+  border-left: 3px solid var(--text-error);
+  border-radius: var(--radius-s);
+  background: var(--background-secondary);
+  padding: var(--size-4-2) var(--size-4-3);
+  margin: var(--size-4-1) 0;
+}
+
+.agate-error-title {
+  color: var(--text-error);
+  font-weight: var(--font-semibold);
+  font-size: var(--font-ui-small);
+}
+
+.agate-error-message {
+  margin: var(--size-4-1) 0 0;
+  padding: 0;
+  background: transparent;
+  color: var(--text-muted);
+  font-family: var(--font-monospace);
+  font-size: var(--font-ui-smaller);
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.agate-placeholder {
+  color: var(--text-muted);
+  padding: var(--size-4-4);
+  text-align: center;
+}
+
+.agate-placeholder-hint {
+  font-size: var(--font-ui-small);
+  color: var(--text-faint);
+  margin-top: var(--size-4-1);
+}
+
+/* vega-tooltip appends this element to <body> with its own light/dark theme classes;
+   the selectors below outrank them so the tooltip follows Obsidian instead. */
+body #vg-tooltip-element.vg-tooltip {
+  background-color: var(--background-primary);
+  color: var(--text-normal);
+  border: 1px solid var(--background-modifier-border);
+  border-radius: var(--radius-m);
+  box-shadow: var(--shadow-s);
+  font-family: var(--font-interface);
+  font-size: var(--font-ui-small);
+  padding: var(--size-4-1) var(--size-4-2);
+}
+
+body #vg-tooltip-element.vg-tooltip h2 {
+  color: var(--text-normal);
+  font-size: var(--font-ui-small);
+  margin: 0 0 var(--size-4-1);
+}
+
+body #vg-tooltip-element.vg-tooltip table tr td.key {
+  color: var(--text-muted);
+}
+
+body #vg-tooltip-element.vg-tooltip table tr td.value {
+  color: var(--text-normal);
+}
+
+/* Settings */
+.agate-settings-textarea {
+  font-family: var(--font-monospace);
+  font-size: var(--font-ui-small);
+}
