@@ -46,7 +46,7 @@ Verified against the Obsidian developer docs and `obsidian.d.ts` (API 1.10+; cur
 
 ### D1. Plugin skeleton and tooling
 
-TypeScript, bundled with esbuild into a single `main.js`, following the layout of `obsidianmd/obsidian-sample-plugin`: `manifest.json`, `main.ts`, `styles.css`, `versions.json`, `version-bump.mjs`, `esbuild.config.mjs`. Plugin id `agate`, `minAppVersion` `1.10.2` (first version with the full Bases view API used here), `isDesktopOnly: false` as a target, to be confirmed by the spike in M0.
+TypeScript, bundled with esbuild into a single `main.js`, following the layout of `obsidianmd/obsidian-sample-plugin`: `manifest.json`, `main.ts`, `styles.css`, `versions.json`, `version-bump.mjs`, `esbuild.config.mjs`. Plugin id `agate`, `minAppVersion` `1.13.0` (raised from 1.10.2 on 2026-09-27: the settings tab uses the declarative `getSettingDefinitions` API so settings are searchable; the Bases view API itself needs 1.10.2), `isDesktopOnly: false` as a target, to be confirmed by the spike in M0.
 
 `vega`, `vega-lite` and `vega-embed` are bundled into `main.js`. There is no supported way to lazy-load third-party scripts inside Obsidian, and a 1.5 to 2 MB `main.js` is within what other chart plugins ship. Production builds are minified; dev builds keep sourcemaps.
 
@@ -235,7 +235,7 @@ Obsidian cannot be launched in CI cheaply and `obsidian` ships types only, so te
 
 **Layer 4: end-to-end automation** (optional, v0.2). `wdio-obsidian-service` can drive a real Obsidian against `test-vault/` in CI. Worth it once Layer 3 grows past a screen; not a v0.1 requirement.
 
-**Local development loop.** Prerequisites: Node 22+ (`.nvmrc`), npm, Obsidian 1.10.2+.
+**Local development loop.** Prerequisites: Node 22+ (`.nvmrc`), npm, Obsidian 1.13.0+.
 
 1. `git clone` and `npm install`.
 2. `npm run dev` starts esbuild in watch mode and writes `main.js` to the repo root.

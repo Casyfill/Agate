@@ -12,6 +12,7 @@ import { AgateRenderer } from "../core/render";
 import { describeEntry, groupsToRows } from "../core/data/bases";
 import { detectMode, loadSpecFile, parseJsonOrYaml, referencedProperties } from "../core/spec";
 import type { AnySpec, ChartOptions, ResolvedSpec } from "../core/types";
+import { AGATE_ICON_ID } from "../icon";
 
 export const AGATE_VIEW_TYPE = "agate";
 
@@ -193,7 +194,7 @@ export class AgateBasesView extends BasesView {
 export function agateViewRegistration(plugin: AgatePlugin): BasesViewRegistration {
   return {
     name: "Agate chart",
-    icon: "lucide-chart-column",
+    icon: AGATE_ICON_ID,
     factory: (controller, containerEl) => new AgateBasesView(plugin, controller, containerEl),
     options: (_config: BasesViewConfig): BasesAllOptions[] => {
       const themeOptions: Record<string, string> = { "": "Vault default" };

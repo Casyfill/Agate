@@ -1,4 +1,5 @@
-import { Notice, Plugin, TFile } from "obsidian";
+import { Notice, Plugin, TFile, addIcon } from "obsidian";
+import { AGATE_ICON_ID, AGATE_ICON_SVG } from "./icon";
 import type { Config, Loader } from "vega";
 import { AgateSettingTab, DEFAULT_SETTINGS, type AgateSettings } from "./settings";
 import { createLogger, errorMessage, type Logger } from "./util/log";
@@ -39,6 +40,7 @@ export default class AgatePlugin extends Plugin {
     await this.loadSettings();
     this.addSettingTab(new AgateSettingTab(this.app, this));
     this.installSvgIsShownGuard();
+    addIcon(AGATE_ICON_ID, AGATE_ICON_SVG);
 
     const basesOk = this.registerBasesView(AGATE_VIEW_TYPE, agateViewRegistration(this));
     if (!basesOk) {

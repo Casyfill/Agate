@@ -2,9 +2,9 @@
   "id": "agate",
   "name": "Agate",
   "version": "0.0.1",
-  "minAppVersion": "1.10.2",
+  "minAppVersion": "1.13.0",
   "description": "Vega and Vega-Lite charts over Obsidian Bases.",
-  "author": "Philipp",
+  "author": "Philipp Kats",
   "authorUrl": "https://github.com/Casyfill",
   "isDesktopOnly": false
 }

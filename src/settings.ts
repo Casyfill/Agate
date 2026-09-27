@@ -1,4 +1,4 @@
-import { App, PluginSettingTab, Setting } from "obsidian";
+import { App, PluginSettingTab, type SettingDefinitionItem } from "obsidian";
 import type AgatePlugin from "./main";
 import type { Renderer } from "./core/types";
 
@@ -35,113 +35,124 @@ export const DEFAULT_SETTINGS: AgateSettings = {
   debug: false,
 };
 
+type Key = keyof AgateSettings;
+
+/**
+ * Declarative settings (Obsidian 1.13+): the definitions below render the tab and feed
+ * Obsidian's settings search. Values are read from and written to `plugin.settings`;
+ * writes also persist and notify open charts so a theme change re-renders them.
+ */
 export class AgateSettingTab extends PluginSettingTab {
   constructor(
     app: App,
-    private plugin: AgatePlugin,
+    private readonly plugin: AgatePlugin,
   ) {
     super(app, plugin);
   }
 
-  display(): void {
-    const { containerEl } = this;
-    containerEl.empty();
+  getSettingDefinitions(): SettingDefinitionItem<Key>[] {
+    const themeOptions: Record<string, string> = {};
+    for (const name of this.plugin.themeNames()) themeOptions[name] = name;
 
-    const s = this.plugin.settings;
-    const save = async (patch: Partial<AgateSettings>) => {
-      Object.assign(this.plugin.settings, patch);
-      await this.plugin.saveSettings();
-    };
+    return [
+      {
+        name: "Theme",
+        desc: "\"obsidian\" follows the active Obsidian theme and light/dark mode. The others are static Vega themes.",
+        control: { type: "dropdown", key: "theme", options: themeOptions, defaultValue: DEFAULT_SETTINGS.theme },
+      },
+      {
+        name: "Config overrides",
+        desc: 'A Vega config object (JSON or YAML) merged over the theme. Example: {"mark": {"color": "#e93147"}}',
+        aliases: ["vega config", "colors", "fonts"],
+        control: {
+          type: "textarea",
+          key: "configOverrides",
+          placeholder: '{ "axis": { "labelFontSize": 12 } }',
+          rows: 6,
+        },
+      },
+      {
+        name: "Theme file",
+        desc: "Optional vault path to a JSON/YAML Vega config, applied after the overrides above.",
+        control: { type: "file", key: "themeFile", placeholder: "agate/theme.json" },
+      },
+      {
+        type: "group",
+        heading: "Rendering",
+        items: [
+          {
+            name: "Renderer",
+            desc: "SVG is sharper and styleable; canvas is faster for charts with many marks.",
+            control: {
+              type: "dropdown",
+              key: "renderer",
+              options: { svg: "SVG", canvas: "Canvas" },
+              defaultValue: DEFAULT_SETTINGS.renderer,
+            },
+          },
+          {
+            name: "Export menu",
+            desc: "Show the chart menu with export to SVG or PNG and view source.",
+            control: { type: "toggle", key: "actions", defaultValue: DEFAULT_SETTINGS.actions },
+          },
+          {
+            name: "Interactive",
+            desc: "Tooltips, hover, brushes and bound inputs. Off renders a static picture once. Individual charts can override.",
+            control: { type: "toggle", key: "interactive", defaultValue: DEFAULT_SETTINGS.interactive },
+          },
+        ],
+      },
+      {
+        type: "group",
+        heading: "Data",
+        items: [
+          {
+            name: "Default dataset name",
+            desc: 'Name of the Vega dataset that receives Bases rows. Specs reference it as {"data": {"name": "…"}}.',
+            control: {
+              type: "text",
+              key: "datasetName",
+              defaultValue: DEFAULT_SETTINGS.datasetName,
+              validate: (v: string) => (v.trim().length === 0 ? "Dataset name cannot be empty." : undefined),
+            },
+          },
+          {
+            name: "Load remote data",
+            desc: "Allow data.url values that start with http(s). Off by default: charts make no network requests.",
+            aliases: ["network", "urls"],
+            control: { type: "toggle", key: "allowRemote", defaultValue: DEFAULT_SETTINGS.allowRemote },
+          },
+        ],
+      },
+      {
+        type: "group",
+        heading: "Advanced",
+        items: [
+          {
+            name: "Also handle ```vega and ```vega-lite blocks",
+            desc: "Takes effect after reloading Obsidian. Conflicts with the obsidian-vega plugin if both are enabled.",
+            aliases: ["code block", "alias"],
+            control: { type: "toggle", key: "codeBlockAliases", defaultValue: DEFAULT_SETTINGS.codeBlockAliases },
+          },
+          {
+            name: "Debug logging",
+            desc: "Verbose output in the developer console, including the converted first row of each chart.",
+            control: { type: "toggle", key: "debug", defaultValue: DEFAULT_SETTINGS.debug },
+          },
+        ],
+      },
+    ];
+  }
 
-    new Setting(containerEl).setName("Appearance").setHeading();
+  getControlValue(key: string): unknown {
+    return this.plugin.settings[key as Key];
+  }
 
-    new Setting(containerEl)
-      .setName("Theme")
-      .setDesc(
-        "\"Obsidian\" follows the active Obsidian theme and light/dark mode. The others are static Vega themes.",
-      )
-      .addDropdown((dd) => {
-        for (const name of this.plugin.themeNames()) dd.addOption(name, name);
-        dd.setValue(s.theme).onChange((v) => save({ theme: v }));
-      });
-
-    new Setting(containerEl)
-      .setName("Config overrides")
-      .setDesc(
-        "A Vega config object (JSON or YAML) merged over the theme. Example: {\"mark\": {\"color\": \"#e93147\"}}",
-      )
-      .addTextArea((ta) => {
-        ta.setPlaceholder('{ "axis": { "labelFontSize": 12 } }')
-          .setValue(s.configOverrides)
-          .onChange((v) => save({ configOverrides: v }));
-        ta.inputEl.rows = 6;
-        ta.inputEl.cols = 48;
-        ta.inputEl.addClass("agate-settings-textarea");
-      });
-
-    new Setting(containerEl)
-      .setName("Theme file")
-      .setDesc("Optional vault path to a JSON/YAML Vega config, applied after the overrides above.")
-      .addText((t) =>
-        t
-          .setPlaceholder("agate/theme.json")
-          .setValue(s.themeFile)
-          .onChange((v) => save({ themeFile: v.trim() })),
-      );
-
-    new Setting(containerEl).setName("Rendering").setHeading();
-
-    new Setting(containerEl)
-      .setName("Renderer")
-      .setDesc("SVG is sharper and styleable; Canvas is faster for charts with many marks.")
-      .addDropdown((dd) =>
-        dd
-          .addOption("svg", "SVG")
-          .addOption("canvas", "Canvas")
-          .setValue(s.renderer)
-          .onChange((v) => save({ renderer: v as Renderer })),
-      );
-
-    new Setting(containerEl)
-      .setName("Export menu")
-      .setDesc("Show the chart menu with export to SVG or PNG and view source.")
-      .addToggle((t) => t.setValue(s.actions).onChange((v) => save({ actions: v })));
-
-    new Setting(containerEl)
-      .setName("Interactive")
-      .setDesc(
-        "Tooltips, hover, brushes and bound inputs. Off renders a static picture once. Individual charts can override.",
-      )
-      .addToggle((t) => t.setValue(s.interactive).onChange((v) => save({ interactive: v })));
-
-    new Setting(containerEl).setName("Data").setHeading();
-
-    new Setting(containerEl)
-      .setName("Default dataset name")
-      .setDesc("Name of the Vega dataset that receives Bases rows. Specs reference it as {\"data\": {\"name\": \"…\"}}.")
-      .addText((t) =>
-        t.setValue(s.datasetName).onChange((v) => save({ datasetName: v.trim() || "base" })),
-      );
-
-    new Setting(containerEl)
-      .setName("Load remote data")
-      .setDesc("Allow data.url values that start with http(s). Off by default: charts make no network requests.")
-      .addToggle((t) => t.setValue(s.allowRemote).onChange((v) => save({ allowRemote: v })));
-
-    new Setting(containerEl).setName("Advanced").setHeading();
-
-    new Setting(containerEl)
-      .setName("Also handle ```vega and ```vega-lite blocks")
-      .setDesc(
-        "Takes effect after reloading Obsidian. Conflicts with the obsidian-vega plugin if both are enabled.",
-      )
-      .addToggle((t) =>
-        t.setValue(s.codeBlockAliases).onChange((v) => save({ codeBlockAliases: v })),
-      );
-
-    new Setting(containerEl)
-      .setName("Debug logging")
-      .setDesc("Verbose output in the developer console, including the converted first row of each chart.")
-      .addToggle((t) => t.setValue(s.debug).onChange((v) => save({ debug: v })));
+  async setControlValue(key: string, value: unknown): Promise<void> {
+    const k = key as Key;
+    if (k === "datasetName" && typeof value === "string") value = value.trim() || DEFAULT_SETTINGS.datasetName;
+    if (k === "themeFile" && typeof value === "string") value = value.trim();
+    (this.plugin.settings as unknown as Record<string, unknown>)[k] = value;
+    await this.plugin.saveSettings();
   }
 }
