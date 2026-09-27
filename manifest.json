@@ -5,6 +5,6 @@
   "minAppVersion": "1.10.2",
   "description": "Vega and Vega-Lite charts over Obsidian Bases.",
   "author": "Philipp",
-  "authorUrl": "",
+  "authorUrl": "https://github.com/Casyfill",
   "isDesktopOnly": false
 }
