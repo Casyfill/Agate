@@ -11,7 +11,7 @@ import type AgatePlugin from "../main";
 import { AgateRenderer } from "../core/render";
 import { describeEntry, groupsToRows } from "../core/data/bases";
 import { detectMode, loadSpecFile, parseJsonOrYaml, referencedProperties } from "../core/spec";
-import type { AnySpec, ChartOptions, Renderer, ResolvedSpec } from "../core/types";
+import type { AnySpec, ChartOptions, ResolvedSpec } from "../core/types";
 
 export const AGATE_VIEW_TYPE = "agate";
 
@@ -59,15 +59,16 @@ export class AgateBasesView extends BasesView {
   dumpFirstRow(): void {
     const groups = this.data?.groupedData ?? [];
     const entry = groups.flatMap((g) => g.entries)[0];
+    const log = this.plugin.log;
     if (!entry) {
-      console.log("[agate] dump: the view has no rows");
+      log.info("dump: the view has no rows");
       return;
     }
     const props = [...new Set<BasesPropertyId>([...this.config.getOrder(), ...(this.allProperties ?? [])])];
-    console.log("[agate] dump: view", this.config.name, "entry", entry.file.path);
-    console.log("[agate] dump: allProperties", this.allProperties, "order", this.config.getOrder());
-    console.log("[agate] dump: value shapes", describeEntry(entry, props));
-    console.log("[agate] dump: converted row", groupsToRows([groups[0]], props).slice(0, 1)[0]);
+    log.info("dump: view", this.config.name, "entry", entry.file.path);
+    log.info("dump: allProperties", this.allProperties, "order", this.config.getOrder());
+    log.info("dump: value shapes", describeEntry(entry, props));
+    log.info("dump: converted row", groupsToRows([groups[0]], props).slice(0, 1)[0]);
   }
 
   private specFilePath(): string | null {
@@ -145,7 +146,7 @@ export class AgateBasesView extends BasesView {
     const renderer = str("renderer");
     return {
       theme: str("theme"),
-      renderer: renderer === "svg" || renderer === "canvas" ? (renderer as Renderer) : undefined,
+      renderer: renderer === "svg" || renderer === "canvas" ? (renderer) : undefined,
       actions: bool("actions"),
       interactive: bool("interactive"),
       dataset: str("dataset"),

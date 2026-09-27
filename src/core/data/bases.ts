@@ -226,7 +226,7 @@ export function describeEntry(entry: BasesEntry, properties: BasesPropertyId[]):
     }
     shapes[prop] = {
       ctor: (v as object).constructor?.name,
-      keys: Object.keys(v as object),
+      keys: Object.keys(v),
       toString: str,
       json: valueToJson(v),
     };

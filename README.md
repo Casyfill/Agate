@@ -19,7 +19,7 @@ M0 spike (see `docs/adr/0001-architecture-and-roadmap.md`). The code under `src/
 
 ## Development
 
-Prerequisites: Node 20+, Obsidian 1.10.2 or newer.
+Prerequisites: Node 22 or newer (`.nvmrc` is set; ESLint 10 needs `util.styleText`), Obsidian 1.10.2 or newer.
 
 ```sh
 npm install                 # dependencies (esbuild ships a platform binary; reinstall if node_modules came from another OS)
@@ -29,6 +29,6 @@ npm run install:local       # symlink main.js, manifest.json, styles.css into te
 
 Then open `test-vault/` as a vault in Obsidian and start with `Start here.md`. For a different vault: `AGATE_VAULT=/path/to/vault npm run install:local`.
 
-Other scripts: `npm run build` (typecheck + minified build, prints the bundle size), `npm run typecheck`, `npm run smoke` (renders every spec in `test-vault/charts` headlessly with real Vega, no Obsidian needed).
+Other scripts: `npm run build` (typecheck + minified build, prints the bundle size), `npm run typecheck`, `npm run test` (vitest: unit tests plus a headless Vega render of every spec in `test-vault/charts`, no Obsidian needed), `npm run lint`.
 
 How things fit together, and why, is in `docs/adr/`.

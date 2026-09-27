@@ -81,7 +81,7 @@ export function builtinThemes(): Map<string, ThemeSource> {
   map.set("obsidian", obsidianTheme);
   for (const [name, cfg] of Object.entries(vegaThemes as Record<string, unknown>)) {
     if (name === "version" || name === "default" || typeof cfg !== "object" || cfg === null) continue;
-    map.set(name, cfg as Config);
+    map.set(name, cfg);
   }
   return map;
 }

@@ -1,0 +1,42 @@
+name: Release
+
+# Tag a version to publish: `npm version 0.1.0` (bumps manifest.json and versions.json via
+# version-bump.mjs), `git push --follow-tags`. The tag must equal manifest.json's version;
+# Obsidian's community plugin directory downloads main.js, manifest.json and styles.css
+# from the release with that tag.
+on:
+  push:
+    tags:
+      - "[0-9]+.[0-9]+.[0-9]+"
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm run lint
+      - run: npm test
+      - run: node esbuild.config.mjs production
+      - name: Verify tag matches manifest
+        run: |
+          tag="${GITHUB_REF#refs/tags/}"
+          version=$(node -p "require('./manifest.json').version")
+          test "$tag" = "$version" || { echo "tag $tag != manifest version $version"; exit 1; }
+      - name: Create release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            main.js
+            manifest.json
+            styles.css
+          draft: true
+          generate_release_notes: true

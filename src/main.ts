@@ -5,6 +5,7 @@ import { createLogger, errorMessage, type Logger } from "./util/log";
 import { builtinThemes, composeConfig, materialize } from "./core/theme";
 import { createVaultLoader } from "./core/loader";
 import { parseJsonOrYaml, resolveVaultFile } from "./core/spec";
+import { resolveChartOptions } from "./core/options";
 import type {
   AnySpec,
   ChartOptions,
@@ -148,14 +149,7 @@ export default class AgatePlugin extends Plugin {
 
   /** Per-chart options over vault defaults (ADR-0001 D11 precedence, steps 2-4). */
   resolveOptions(opts: ChartOptions): ResolvedChartOptions {
-    const s = this.settings;
-    return {
-      theme: opts.theme && this.themes.has(opts.theme) ? opts.theme : s.theme,
-      renderer: opts.renderer ?? s.renderer,
-      actions: opts.actions ?? s.actions,
-      interactive: opts.interactive ?? s.interactive,
-      dataset: opts.dataset && opts.dataset.trim() ? opts.dataset.trim() : s.datasetName,
-    };
+    return resolveChartOptions(opts, this.settings, this.themes.keys());
   }
 
   /** Theme, then vault config overrides, then the vault theme file. */
@@ -165,7 +159,7 @@ export default class AgatePlugin extends Plugin {
     if (this.settings.configOverrides.trim()) {
       try {
         const parsed = parseJsonOrYaml(this.settings.configOverrides);
-        if (parsed && typeof parsed === "object") overrides = parsed as Config;
+        if (parsed && typeof parsed === "object") overrides = parsed;
       } catch (err) {
         this.log.warn("config overrides are not valid JSON/YAML:", errorMessage(err));
       }
@@ -176,7 +170,7 @@ export default class AgatePlugin extends Plugin {
       if (file) {
         try {
           const parsed = parseJsonOrYaml(await this.app.vault.read(file));
-          if (parsed && typeof parsed === "object") fileConfig = parsed as Config;
+          if (parsed && typeof parsed === "object") fileConfig = parsed;
         } catch (err) {
           this.log.warn("theme file is not valid JSON/YAML:", errorMessage(err));
         }

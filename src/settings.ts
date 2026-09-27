@@ -104,7 +104,7 @@ export class AgateSettingTab extends PluginSettingTab {
 
     new Setting(containerEl)
       .setName("Export menu")
-      .setDesc("Show the vega-embed \"…\" menu with Save as SVG/PNG and View source.")
+      .setDesc("Show the chart menu with export to SVG or PNG and view source.")
       .addToggle((t) => t.setValue(s.actions).onChange((v) => save({ actions: v })));
 
     new Setting(containerEl)
@@ -124,7 +124,7 @@ export class AgateSettingTab extends PluginSettingTab {
       );
 
     new Setting(containerEl)
-      .setName("Load remote URLs")
+      .setName("Load remote data")
       .setDesc("Allow data.url values that start with http(s). Off by default: charts make no network requests.")
       .addToggle((t) => t.setValue(s.allowRemote).onChange((v) => save({ allowRemote: v })));
 
@@ -141,7 +141,7 @@ export class AgateSettingTab extends PluginSettingTab {
 
     new Setting(containerEl)
       .setName("Debug logging")
-      .setDesc("Verbose [agate] output in the developer console, including a dump of the first Bases row.")
+      .setDesc("Verbose output in the developer console, including the converted first row of each chart.")
       .addToggle((t) => t.setValue(s.debug).onChange((v) => save({ debug: v })));
   }
 }

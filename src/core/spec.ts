@@ -67,8 +67,8 @@ export function parseBlock(source: string, forcedMode?: Mode): AgateEnvelope {
     throw new Error("Block must be a mapping (JSON object or YAML map).");
   }
   const env: AgateEnvelope = isBareSpec(parsed)
-    ? { spec: parsed as AnySpec }
-    : (parsed as AgateEnvelope);
+    ? { spec: parsed }
+    : (parsed);
   if (forcedMode) env.mode = forcedMode;
   return env;
 }

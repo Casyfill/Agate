@@ -56,10 +56,10 @@ export function createApi(plugin: AgatePlugin): AgateAPI {
 
     registerExpressionFunction(name, fn) {
       const previous = vega.expressionFunction(name) as unknown;
-      vega.expressionFunction(name, fn as never);
+      vega.expressionFunction(name, fn);
       return () => {
-        if (typeof previous === "function") vega.expressionFunction(name, previous as never);
-        else vega.expressionFunction(name, undefined as never);
+        if (typeof previous === "function") vega.expressionFunction(name, previous);
+        else vega.expressionFunction(name, undefined);
       };
     },
 

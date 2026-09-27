@@ -235,7 +235,7 @@ Obsidian cannot be launched in CI cheaply and `obsidian` ships types only, so te
 
 **Layer 4: end-to-end automation** (optional, v0.2). `wdio-obsidian-service` can drive a real Obsidian against `test-vault/` in CI. Worth it once Layer 3 grows past a screen; not a v0.1 requirement.
 
-**Local development loop.** Prerequisites: Node 20+, npm, Obsidian 1.10.2+.
+**Local development loop.** Prerequisites: Node 22+ (`.nvmrc`), npm, Obsidian 1.10.2+.
 
 1. `git clone` and `npm install`.
 2. `npm run dev` starts esbuild in watch mode and writes `main.js` to the repo root.
@@ -313,15 +313,20 @@ M1 through M3 can each be merged independently; M4 depends on M0's outcome; M5 c
 
 **M0 outcome (2026-09-26).** All five questions answered on desktop; the spike code is kept as the starting point for M1 rather than thrown away, since it already follows D2. (a) The `agate` view renders in `.base` tabs, embeds, ```` ```base ```` blocks and Canvas cards; toolbar filter, sort (with `sort: null` in the spec), group and property changes update the chart in place and a brush survives them. (b) The synthesized ```` ```base ```` block works from a code block, in notes and in Canvas cards; no D3 fallback needed. (c) Tooltips and brushes work in reading view and live preview; in Canvas the card drag beats a brush and tooltips need the card selected; `interactive` stays on everywhere. Two Obsidian interactions needed fixes: `HTMLElement.prototype.isShown` is called on SVG marks (shim returning `false`, which also stops the page preview from opening under a tooltip), and property selection must scan the spec, not rely on the view's `order`. (d) `geoshape` over vault TopoJSON works with no add-on. (e) `main.js` is 0.84 MB minified; load time not noticeable; mobile checked only in device emulation, so `isDesktopOnly: false` stands provisionally until a real device confirms. The `Value` question is settled too: `instanceof` against the classes exported by `obsidian` works at runtime (constructor names are minified, so never rely on those), numbers, strings, booleans, lists and formula results convert to their JSON counterparts, dates arrive as strings Vega's `toDate` parses, and `allProperties` exposes `file.basename` and `file.fullname` separately, so Bases' `file.name` matches Agate's (no extension). The D4 mapping stays as written; the defensive `toString()` paths remain as fallbacks only. M0 is closed; a debug command ("Dump first Bases row") stays in the plugin for future API drift.
 
-### v0.2 preparation (secondary)
+### After M0: the road to 0.1.0 (revised 2026-09-26)
 
-These are not built in v0.1, but v0.1 makes room for them:
+M0 closed with the spike code kept as the base. The remaining milestones, in order:
 
-**Canvas.** Text cards render Markdown, so ```` ```agate ```` blocks should work in them without new code; `.base` file cards render the Agate view. Two things need work: pointer events (Canvas uses drag on the card; an interactive chart competes for the same gestures, which is why the `interactive` toggle exists in D3 and why the renderer must support a no-signal static mode), and a standalone spec file view (`registerView` + `registerExtensions(['agate'])` or similar) so a spec can be a file card on its own. M0 records what already works in Canvas so v0.2 scoping starts from facts.
+| # | Milestone | Delivers |
+|---|---|---|
+| M1 (done 2026-09-26) | Tests and hygiene | vitest with an `obsidian` mock; unit tests for spec parsing, the `Value` mapping, property scan, options precedence, loader dispatch and base-block synthesis; the headless Vega snapshot suite (Layer 2); eslint; CI on push. Pure functions extracted from surfaces where needed. |
+| M2 | Loose ends | Spec-file and theme-file watching everywhere, "Reload charts" command, styled export menu, the facet sparkline fixture, static-mode re-render on data change. |
+| M3 | Docs | `docs/quickstart.md`, `docs/agate-block.md`, `docs/data-model.md`, `docs/api.md`, `docs/testing.md`; README for users. |
+| M4 | Release and registration | `LICENSE`, `CHANGELOG.md`, release workflow on tag, `versions.json`; full Layer 3 run and a real mobile device; PR to `obsidianmd/obsidian-releases`. Before submitting, resolve the two likely review comments: the `SVGElement.prototype.isShown` shim (a global prototype change; alternatives are intercepting `mouseover` at the chart element or defaulting to the canvas renderer) and guideline conformance of settings copy. BRAT for early installs while review runs. |
 
-**Dataview as a data input.** Lands as a `DataSchemeProvider` (D7) registered under `dataview://`, calling `app.plugins.plugins.dataview.api.query(...)` and re-rendering on Dataview's `dataview:refresh-views` event. It can ship inside Agate behind a setting or as a separate add-on plugin; the API is the same either way. The `Row` shape from D4 is reused so a spec can switch from a base to a Dataview query by changing one line.
+### v0.2 candidates
 
-**Also queued for v0.2 consideration:** row limits and sampling for very large bases; PNG/SVG export commands independent of the vega-embed actions menu; a spec-file editor affordance (open the referenced `.vl.json` from the chart's context menu); Vega-Lite `params` bound to note frontmatter.
+Kept in `docs/future-features.md`, reviewed when 0.1.0 ships. Two decisions taken now: Dataview as a data source is dropped (the generic `DataSchemeProvider` hook stays); small charts per note are done with Vega-Lite `facet` in a single Agate view and need no new code, with data-through-links and a `sparkline()` formula function (needs an Obsidian API that is announced but not yet public) as the follow-ups. Canvas is already covered by M0's findings; a standalone spec-file view for Canvas file cards remains a candidate.
 
 ## Consequences
 

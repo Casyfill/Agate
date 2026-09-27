@@ -4,12 +4,12 @@ import {
   Notice,
   parseYaml,
   stringifyYaml,
-  type BasesConfigFile,
   type MarkdownPostProcessorContext,
 } from "obsidian";
 import type AgatePlugin from "../main";
 import { AgateRenderer } from "../core/render";
 import { detectMode, loadSpecFile, parseBlock, resolveVaultFile } from "../core/spec";
+import { synthesizeBaseConfig } from "../core/synthesize";
 import type { AgateEnvelope, AnySpec, Mode, ResolvedSpec, Row } from "../core/types";
 import { errorMessage } from "../util/log";
 import { AGATE_VIEW_TYPE } from "./bases-view";
@@ -148,46 +148,25 @@ class AgateBlock extends MarkdownRenderChild {
     if (baseFile.extension !== "base") throw new Error(`Not a .base file: ${baseFile.path}`);
 
     const baseText = await app.vault.read(baseFile);
-    const baseCfg = (parseYaml(baseText) ?? {}) as BasesConfigFile & Record<string, unknown>;
-
-    const views = Array.isArray(baseCfg.views) ? baseCfg.views : [];
-    let sourceView: Record<string, unknown> | undefined;
-    if (env.view) {
-      sourceView = views.find((v) => v && (v as { name?: string }).name === env.view) as
-        | Record<string, unknown>
-        | undefined;
-      if (!sourceView) {
-        const names = views.map((v) => (v as { name?: string }).name).filter(Boolean).join(", ");
-        throw new Error(`View "${env.view}" not found in ${baseFile.path}. Views: ${names || "(none)"}`);
-      }
-    }
+    const baseCfg = (parseYaml(baseText) ?? {}) as Record<string, unknown>;
 
     // Resolve the spec path against this note now; the synthesized view has no note context.
-    const agateView: Record<string, unknown> = {
-      type: AGATE_VIEW_TYPE,
-      name: `Agate (${baseFile.basename})`,
-    };
-    if (sourceView) {
-      for (const key of ["filters", "order", "groupBy", "limit", "sort", "summaries"]) {
-        if (sourceView[key] !== undefined) agateView[key] = sourceView[key];
-      }
-    }
+    let resolvedSpecPath: string | null = null;
     if (typeof env.spec === "string") {
-      const specFile = resolveVaultFile(app, env.spec, sourcePath);
-      if (!specFile) throw new Error(`Spec file not found: ${env.spec}`);
-      agateView.specFile = specFile.path;
-    } else if (env.spec && typeof env.spec === "object") {
-      agateView.spec = env.spec;
-    } else {
-      throw new Error("Block needs a spec next to `base:`: either inline or `spec: path/to/file.json`.");
-    }
-    for (const key of ["dataset", "theme", "renderer", "actions", "interactive"] as const) {
-      if (env[key] !== undefined) agateView[key] = env[key];
+      resolvedSpecPath = resolveVaultFile(app, env.spec, sourcePath)?.path ?? null;
     }
 
-    const synthesized: Record<string, unknown> = { views: [agateView] };
-    for (const key of ["filters", "formulas", "properties", "summaries"]) {
-      if (baseCfg[key] !== undefined) synthesized[key] = baseCfg[key];
+    let synthesized: Record<string, unknown>;
+    try {
+      synthesized = synthesizeBaseConfig({
+        baseConfig: baseCfg,
+        baseName: baseFile.basename,
+        envelope: env,
+        resolvedSpecPath,
+        viewType: AGATE_VIEW_TYPE,
+      });
+    } catch (err) {
+      throw new Error(`${errorMessage(err)} (${baseFile.path})`);
     }
 
     const markdown = "```base\n" + stringifyYaml(synthesized).trimEnd() + "\n```\n";

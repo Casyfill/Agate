@@ -1,0 +1,33 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm run lint
+      - run: npm test
+      - run: node esbuild.config.mjs production
+      - name: Check bundle size
+        run: |
+          size=$(stat -c %s main.js)
+          echo "main.js: $size bytes"
+          test "$size" -lt 2500000 || { echo "main.js grew past 2.5 MB"; exit 1; }
+      - uses: actions/upload-artifact@v4
+        with:
+          name: agate-${{ github.sha }}
+          path: |
+            main.js
+            manifest.json
+            styles.css

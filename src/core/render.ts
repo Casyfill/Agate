@@ -90,7 +90,7 @@ export class AgateRenderer {
     this.chartEl = this.hostEl.createDiv({ cls: "agate-chart" });
 
     try {
-      let spec = cloneSpec(resolved.spec) as AnySpec;
+      let spec = cloneSpec(resolved.spec);
       const datasetNames = Object.keys(input.datasets);
       for (const name of datasetNames) {
         spec = ensureNamedData(spec, resolved.mode, name);
@@ -101,7 +101,7 @@ export class AgateRenderer {
 
       const embedOptions: EmbedOptions = {
         mode: resolved.mode,
-        config: input.config as EmbedOptions["config"],
+        config: input.config,
         renderer: options.renderer,
         actions: options.actions
           ? { export: true, source: true, compiled: false, editor: false }
@@ -111,7 +111,7 @@ export class AgateRenderer {
         downloadFileName: "agate-chart",
       };
 
-      const result = await vegaEmbed(this.chartEl, spec as never, embedOptions);
+      const result = await vegaEmbed(this.chartEl, spec, embedOptions);
       if (gen !== this.generation) {
         // A newer render started while we were embedding; drop this one.
         result.finalize();
