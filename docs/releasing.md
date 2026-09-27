@@ -14,11 +14,11 @@ Sources: [Submit your plugin](https://docs.obsidian.md/Plugins/Releasing/Submit+
 
 ## B. Code review pass against the guidelines
 
-`npm run lint` uses `eslint-plugin-obsidianmd`, which encodes most of the review's automatic checks; zero errors is the bar, and the remaining warnings should each be a conscious decision. Beyond lint, three items in the current code will draw a reviewer's eye:
+`npm run lint` uses `eslint-plugin-obsidianmd`, which encodes most of the review's automatic checks; zero errors and zero warnings is the current state and the bar to keep. Three items the spike had that a reviewer would have questioned were resolved on 2026-09-27:
 
-1. **`SVGElement.prototype.isShown` shim** (`main.ts`). Modifies a global prototype. Options, in order of preference: find the Obsidian handler that calls `isShown()` on the event target and stop `mouseover` bubbling out of the chart element instead; or switch the default renderer to canvas and drop the shim. Whichever we pick, the reasoning goes in the PR description and the ADR (D10).
-2. **`lastBasesView` reference** (`main.ts`, for the "Dump first Bases row" command). The guidelines say not to hold references to views. Fix: either a `WeakRef`, or drop the command from the shipped build and keep the dump behind Debug logging only.
-3. **Console output.** `util/log.ts` is the only place; `debug` is gated by a setting, `info` prints one line at load. Reviewers accept gated debug logging; the load line is borderline. Consider dropping it to `debug`.
+1. The `SVGElement.prototype.isShown` shim (a global prototype change) is replaced by stopping `mouseover`/`mouseout` at the chart element, which keeps Obsidian's document-level hover handler out of Vega's SVG marks. Verify in Obsidian: no `isShown` error, no page preview under a tooltip (round 4 in the checklist).
+2. The strong reference to the last Bases view (for the debug dump command) is a `WeakRef`.
+3. Nothing is written to the console at load unless Debug logging is on.
 
 Also confirm: no `innerHTML` (vega-embed builds its own DOM; we do not touch it), no hard-coded styles in TS (all in `styles.css` with Obsidian variables), every listener goes through `register*`, settings headings without the word "settings" and no top-level heading, sentence case throughout, and no Node or Electron imports in `src/` (mobile).
 

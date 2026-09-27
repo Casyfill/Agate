@@ -8,7 +8,7 @@ import {
 } from "obsidian";
 import type AgatePlugin from "../main";
 import { AgateRenderer } from "../core/render";
-import { detectMode, loadSpecFile, parseBlock, resolveVaultFile } from "../core/spec";
+import { detectMode, loadSpecFile, parseBlock, resolveSpecFile, resolveVaultFile } from "../core/spec";
 import { synthesizeBaseConfig } from "../core/synthesize";
 import type { AgateEnvelope, AnySpec, Mode, ResolvedSpec, Row } from "../core/types";
 import { errorMessage } from "../util/log";
@@ -116,7 +116,7 @@ class AgateBlock extends MarkdownRenderChild {
     let spec: AnySpec;
     let specPath: string | null = null;
     if (typeof env.spec === "string") {
-      const file = resolveVaultFile(this.plugin.app, env.spec, sourcePath);
+      const file = resolveSpecFile(this.plugin.app, env.spec, sourcePath, this.plugin.settings.specFolder);
       if (!file) throw new Error(`Spec file not found: ${env.spec}`);
       specPath = file.path;
       spec = await loadSpecFile(this.plugin.app, file.path, null);
@@ -153,7 +153,7 @@ class AgateBlock extends MarkdownRenderChild {
     // Resolve the spec path against this note now; the synthesized view has no note context.
     let resolvedSpecPath: string | null = null;
     if (typeof env.spec === "string") {
-      resolvedSpecPath = resolveVaultFile(app, env.spec, sourcePath)?.path ?? null;
+      resolvedSpecPath = resolveSpecFile(app, env.spec, sourcePath, this.plugin.settings.specFolder)?.path ?? null;
     }
 
     let synthesized: Record<string, unknown>;

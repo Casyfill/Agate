@@ -52,7 +52,7 @@ export class AgateBasesView extends BasesView {
   }
 
   onDataUpdated(): void {
-    this.plugin.lastBasesView = this;
+    this.plugin.lastBasesView = new WeakRef(this);
     this.scheduleRender();
   }
 
@@ -162,7 +162,7 @@ export class AgateBasesView extends BasesView {
     let specPath: string | null = null;
 
     if (specFile) {
-      spec = await loadSpecFile(this.app, specFile, null);
+      spec = await loadSpecFile(this.app, specFile, null, this.plugin.settings.specFolder);
       specPath = specFile;
     } else if (typeof inline === "string" && inline.trim().length > 0) {
       const parsed = parseJsonOrYaml(inline);
@@ -204,7 +204,7 @@ export function agateViewRegistration(plugin: AgatePlugin): BasesViewRegistratio
           type: "file",
           key: "specFile",
           displayName: "Spec file",
-          placeholder: "charts/my-chart.vl.json",
+          placeholder: plugin.settings.specFolder ? `${plugin.settings.specFolder}/my-chart.vl.json` : "charts/my-chart.vl.json",
           filter: (file: TFile) => SPEC_EXTENSIONS.has(file.extension.toLowerCase()),
         },
         {

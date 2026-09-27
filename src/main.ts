@@ -30,8 +30,8 @@ export default class AgatePlugin extends Plugin {
   readonly schemes: Map<string, DataSchemeProvider> = new Map();
   readonly preprocessors: SpecPreprocessor[] = [];
 
-  /** Most recently updated Agate Bases view; target of the debug dump command. */
-  lastBasesView: AgateBasesView | null = null;
+  /** Most recently updated Agate Bases view (weakly held, per the plugin guidelines); target of the debug dump command. */
+  lastBasesView: WeakRef<AgateBasesView> | null = null;
 
   private settingsListeners = new Set<() => void>();
   private specFileListeners = new Set<(path: string) => void>();
@@ -39,7 +39,6 @@ export default class AgatePlugin extends Plugin {
   async onload(): Promise<void> {
     await this.loadSettings();
     this.addSettingTab(new AgateSettingTab(this.app, this));
-    this.installSvgIsShownGuard();
     addIcon(AGATE_ICON_ID, AGATE_ICON_SVG);
 
     const basesOk = this.registerBasesView(AGATE_VIEW_TYPE, agateViewRegistration(this));
@@ -54,11 +53,12 @@ export default class AgatePlugin extends Plugin {
       id: "dump-first-row",
       name: "Debug: dump first Bases row of the last rendered chart to the console",
       callback: () => {
-        if (!this.lastBasesView) {
+        const view = this.lastBasesView?.deref();
+        if (!view) {
           new Notice("Agate: no Agate chart has rendered from a base yet.");
           return;
         }
-        this.lastBasesView.dumpFirstRow();
+        view.dumpFirstRow();
         new Notice("Agate: dumped to the developer console (Cmd/Ctrl+Shift+I).");
       },
     });
@@ -80,35 +80,12 @@ export default class AgatePlugin extends Plugin {
       this.app.workspace.trigger("agate:ready", this.api);
     });
 
-    this.log.info(`loaded, vega ${this.api.vegaVersion}`);
+    this.log.debug(`loaded, vega ${this.api.vegaVersion}`);
   }
 
   onunload(): void {
     this.settingsListeners.clear();
     this.specFileListeners.clear();
-  }
-
-  /**
-   * M0 finding: Obsidian extends HTMLElement.prototype with isShown() and calls it on event
-   * targets. SVG elements (every mark Vega draws with the svg renderer) are not HTMLElements,
-   * so the app throws "e.isShown is not a function" when the user interacts with a chart.
-   * Give SVGElement the method, answering `false`: the caller is Obsidian's hover machinery,
-   * and M0 round 2 showed that answering for the HTML ancestor lets it go on to open a page
-   * preview of the embedding file underneath the Vega tooltip. `false` makes it bail out,
-   * which is what happened (via the exception) before the shim. Removed on unload.
-   */
-  private installSvgIsShownGuard(): void {
-    const proto = SVGElement.prototype as unknown as { isShown?: () => boolean };
-    const html = HTMLElement.prototype as unknown as { isShown?: () => boolean };
-    if (typeof proto.isShown === "function" || typeof html.isShown !== "function") return;
-    const shim = function (this: SVGElement): boolean {
-      return false;
-    };
-    proto.isShown = shim;
-    this.register(() => {
-      if (proto.isShown === shim) delete proto.isShown;
-    });
-    this.log.debug("installed SVGElement.isShown shim");
   }
 
   // --- settings -----------------------------------------------------------

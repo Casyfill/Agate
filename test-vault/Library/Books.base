@@ -38,9 +38,6 @@ views:
     specFile: charts/ratings-by-genre.vl.json
   - type: agate
     name: Scatter
-    filters:
-      and:
-        - rating > 4
     order:
       - file.name
       - author

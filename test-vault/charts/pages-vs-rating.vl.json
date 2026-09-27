@@ -1,10 +1,10 @@
 {
   "$schema": "https://vega.github.io/schema/vega-lite/v6.json",
-  "description": "Interactive: drag an interval brush to highlight books; hover for tooltips.",
+  "description": "Interactive without dragging: hovering a point highlights it and shows a tooltip. (Interval brushes work too, but not inside Canvas cards, so the examples avoid them.)",
   "data": { "name": "base" },
   "transform": [{ "filter": "isValid(datum.note.rating) && isValid(datum.note.pages)" }],
-  "params": [{ "name": "brush", "select": { "type": "interval" } }],
-  "mark": { "type": "point", "filled": true, "size": 110, "opacity": 0.85 },
+  "params": [{ "name": "hover", "select": { "type": "point", "on": "pointerover", "clear": "pointerout", "nearest": true } }],
+  "mark": { "type": "point", "filled": true },
   "encoding": {
     "x": { "field": "note.pages", "type": "quantitative", "title": "Pages" },
     "y": {
@@ -14,10 +14,9 @@
       "scale": { "domain": [0, 5.5] },
       "axis": { "tickMinStep": 1 }
     },
-    "color": {
-      "condition": { "param": "brush", "field": "note.genre", "type": "nominal", "title": "Genre" },
-      "value": "#9e9e9e"
-    },
+    "color": { "field": "note.genre", "type": "nominal", "title": "Genre" },
+    "opacity": { "condition": { "param": "hover", "value": 1, "empty": false }, "value": 0.55 },
+    "size": { "condition": { "param": "hover", "value": 220, "empty": false }, "value": 110 },
     "tooltip": [
       { "field": "file.name", "title": "Book" },
       { "field": "note.author", "title": "Author" },

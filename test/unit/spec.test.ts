@@ -9,6 +9,7 @@ import {
   parseBlock,
   parseJsonOrYaml,
   referencedProperties,
+  resolveSpecFile,
   resolveVaultFile,
   withInitialValues,
 } from "../../src/core/spec";
@@ -120,6 +121,7 @@ describe("referencedProperties", () => {
 describe("vault resolution", () => {
   const app = new FakeApp({
     "charts/a.vl.json": '{"mark": "bar"}',
+    "charts/geo/map.vl.json": '{"mark": "geoshape"}',
     "charts/bad.json": "[1, 2]",
     "Notes/Sub/b.md": "",
   });
@@ -129,6 +131,24 @@ describe("vault resolution", () => {
     expect(resolveVaultFile(app, "[[charts/a.vl.json]]", "Notes/x.md")?.path).toBe("charts/a.vl.json");
     expect(resolveVaultFile(app, "Sub/b.md", "Notes/x.md")?.path).toBe("Notes/Sub/b.md");
     expect(resolveVaultFile(app, "nope.json", null)).toBeNull();
+  });
+
+  it("falls back to the default spec folder only when the direct lookup fails", () => {
+    // A unique filename resolves like a link regardless of folder (Obsidian behaviour, mirrored by the mock).
+    expect(resolveSpecFile(app, "a.vl.json", "Notes/x.md", undefined)?.path).toBe("charts/a.vl.json");
+    // A path with a subfolder component does not, so the folder fallback is what finds it.
+    expect(resolveSpecFile(app, "geo/map.vl.json", "Notes/x.md", "charts")?.path).toBe("charts/geo/map.vl.json");
+    expect(resolveSpecFile(app, "geo/map.vl.json", null, "/charts/")?.path).toBe("charts/geo/map.vl.json");
+    expect(resolveSpecFile(app, "geo/map.vl.json", null, "")).toBeNull();
+    expect(resolveSpecFile(app, "geo/map.vl.json", null, undefined)).toBeNull();
+    // Absolute paths are taken literally and never prefixed.
+    expect(resolveSpecFile(app, "/geo/map.vl.json", null, "charts")).toBeNull();
+    // A full path keeps working even when the folder setting points elsewhere.
+    expect(resolveSpecFile(app, "charts/a.vl.json", null, "elsewhere")?.path).toBe("charts/a.vl.json");
+  });
+
+  it("names the folder it also tried when a spec is missing", async () => {
+    await expect(loadSpecFile(app, "nope.json", null, "charts")).rejects.toThrow(/also tried charts\/nope.json/);
   });
 
   it("loads and validates a spec file", async () => {

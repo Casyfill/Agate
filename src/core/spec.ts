@@ -97,9 +97,36 @@ export function resolveVaultFile(app: App, path: string, sourcePath: string | nu
   return null;
 }
 
-export async function loadSpecFile(app: App, path: string, sourcePath: string | null): Promise<AnySpec> {
-  const file = resolveVaultFile(app, path, sourcePath);
-  if (!file) throw new Error(`Spec file not found: ${path}`);
+/**
+ * Resolve a spec path: like a link first; if that fails and a default spec folder is
+ * configured (D11), try `<folder>/<path>` so `spec: ratings.vl.json` finds `charts/ratings.vl.json`.
+ */
+export function resolveSpecFile(
+  app: App,
+  path: string,
+  sourcePath: string | null,
+  specFolder: string | undefined,
+): TFile | null {
+  const direct = resolveVaultFile(app, path, sourcePath);
+  if (direct) return direct;
+  const folder = (specFolder ?? "").trim();
+  if (!folder) return null;
+  const clean = path.trim().replace(/^\[\[|\]\]$/g, "");
+  if (clean.startsWith("/")) return null;
+  return resolveVaultFile(app, `${normalizePath(folder)}/${clean}`, null);
+}
+
+export async function loadSpecFile(
+  app: App,
+  path: string,
+  sourcePath: string | null,
+  specFolder?: string,
+): Promise<AnySpec> {
+  const file = resolveSpecFile(app, path, sourcePath, specFolder);
+  if (!file) {
+    const hint = specFolder?.trim() ? ` (also tried ${normalizePath(specFolder)}/${path})` : "";
+    throw new Error(`Spec file not found: ${path}${hint}`);
+  }
   const text = await app.vault.read(file);
   const parsed = parseJsonOrYaml(text);
   if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {

@@ -15,6 +15,7 @@ All notable changes to Agate. The format follows [Keep a Changelog](https://keep
 - Settings tab (theme, renderer, export menu, interactivity, dataset name, remote data, block aliases, debug logging).
 - Extension API for other plugins (`app.plugins.plugins.agate.api`, `agate:ready` event): data schemes, expression functions, themes, spec preprocessors, and Agate's bundled `vega` instance.
 - Optional handling of ```` ```vega ```` and ```` ```vega-lite ```` blocks.
+- Default spec folder setting: a spec path that does not resolve on its own is looked up there.
 - Plugin icon.
 
 ### Known limitations
