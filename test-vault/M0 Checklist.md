@@ -28,6 +28,7 @@ Goal: answer the five questions from ADR-0001 M0 with evidence, not impressions.
 - [x] Reading view, `Surfaces/4 Base embed` → Scatter: tooltip appears on hover, brush works, page does not scroll while brushing.
 - [x] Live preview (Settings → Editor → Default editing mode: Live Preview, i.e. the editing mode that renders blocks in place; Source mode shows raw text), same note: same three checks.
 - [x] Round 3: hover a point. Round 2 had Obsidian's page preview open under the tooltip; the SVG `isShown` shim now answers `false` so the hover handler bails. Preview gone, error gone (2026-09-26).
+- [ ] Round 4 (2026-09-27): the shim is removed; the chart element stops `mouseover` bubbling instead. Re-check in reading view, live preview, an embed and a Canvas card: no `isShown` error in the console, no page preview under a tooltip, tooltips and brush still work.
 - [x] `Surfaces/Canvas.canvas`: in the `.base` card (Scatter), brush loses to card drag. Decision: brushes are spec-level (the plugin adds none); fixtures keep tooltips only in Canvas; documented as a Canvas limitation.
 - [x] Round 2: Canvas note card `9 Canvas card text` shows the scatter (round 1: blank, same property-selection cause).
 - [x] Canvas static map card: no tooltip on hover, no console errors.

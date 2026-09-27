@@ -10,4 +10,4 @@ spec: charts/pages-vs-rating.vl.json
 base: Library/Books.base
 ```
 
-Try to brush inside the card: does the brush win, or does Canvas start dragging the card? That answer decides the default of the `interactive` option in Canvas (ADR-0001 D10).
+Hover a point inside the card (select the card first): highlight and tooltip should work. Drag-based brushes lose to card drag in Canvas, which is why the examples use hover.

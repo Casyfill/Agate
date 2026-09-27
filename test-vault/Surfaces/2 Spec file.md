@@ -13,4 +13,4 @@ data:
   - {file: {name: "Book C"}, note: {author: "Z", pages: 310, rating: 3, genre: "thriller"}}
 ```
 
-Expected: a scatter with three points. Drag to brush; the brushed points keep colour, the rest turn grey. Edit the spec file in another pane (for example change `"size": 110`) and the chart re-renders on save.
+Expected: a scatter with three points. Hovering a point enlarges it and shows a tooltip. Edit the spec file in another pane (for example change `"size": 110`) and the chart re-renders on save.

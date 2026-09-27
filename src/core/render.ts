@@ -33,6 +33,10 @@ function defaultToContainerWidth(spec: AnySpec, mode: "vega" | "vega-lite"): Any
   return { ...spec, width: "container", autosize };
 }
 
+function stopBubbling(evt: Event): void {
+  evt.stopPropagation();
+}
+
 declare global {
   interface Window {
     /** Debug-only counter of live Vega views, to catch leaks (ADR-0001 D8). */
@@ -112,6 +116,7 @@ export class AgateRenderer {
       };
 
       const result = await vegaEmbed(this.chartEl, spec, embedOptions);
+      this.isolateHover(this.chartEl);
       if (gen !== this.generation) {
         // A newer render started while we were embedding; drop this one.
         result.finalize();
@@ -152,6 +157,19 @@ export class AgateRenderer {
       }
     }
     if (touched) await view.runAsync();
+  }
+
+  /**
+   * Obsidian listens for `mouseover` at the document level to drive hover-link previews and
+   * calls `isShown()` on the event target, a method it adds to HTMLElement only. Vega's SVG
+   * marks are SVGElements, so that handler either throws or, once past the check, opens a
+   * page preview of the embedding note under the chart's tooltip. Vega listens on the
+   * SVG/canvas element inside, so stopping the event at the chart element changes nothing
+   * for the chart and keeps Obsidian's handler out of it. Replaces the M0 prototype shim.
+   */
+  private isolateHover(el: HTMLElement): void {
+    el.addEventListener("mouseover", stopBubbling);
+    el.addEventListener("mouseout", stopBubbling);
   }
 
   private observeResize(el: HTMLElement): void {

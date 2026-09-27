@@ -8,6 +8,10 @@ Vega and Vega-Lite charts inside Obsidian, fed by [Bases](https://help.obsidian.
 
 ## What you get
 
+Two things, one renderer.
+
+### 1. A Bases view that is a chart
+
 A new Bases view type, **Agate chart**. Open any base, add a view, choose the Agate layout, point it at a spec. The base's rows arrive in the chart as a dataset named `base`, one row per note:
 
 ```json
@@ -19,11 +23,13 @@ A new Bases view type, **Agate chart**. Open any base, add a view, choose the Ag
 }
 ```
 
-Field names are the Bases property ids, so `"field": "note.rating"` in a spec is the same `note.rating` you see in the Bases toolbar. `group` appears when the view is grouped.
+Field names are the Bases property ids, so `"field": "note.rating"` in a spec is the same `note.rating` you see in the Bases toolbar. `group` appears when the view is grouped. Filters, sort, grouping and the Properties menu are the chart's controls; change them and the chart updates in place.
 
 Because it is an ordinary Bases view, the chart shows up everywhere a base does: in the base's own tab, embedded in a note with `![[Books.base#Ratings]]`, in a ```` ```base ```` code block, in the sidebar, and on a Canvas card.
 
-For charts that live in a note rather than in a base, there is an ```` ```agate ```` code block. It takes a bare Vega-Lite or Vega spec, or a small envelope:
+### 2. Charts inside notes
+
+Rendering a Vega or Vega-Lite spec from a code block in a note is not new; the [Vega Visualizations](https://github.com/Justin-J-K/obsidian-vega) plugin has done that for years with ```` ```vega ```` and ```` ```vega-lite ```` blocks. What it cannot do is feed a chart from Bases or any other live data inside the vault. Agate's block does:
 
 ````markdown
 ```agate
@@ -33,7 +39,9 @@ view: Table                             # optional: reuse that view's filters an
 ```
 ````
 
-Without `base:`, the spec's own `data` applies: inline `values`, or a `url` that resolves inside the vault the way a link does (`data/sales.csv`). Remote URLs are off by default and can be enabled in settings.
+The block is called ```` ```agate ```` so the two plugins can coexist. A bare spec pasted into it works as-is; the envelope form above adds `spec:` (file or inline), `data:` (inline rows), and `base:`/`view:` to pull rows from a `.base` file's query. Without `base:`, the spec's own `data` applies: inline `values`, or a `url` that resolves inside the vault the way a link does (`data/sales.csv`). Remote URLs are off by default and can be enabled in settings.
+
+If you do not use the Vega Visualizations plugin, a setting lets Agate also handle ```` ```vega ```` and ```` ```vega-lite ```` blocks, so existing notes render through Agate with its themes and vault loader. With both plugins enabled that setting is left off: Obsidian allows one handler per block language.
 
 ## Quick start
 
@@ -57,12 +65,12 @@ Tips: hidden properties are still converted when the spec refers to them, so a s
 
 ## Settings
 
-Vault-wide defaults, each overridable per chart (view options in a base, envelope keys in a block): theme (`obsidian` follows your Obsidian theme and light/dark mode live; the Vega named themes are also there), a config override block, an optional theme file in the vault, renderer (SVG or canvas), the export menu, interactivity (off renders a static picture), the dataset name, remote data loading, and whether Agate should also handle ```` ```vega ```` / ```` ```vega-lite ```` blocks (off by default; conflicts with the obsidian-vega plugin).
+Vault-wide defaults, each overridable per chart (view options in a base, envelope keys in a block): a default spec folder (a spec path that does not resolve on its own is looked up there, so `spec: ratings.vl.json` finds `charts/ratings.vl.json`), theme (`obsidian` follows your Obsidian theme and light/dark mode live; the Vega named themes are also there), a config override block, an optional theme file in the vault, renderer (SVG or canvas), the export menu, interactivity (off renders a static picture), the dataset name, remote data loading, and whether Agate should also handle ```` ```vega ```` / ```` ```vega-lite ```` blocks (off by default; conflicts with the obsidian-vega plugin).
 
 ## Limits worth knowing
 
 - Bases data flows only into a registered Bases view; Agate cannot run a base query on its own. The ```` ```agate ```` block with `base:` works by rendering a hidden base view, which is why the Bases toolbar appears above such charts.
-- In Canvas, dragging the card wins over an in-chart brush. Tooltips work once the card is selected.
+- In Canvas, dragging the card wins over drag-based selections (interval brushes). Tooltips and hover highlights work once the card is selected. The example specs use hover, not brushes.
 - Charts inside the core Table view (sparklines per row) need a Bases API that does not exist yet.
 
 ## For plugin authors

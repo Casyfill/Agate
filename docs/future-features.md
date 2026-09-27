@@ -32,7 +32,7 @@ Ideas parked for after 0.1.0. Not commitments; reviewed when 0.1.0 ships. Each e
 
 **Tooltips with links.** Render tooltip values through Obsidian's `Value.renderTo` so a `file.name` in a tooltip is a working link. Medium, and tooltips are a vega-tooltip concern; would need a custom tooltip handler.
 
-**Canvas renderer default when `isShown` shim proves fragile.** Recorded here so the trade-off is not forgotten: the shim modifies `SVGElement.prototype`; the canvas renderer avoids the problem without touching globals but loses styleable SVG.
+**Canvas renderer default if hover isolation proves insufficient.** The `isShown` problem is handled by stopping `mouseover` at the chart element. If some Obsidian handler still reaches SVG marks, the canvas renderer sidesteps it (event targets become an HTMLCanvasElement) at the cost of styleable SVG.
 
 **End-to-end tests.** `wdio-obsidian-service` against `test-vault/` in CI once the manual checklist is longer than a screen.
 

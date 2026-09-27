@@ -11,6 +11,8 @@ export interface AgateSettings {
   configOverrides: string;
   /** Optional vault path to a JSON/YAML config file, merged after configOverrides. */
   themeFile: string;
+  /** Folder tried when a spec path does not resolve on its own, e.g. `charts`. */
+  specFolder: string;
   renderer: Renderer;
   actions: boolean;
   interactive: boolean;
@@ -26,6 +28,7 @@ export const DEFAULT_SETTINGS: AgateSettings = {
   theme: "obsidian",
   configOverrides: "",
   themeFile: "",
+  specFolder: "",
   renderer: "svg",
   actions: false,
   interactive: true,
@@ -107,6 +110,12 @@ export class AgateSettingTab extends PluginSettingTab {
         heading: "Data",
         items: [
           {
+            name: "Default spec folder",
+            desc: "Where spec files live. A spec path that does not resolve on its own is looked up here, so `spec: ratings.vl.json` finds `charts/ratings.vl.json`.",
+            aliases: ["charts folder", "spec path"],
+            control: { type: "folder", key: "specFolder", placeholder: "charts" },
+          },
+          {
             name: "Default dataset name",
             desc: 'Name of the Vega dataset that receives Bases rows. Specs reference it as {"data": {"name": "…"}}.',
             control: {
@@ -151,7 +160,7 @@ export class AgateSettingTab extends PluginSettingTab {
   async setControlValue(key: string, value: unknown): Promise<void> {
     const k = key as Key;
     if (k === "datasetName" && typeof value === "string") value = value.trim() || DEFAULT_SETTINGS.datasetName;
-    if (k === "themeFile" && typeof value === "string") value = value.trim();
+    if ((k === "themeFile" || k === "specFolder") && typeof value === "string") value = value.trim().replace(/^\/+|\/+$/g, "");
     (this.plugin.settings as unknown as Record<string, unknown>)[k] = value;
     await this.plugin.saveSettings();
   }
