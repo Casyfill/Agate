@@ -1,6 +1,6 @@
 {
   "name": "agate",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Vega and Vega-Lite charts over Obsidian Bases.",
   "main": "main.js",
   "private": true,
