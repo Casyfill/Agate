@@ -4,6 +4,8 @@ All notable changes to Agate. The format follows [Keep a Changelog](https://keep
 
 ## [Unreleased]
 
+## [0.0.2] - 2026-09-27
+
 ### Added
 
 - `Agate chart` view type for Bases: pick it in a base's view menu, point it at a Vega or Vega-Lite spec (file in the vault or inline), and the base's rows become the chart's `base` dataset. Filters, sort, group and the Properties menu drive the chart; brushes and selections survive a filter change.
