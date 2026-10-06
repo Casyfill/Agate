@@ -11,9 +11,10 @@ import type AgatePlugin from "../main";
 import { AgateRenderer } from "../core/render";
 import { describeEntry, groupsToRows } from "../core/data/bases";
 import { cellsDatasetName, tableCells } from "../core/data/table";
+import { edgesDatasetName, linkEdges, pathTree, treeDatasetName } from "../core/data/structure";
 import { detectMode, loadSpecFile, parseJsonOrYaml, referencedProperties } from "../core/spec";
 import type { AnySpec, ChartOptions, ResolvedSpec } from "../core/types";
-import { AGATE_ICON_ID } from "../icon";
+import { CHART_VIEW_ICON_ID } from "../chart-icon";
 
 export const AGATE_VIEW_TYPE = "agate";
 
@@ -116,8 +117,15 @@ export class AgateBasesView extends BasesView {
         const order = this.config.getOrder();
         datasets[cellsName] = tableCells(rows, order, (id) => this.config.getDisplayName(id as BasesPropertyId));
       }
+      const edgesName = edgesDatasetName(resolved.spec);
+      if (edgesName) datasets[edgesName] = linkEdges(rows, this.app.metadataCache.resolvedLinks);
+      const treeName = treeDatasetName(resolved.spec);
+      if (treeName) datasets[treeName] = pathTree(rows, this.app.vault.getName());
 
-      await this.renderer.render({ resolved, options, config, loader, datasets });
+      const openNote = (path: string, newLeaf: boolean): void => {
+        void this.app.workspace.openLinkText(path, "", newLeaf);
+      };
+      await this.renderer.render({ resolved, options, config, loader, datasets, openNote });
     } catch (err) {
       if (gen === this.renderGen) this.renderer.showError(err);
     }
@@ -201,7 +209,9 @@ export class AgateBasesView extends BasesView {
 export function agateViewRegistration(plugin: AgatePlugin): BasesViewRegistration {
   return {
     name: "Agate chart",
-    icon: AGATE_ICON_ID,
+    // Line icon in the style of the core views (Table, Cards, List); the Agate logo stays for
+    // the settings tab and docs.
+    icon: CHART_VIEW_ICON_ID,
     factory: (controller, containerEl) => new AgateBasesView(plugin, controller, containerEl),
     options: (_config: BasesViewConfig): BasesAllOptions[] => {
       const themeOptions: Record<string, string> = { "": "Vault default" };

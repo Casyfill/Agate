@@ -1,0 +1,28 @@
+filters:
+  and:
+    - file.inFolder("Journal")
+    - file.ext == "md"
+views:
+  - type: agate
+    name: Mood swarm
+    order:
+      - file.name
+      - date
+      - mood
+      - energy
+      - sleep
+    specFile: charts/mood-beeswarm.vg.json
+  - type: agate
+    name: Activity cloud
+    order:
+      - file.name
+      - file.tags
+    specFile: charts/tag-cloud.vg.json
+  - type: table
+    name: Table
+    order:
+      - date
+      - mood
+      - energy
+      - sleep
+      - file.tags

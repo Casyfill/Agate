@@ -2,6 +2,7 @@
 tags:
   - book
 author: Isaac Asimov
+isbn: "9780553293357"
 genre: sci-fi
 rating: 4
 pages: 255

@@ -2,6 +2,7 @@
 tags:
   - book
 author: William Gibson
+isbn: "9780441569595"
 genre: sci-fi
 rating: 4
 pages: 271

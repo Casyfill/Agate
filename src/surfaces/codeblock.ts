@@ -112,7 +112,10 @@ class AgateBlock extends MarkdownRenderChild {
         datasets = { ...datasets, ...(await this.plugin.buildDatasets(resolved.spec, options.dataset, rows, loader)) };
       }
 
-      await this.getRenderer().render({ resolved, options, config, loader, datasets });
+      const openNote = (path: string, newLeaf: boolean): void => {
+        void this.plugin.app.workspace.openLinkText(path, sourcePath, newLeaf);
+      };
+      await this.getRenderer().render({ resolved, options, config, loader, datasets, openNote });
     } catch (err) {
       this.getRenderer().showError(err);
     }

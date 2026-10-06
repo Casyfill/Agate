@@ -1,5 +1,6 @@
 import { Notice, Plugin, TFile, addIcon } from "obsidian";
 import { AGATE_ICON_ID, AGATE_ICON_SVG } from "./icon";
+import { CHART_VIEW_ICON_ID, CHART_VIEW_ICON_SVG } from "./chart-icon";
 import type { Config, Loader } from "vega";
 import { AgateSettingTab, DEFAULT_SETTINGS, type AgateSettings } from "./settings";
 import { createLogger, errorMessage, type Logger } from "./util/log";
@@ -43,8 +44,10 @@ export default class AgatePlugin extends Plugin {
 
   async onload(): Promise<void> {
     await this.loadSettings();
-    this.addSettingTab(new AgateSettingTab(this.app, this));
+    // Before anything that refers to the icons by id.
     addIcon(AGATE_ICON_ID, AGATE_ICON_SVG);
+    addIcon(CHART_VIEW_ICON_ID, CHART_VIEW_ICON_SVG);
+    this.addSettingTab(new AgateSettingTab(this.app, this));
 
     const basesOk = this.registerBasesView(AGATE_VIEW_TYPE, agateViewRegistration(this));
     if (!basesOk) {

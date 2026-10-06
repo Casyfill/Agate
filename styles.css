@@ -126,6 +126,15 @@ body #vg-tooltip-element.vg-tooltip h2 {
   margin: 0 0 var(--size-4-1);
 }
 
+/* A tooltip field titled "image" renders as a picture (e.g. a cover from a note's URL property). */
+body #vg-tooltip-element.vg-tooltip img {
+  display: block;
+  max-width: 160px;
+  max-height: 220px;
+  margin: 0 0 var(--size-4-2);
+  border-radius: var(--radius-s);
+}
+
 body #vg-tooltip-element.vg-tooltip table tr td.key {
   color: var(--text-muted);
 }

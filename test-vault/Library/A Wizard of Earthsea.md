@@ -2,6 +2,7 @@
 tags:
   - book
 author: Ursula K. Le Guin
+isbn: "9780547773742"
 genre: fantasy
 rating: 4
 pages: 183

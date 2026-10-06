@@ -1,0 +1,60 @@
+{
+  "$schema": "https://vega.github.io/schema/vega/v6.json",
+  "description": "Word cloud of the tags on the notes in the base (file.tags), sized by how many notes carry each. Nested tags count once per level unless Leaf only is on.",
+  "autosize": { "type": "fit-x", "contains": "padding" },
+  "padding": 8,
+  "signals": [
+    {
+      "name": "width",
+      "init": "isFinite(containerSize()[0]) && containerSize()[0] > 0 ? containerSize()[0] : 640",
+      "on": [{ "events": "window:resize", "update": "isFinite(containerSize()[0]) && containerSize()[0] > 0 ? containerSize()[0] : 640" }]
+    },
+    { "name": "height", "value": 320 },
+    { "name": "leafOnly", "value": true, "bind": { "input": "checkbox", "name": "Leaf only " } },
+    { "name": "skip", "value": "journal", "bind": { "input": "text", "name": "Hide tags (comma-separated) " } }
+  ],
+  "data": [
+    { "name": "base" },
+    {
+      "name": "tags",
+      "source": "base",
+      "transform": [
+        { "type": "formula", "as": "tagList", "expr": "isArray(datum.file.tags) ? datum.file.tags : (isArray(datum.note.tags) ? datum.note.tags : [])" },
+        { "type": "flatten", "fields": ["tagList"], "as": ["tag"] },
+        { "type": "formula", "as": "tag", "expr": "replace(datum.tag + '', regexp('^#'), '')" },
+        { "type": "formula", "as": "word", "expr": "leafOnly ? peek(split(datum.tag, '/')) : datum.tag" },
+        { "type": "filter", "expr": "indexof(split(replace(skip, regexp(' ', 'g'), ''), ','), datum.word) < 0" },
+        { "type": "aggregate", "groupby": ["word"], "as": ["n"] },
+        { "type": "formula", "as": "angle", "expr": "[-30, 0, 0, 0, 30][~~(random() * 5)]" },
+        { "type": "formula", "as": "weight", "expr": "datum.n >= 4 ? 600 : 400" }
+      ]
+    }
+  ],
+  "scales": [
+    { "name": "colour", "type": "ordinal", "domain": { "data": "tags", "field": "word" }, "range": "category" },
+    { "name": "size", "type": "sqrt", "domain": { "data": "tags", "field": "n" }, "range": [12, 52] }
+  ],
+  "marks": [
+    {
+      "type": "text",
+      "from": { "data": "tags" },
+      "encode": {
+        "enter": { "text": { "field": "word" }, "align": { "value": "center" }, "baseline": { "value": "alphabetic" }, "fill": { "scale": "colour", "field": "word" } },
+        "update": { "fillOpacity": { "value": 0.9 }, "tooltip": { "signal": "{title: '#' + datum.word, 'Notes': datum.n}" } },
+        "hover": { "fillOpacity": { "value": 1 } }
+      },
+      "transform": [
+        {
+          "type": "wordcloud",
+          "size": [{ "signal": "width" }, { "signal": "height" }],
+          "text": { "field": "datum.word" },
+          "rotate": { "field": "datum.angle" },
+          "fontSize": { "field": "datum.n" },
+          "fontSizeRange": [12, 52],
+          "fontWeight": { "field": "datum.weight" },
+          "padding": 3
+        }
+      ]
+    }
+  ]
+}

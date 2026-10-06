@@ -304,7 +304,11 @@ Small charts per note need data per note, and Bases formulas cannot fetch anythi
 - `rowData: {name, from, format?}` (or a list of them). For each base row, Agate reads property `from` (`note.data`, `formula.csv`), loads it through the D5 loader (vault path, link, scheme, or http(s) if allowed), parses it with `vega.read` (format from `format`, else the extension, else sniffed), and emits the records into dataset `name` with the parent's `file`, `note`, `formula`, `group` and `rowIndex` copied on. A list value becomes `{index, value}` records. Rows load in parallel (6 at a time); a failed row is logged and skipped, and only when every row fails does the chart show the error. Remote text is cached in memory for 10 minutes per URL, cleared by the "Refresh remote data" command. Records keep base row order.
 - `cells: "<name>"`. One record per row and visible property (`config.getOrder()`, display names from `getDisplayName`), with `rowIndex`, `column`, `property`, `label`, `value` and `text`. Lets a spec draw the view as a table whose columns follow the Properties menu, with a chart in one column. Bases view only; the code block has no Properties menu.
 
-Both live in `src/core/data/` as pure functions; the Bases view and the plugin wire them in. Rejected: rendering per-row SVG files into the vault for `image()` cells in the core Table (vault churn, sync noise, static) and formula-only `html()` sparklines (not Agate).
+- `edges: "<name>"` (added the same day). Links between rows of the base from `metadataCache.resolvedLinks`, as `{source, target, count, …}` with row positions, so Vega's force `link` and arc diagrams can use them directly. Links to notes outside the base are dropped.
+- `tree: "<name>"`. The folder hierarchy of the rows: one node per folder (root id `/`, since d3's `stratify` treats an empty id as none) and per row, each with `parent`, `depth`, `ancestors`, and `size`/`count` totals, so a spec can cut the tree at a depth and still show true sizes, and zoom by filtering on `ancestors`.
+- `open: "click" | "dblclick"`. A pointer event on a mark whose datum carries `file.path` opens that note (Cmd/Ctrl: new tab). Opt-in, because a click inside a chart means different things in different specs.
+
+All of these live in `src/core/data/` and `src/core/spec.ts` as pure functions; the Bases view and the plugin wire them in. Rejected: rendering per-row SVG files into the vault for `image()` cells in the core Table (vault churn, sync noise, static) and formula-only `html()` sparklines (not Agate).
 
 ## Roadmap
 

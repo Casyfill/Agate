@@ -2,6 +2,7 @@
 tags:
   - book
 author: Tara Westover
+isbn: "9780399590504"
 genre: non-fiction
 rating: 5
 pages: 334

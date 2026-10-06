@@ -99,7 +99,7 @@ npm run dev                 # esbuild in watch mode -> main.js
 npm run install:local       # symlink into test-vault/.obsidian/plugins/agate/
 ```
 
-Open `test-vault/` as a vault and start with `Start here.md`. For another vault: `AGATE_VAULT=/path/to/vault npm run install:local`. `npm run check` (or `make check`) runs typecheck, lint and tests; `make help` lists everything. How testing is layered is in `docs/testing.md`; decisions and roadmap in `docs/adr/`; the backlog in `docs/future-features.md`; the original goals in `docs/goals.md`.
+Open `test-vault/` as a vault and start with `Start here.md`. For another vault: `AGATE_VAULT=/path/to/vault npm run install:local`. `npm run check` (or `make check`) runs typecheck, lint and tests; `make help` lists everything. The user guide (draft) is `docs/guide.md` and the comparison with other chart plugins (draft) is `docs/why-agate.md`. How testing is layered is in `docs/testing.md`; decisions and roadmap in `docs/adr/`; the backlog in `docs/future-features.md`; the original goals in `docs/goals.md`.
 
 ## Releasing
 

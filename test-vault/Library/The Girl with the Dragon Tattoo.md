@@ -2,6 +2,7 @@
 tags:
   - book
 author: Stieg Larsson
+isbn: "9780307454546"
 genre: thriller
 rating: 4
 pages: 465

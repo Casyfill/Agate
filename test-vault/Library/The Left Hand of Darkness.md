@@ -2,6 +2,7 @@
 tags:
   - book
 author: Ursula K. Le Guin
+isbn: "9780441478125"
 genre: sci-fi
 rating: 5
 pages: 304

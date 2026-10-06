@@ -4,6 +4,7 @@ filters:
 formulas:
   age: if(published, today().year - published.year, null)
   decade: if(published, (published.year / 10).floor() * 10, null)
+  cover: if(isbn, "https://covers.openlibrary.org/b/isbn/" + isbn + "-M.jpg", null)
 properties:
   note.rating:
     displayName: Rating
@@ -75,3 +76,29 @@ views:
       - file.name
       - status
     spec: '{"mark": {"type": "bar", "tooltip": true}, "encoding": {"x": {"field": "note.status", "type": "nominal", "title": "Status"}, "y": {"aggregate": "count", "title": "Books"}}, "height": 160}'
+  - type: agate
+    name: Covers
+    order:
+      - file.name
+      - author
+      - rating
+      - pages
+    specFile: charts/covers-tooltip.vl.json
+  - type: agate
+    name: Reading flow
+    order:
+      - file.name
+      - genre
+      - status
+      - rating
+    specFile: charts/reading-sankey.vg.json
+  - type: agate
+    name: Dashboard
+    order:
+      - file.name
+      - author
+      - genre
+      - rating
+      - pages
+      - published
+    specFile: charts/reading-dashboard.vl.json

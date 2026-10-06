@@ -2,6 +2,7 @@
 tags:
   - book
 author: Susanna Clarke
+isbn: "9781635575637"
 genre: fantasy
 rating: 5
 pages: 245

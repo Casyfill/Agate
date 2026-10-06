@@ -177,3 +177,15 @@ describe("withSignalValues (environment signals)", async () => {
     expect(withSignalValues(spec, "vega-lite", { agateDark: true })).toBe(spec);
   });
 });
+
+describe("open on click (D12)", async () => {
+  const { notePathOf, openOnEvent } = await import("../../src/core/spec");
+  it("reads usermeta.agate.open and finds file.path on a datum", () => {
+    expect(openOnEvent({})).toBeNull();
+    expect(openOnEvent({ usermeta: { agate: { open: "click" } } })).toBe("click");
+    expect(openOnEvent({ usermeta: { agate: { open: "hover" } } })).toBeNull();
+    expect(notePathOf({ file: { path: "Ideas/A.md" } })).toBe("Ideas/A.md");
+    expect(notePathOf({ group: "x" })).toBeNull();
+    expect(notePathOf(null)).toBeNull();
+  });
+});

@@ -20,6 +20,7 @@ This vault exists to exercise the plugin. Each note in `Surfaces/` covers one wa
 - `geo/world-110m.json` — TopoJSON for the map tests (from the `world-atlas` package, ISC licence).
 - `data/sales.csv` — for the `data.url` loader test.
 - `Markets/` — twelve FRED series notes and `Markets.base` (per-row data example).
+- `Ideas/`, `Places/`, `Trips/`, `Journal/`, `Vault.base` — data for the gallery (`Surfaces/12 Gallery`).
 - `Surfaces/` — one note per surface, numbered in the order worth trying.
 
 ## Surfaces
@@ -34,5 +35,7 @@ This vault exists to exercise the plugin. Each note in `Surfaces/` covers one wa
 8. [[Surfaces/8 Broken]] — every failure mode shows an error box
 9. [[Surfaces/Canvas.canvas]] — text card, `.base` card, note card, static map card
 10. [[Surfaces/10 Markets table]] — per-row CSV from FRED, table cells, horizon chart (needs network)
+11. [[Surfaces/11 Tooltip images]] — cover image from a note's URL in the tooltip (needs network)
+12. [[Surfaces/12 Gallery]] — sunburst, link graph, arc diagram, travel globe, sankey, linked dashboard, beeswarm, tag clouds
 
 Also open [[Library/Books.base]] directly and switch views from the toolbar.

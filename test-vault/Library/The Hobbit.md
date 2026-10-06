@@ -2,6 +2,7 @@
 tags:
   - book
 author: J.R.R. Tolkien
+isbn: "9780547928227"
 genre: fantasy
 rating: 5
 pages: 310

@@ -169,6 +169,21 @@ export function cloneSpec<T>(spec: T): T {
   return JSON.parse(JSON.stringify(spec)) as T;
 }
 
+/** `usermeta.agate.open`: which pointer event on a mark opens the note behind it (D12). */
+export function openOnEvent(spec: AnySpec): "click" | "dblclick" | null {
+  const meta = spec.usermeta as Record<string, unknown> | undefined;
+  const agate = meta && typeof meta === "object" ? (meta.agate as Record<string, unknown> | undefined) : undefined;
+  const v = agate && typeof agate === "object" ? agate.open : undefined;
+  return v === "click" || v === "dblclick" ? v : null;
+}
+
+/** The note path behind a mark's datum: `file.path`, as on base rows and on every Agate dataset that copies `file`. */
+export function notePathOf(datum: unknown): string | null {
+  const file = datum && typeof datum === "object" ? (datum as { file?: unknown }).file : undefined;
+  const path = file && typeof file === "object" ? (file as { path?: unknown }).path : undefined;
+  return typeof path === "string" && path.length > 0 ? path : null;
+}
+
 /**
  * Environment signals (D5): values Agate knows and a spec cannot, such as `agateDark`.
  * Only signals (Vega) or params (Vega-Lite) the spec declares itself are touched, and only

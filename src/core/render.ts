@@ -2,7 +2,15 @@ import vegaEmbed, { type EmbedOptions, type Result } from "vega-embed";
 import type { Config } from "vega";
 import type { Loader } from "vega";
 import type { AnySpec, ResolvedChartOptions, ResolvedSpec, Row } from "./types";
-import { cloneSpec, declaredDatasetNames, ensureNamedData, withInitialValues, withSignalValues } from "./spec";
+import {
+  cloneSpec,
+  declaredDatasetNames,
+  ensureNamedData,
+  notePathOf,
+  openOnEvent,
+  withInitialValues,
+  withSignalValues,
+} from "./spec";
 import { errorMessage, type Logger } from "../util/log";
 
 export interface RenderInput {
@@ -12,6 +20,8 @@ export interface RenderInput {
   loader: Loader;
   /** Rows per dataset name, injected after embed. */
   datasets: Record<string, Row[]>;
+  /** Opens a note by vault path; used when the spec sets `usermeta.agate.open`. */
+  openNote?: (path: string, newLeaf: boolean) => void;
 }
 
 /**
@@ -125,6 +135,16 @@ export class AgateRenderer {
 
       const result = await vegaEmbed(this.chartEl, spec, embedOptions);
       this.isolateHover(this.chartEl);
+      const openOn = openOnEvent(resolved.spec);
+      const openNote = input.openNote;
+      if (openOn && openNote && options.interactive) {
+        result.view.addEventListener(openOn, (evt, item) => {
+          const path = notePathOf(item?.datum);
+          if (!path) return;
+          const e = evt as MouseEvent;
+          openNote(path, e.metaKey || e.ctrlKey);
+        });
+      }
       if (gen !== this.generation) {
         // A newer render started while we were embedding; drop this one.
         result.finalize();

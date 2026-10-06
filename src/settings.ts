@@ -1,6 +1,7 @@
 import { App, PluginSettingTab, type SettingDefinitionItem } from "obsidian";
 import type AgatePlugin from "./main";
 import type { Renderer } from "./core/types";
+import { AGATE_ICON_ID } from "./icon";
 
 /** Vault-wide defaults (ADR-0001 D11). Per-chart options override these. */
 export interface AgateSettings {
@@ -51,6 +52,8 @@ export class AgateSettingTab extends PluginSettingTab {
     private readonly plugin: AgatePlugin,
   ) {
     super(app, plugin);
+    // Shown next to "Agate" in the settings sidebar (Obsidian 1.11+); registered with addIcon in main.ts.
+    this.icon = AGATE_ICON_ID;
   }
 
   getSettingDefinitions(): SettingDefinitionItem<Key>[] {
