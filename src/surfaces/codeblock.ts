@@ -10,6 +10,7 @@ import type AgatePlugin from "../main";
 import { AgateRenderer } from "../core/render";
 import { detectMode, loadSpecFile, parseBlock, resolveSpecFile, resolveVaultFile } from "../core/spec";
 import { synthesizeBaseConfig } from "../core/synthesize";
+import { rowDataDefs } from "../core/data/rowdata";
 import type { AgateEnvelope, AnySpec, Mode, ResolvedSpec, Row } from "../core/types";
 import { errorMessage } from "../util/log";
 import { AGATE_VIEW_TYPE } from "./bases-view";
@@ -104,7 +105,12 @@ class AgateBlock extends MarkdownRenderChild {
       const options = this.plugin.resolveOptions(env);
       const config = await this.plugin.resolveConfig(options.theme);
       const loader = this.plugin.makeLoader(sourcePath);
-      const datasets = inlineDatasets(env, options.dataset);
+      let datasets = inlineDatasets(env, options.dataset);
+      if (rowDataDefs(resolved.spec).length > 0) {
+        // Per-row data (D12) over inline `data:` rows; with `base:` the Bases view does this.
+        const rows = datasets[options.dataset] ?? [];
+        datasets = { ...datasets, ...(await this.plugin.buildDatasets(resolved.spec, options.dataset, rows, loader)) };
+      }
 
       await this.getRenderer().render({ resolved, options, config, loader, datasets });
     } catch (err) {

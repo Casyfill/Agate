@@ -10,6 +10,7 @@ import {
 import type AgatePlugin from "../main";
 import { AgateRenderer } from "../core/render";
 import { describeEntry, groupsToRows } from "../core/data/bases";
+import { cellsDatasetName, tableCells } from "../core/data/table";
 import { detectMode, loadSpecFile, parseJsonOrYaml, referencedProperties } from "../core/spec";
 import type { AnySpec, ChartOptions, ResolvedSpec } from "../core/types";
 import { AGATE_ICON_ID } from "../icon";
@@ -28,6 +29,8 @@ export class AgateBasesView extends BasesView {
   private readonly containerEl: HTMLElement;
   private readonly renderer: AgateRenderer;
   private renderQueued = false;
+  /** Bumped per render, so a slow per-row load cannot overwrite a newer render's data. */
+  private renderGen = 0;
 
   constructor(
     private readonly plugin: AgatePlugin,
@@ -89,6 +92,7 @@ export class AgateBasesView extends BasesView {
 
   private async render(): Promise<void> {
     const { plugin } = this;
+    const gen = ++this.renderGen;
     try {
       const resolved = await this.resolveSpec();
       if (!resolved) {
@@ -104,15 +108,18 @@ export class AgateBasesView extends BasesView {
       const rows = groupsToRows(groups, props, plugin.settings.debug ? plugin.log : undefined);
       plugin.log.debug(`bases view: ${rows.length} rows, ${props.length} properties`, props);
 
-      await this.renderer.render({
-        resolved,
-        options,
-        config,
-        loader,
-        datasets: { [options.dataset]: rows },
-      });
+      const datasets = await plugin.buildDatasets(resolved.spec, options.dataset, rows, loader);
+      if (gen !== this.renderGen) return;
+      const cellsName = cellsDatasetName(resolved.spec);
+      if (cellsName) {
+        // Table layout (D12): visible properties, in Properties-menu order, as cells.
+        const order = this.config.getOrder();
+        datasets[cellsName] = tableCells(rows, order, (id) => this.config.getDisplayName(id as BasesPropertyId));
+      }
+
+      await this.renderer.render({ resolved, options, config, loader, datasets });
     } catch (err) {
-      this.renderer.showError(err);
+      if (gen === this.renderGen) this.renderer.showError(err);
     }
   }
 

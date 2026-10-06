@@ -7,11 +7,13 @@ import { builtinThemes, composeConfig, materialize } from "./core/theme";
 import { createVaultLoader } from "./core/loader";
 import { parseJsonOrYaml, resolveVaultFile } from "./core/spec";
 import { resolveChartOptions } from "./core/options";
+import { RowDataCache, expandRowData, rowDataDefs } from "./core/data/rowdata";
 import type {
   AnySpec,
   ChartOptions,
   DataSchemeProvider,
   ResolvedChartOptions,
+  Row,
   SpecContext,
   SpecPreprocessor,
   ThemeSource,
@@ -32,6 +34,9 @@ export default class AgatePlugin extends Plugin {
 
   /** Most recently updated Agate Bases view (weakly held, per the plugin guidelines); target of the debug dump command. */
   lastBasesView: WeakRef<AgateBasesView> | null = null;
+
+  /** Remote responses behind per-row data (D12), shared by every chart in the vault. */
+  readonly rowDataCache = new RowDataCache();
 
   private settingsListeners = new Set<() => void>();
   private specFileListeners = new Set<(path: string) => void>();
@@ -60,6 +65,16 @@ export default class AgatePlugin extends Plugin {
         }
         view.dumpFirstRow();
         new Notice("Agate: dumped to the developer console (Cmd/Ctrl+Shift+I).");
+      },
+    });
+
+    this.addCommand({
+      id: "refresh-remote-data",
+      name: "Refresh remote data and re-render charts",
+      callback: () => {
+        this.rowDataCache.clear();
+        this.emitSettingsChanged();
+        new Notice("Agate: remote data cleared, charts re-rendering.");
       },
     });
 
@@ -167,6 +182,34 @@ export default class AgatePlugin extends Plugin {
       allowRemote: this.settings.allowRemote,
       schemes: this.schemes,
     });
+  }
+
+  /**
+   * The datasets a chart receives: the rows under `datasetName`, plus one dataset per
+   * `usermeta.agate.rowData` entry built by loading each row's property (D12). A row that
+   * fails to load is skipped with a warning; when every row fails the chart shows the error.
+   */
+  async buildDatasets(spec: AnySpec, datasetName: string, rows: Row[], loader: Loader): Promise<Record<string, Row[]>> {
+    const datasets: Record<string, Row[]> = { [datasetName]: rows };
+    for (const def of rowDataDefs(spec)) {
+      if (def.name === datasetName) {
+        throw new Error(`usermeta.agate.rowData "${def.name}" uses the same name as the rows dataset; pick another.`);
+      }
+      const { records, errors } = await expandRowData(rows, def, {
+        load: (uri) => loader.load(uri),
+        cache: this.rowDataCache,
+      });
+      if (errors.length > 0) {
+        if (records.length === 0 && errors.length === rows.length) {
+          const more = errors.length > 3 ? `\n… and ${errors.length - 3} more` : "";
+          throw new Error(`Per-row data "${def.name}" (${def.from}) failed for every row:\n${errors.slice(0, 3).join("\n")}${more}`);
+        }
+        this.log.warn(`per-row data "${def.name}": ${errors.length} of ${rows.length} rows failed`, errors);
+      }
+      this.log.debug(`per-row data "${def.name}": ${records.length} records from ${rows.length} rows`);
+      datasets[def.name] = records;
+    }
+    return datasets;
   }
 
   preprocess(spec: AnySpec, ctx: SpecContext): AnySpec {

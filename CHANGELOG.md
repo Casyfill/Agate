@@ -4,6 +4,18 @@ All notable changes to Agate. The format follows [Keep a Changelog](https://keep
 
 ## [Unreleased]
 
+### Added
+
+- Per-row data: a spec can declare `usermeta.agate.rowData: {name, from}`. For every base row Agate loads what the `from` property points at (vault path, link, URL, or an inline list), parses it (CSV, TSV, JSON) and puts the records, each carrying its parent row's `file`, `note`, `formula`, `group` and `rowIndex`, into the named dataset. One small chart per note without a facet over a list property. Remote responses are cached for 10 minutes.
+- Table cells: `usermeta.agate.cells: "cells"` gives a spec one record per row and visible property (Properties menu order, display names), so a chart can draw the Bases view as a table with a chart column.
+- Command "Refresh remote data and re-render charts".
+- `agateDark` environment signal: a Vega signal or Vega-Lite param of that name (with a plain `value`) is set to true when Obsidian is in dark mode, and the chart re-renders when the mode changes. Outside Agate the spec keeps its own default.
+- Example: `test-vault/Markets`, twelve FRED series (indices, VIX, rates, FX, oil, crypto) drawn as a cubism-style horizon table (`charts/horizon-table.vg.json`) and as plain horizon strips (`charts/horizon.vg.json`).
+
+### Changed
+
+- Remote loads run at most two at a time per host and retry network errors, 429 and 5xx twice with backoff; the error names the URL.
+
 ## [0.0.2] - 2026-09-27
 
 ### Added

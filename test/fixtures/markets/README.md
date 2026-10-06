@@ -1,0 +1,1 @@
+Synthetic random walks in FRED's CSV layout (`observation_date,<SERIES_ID>`, empty cells for missing days), one file per series used in `test-vault/Markets`. Offline stand-ins for the headless horizon render test; not real market data.

@@ -4,21 +4,31 @@
  * world map (190 KB of paths) is snapshotted as a hash plus shape count.
  */
 import { createHash } from "node:crypto";
-import { readFileSync, readdirSync } from "node:fs";
+import { readFileSync, readdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
+import { env } from "node:process";
 import { fileURLToPath } from "node:url";
 import * as vega from "vega";
 import * as vl from "vega-lite";
 import { describe, expect, it } from "vitest";
 import { defaultRows } from "../fixtures/rows";
+import { marketColumns, marketLabels, marketRows, marketsFixtureDir } from "../fixtures/markets";
 import { ensureNamedData, withInitialValues } from "../../src/core/spec";
+import { expandRowData, rowDataDefs } from "../../src/core/data/rowdata";
+import { cellsDatasetName, tableCells } from "../../src/core/data/table";
+import type { Row } from "../../src/core/types";
 
 const root = fileURLToPath(new URL("../..", import.meta.url));
 const chartsDir = join(root, "test-vault/charts");
 const vaultDir = join(root, "test-vault");
 
 const loader = vega.loader();
-loader.load = async (uri: string) => readFileSync(join(vaultDir, uri), "utf8");
+// `markets/…` is the offline stand-in for FRED (test/fixtures/markets); everything else is the vault.
+const readUri = (uri: string): string =>
+  uri.startsWith("markets/")
+    ? readFileSync(join(marketsFixtureDir, uri.slice("markets/".length)), "utf8")
+    : readFileSync(join(vaultDir, uri), "utf8");
+loader.load = async (uri: string) => readUri(uri);
 
 const warnings: string[] = [];
 const quietLogger = {
@@ -45,13 +55,30 @@ async function renderFixture(name: string): Promise<string> {
   const raw = JSON.parse(readFileSync(join(chartsDir, name), "utf8")) as Record<string, unknown>;
   const isVL = typeof raw.$schema === "string" && /vega-lite/.test(raw.$schema);
   const mode = isVL ? "vega-lite" : "vega";
-  let spec = ensureNamedData(raw, mode, "base");
-  spec = withInitialValues(spec, mode, "base", defaultRows);
+  // Specs with per-row data (D12) chart test-vault/Markets; the rest chart the Library rows.
+  const defs = rowDataDefs(raw);
+  const baseRows = defs.length > 0 ? marketRows() : defaultRows;
+  const datasets: Record<string, Row[]> = { base: baseRows };
+  for (const def of defs) {
+    const { records, errors } = await expandRowData(baseRows, def, { load: async (u) => readUri(u) });
+    expect(errors).toEqual([]);
+    datasets[def.name] = records;
+  }
+  const cells = cellsDatasetName(raw);
+  if (cells) datasets[cells] = tableCells(baseRows, marketColumns, (id) => marketLabels[id] ?? id);
+  let spec = raw;
+  for (const [name, rows] of Object.entries(datasets)) {
+    spec = ensureNamedData(spec, mode, name);
+    spec = withInitialValues(spec, mode, name, rows);
+  }
   if (spec.width === "container") spec = { ...spec, width: 500 }; // no DOM to measure
   const vgSpec = isVL ? vl.compile(spec as never, { logger: quietLogger }).spec : spec;
   const view = new vega.View(vega.parse(vgSpec), { renderer: "none", loader, logger: quietLogger });
   const svg = await view.toSVG();
   view.finalize();
+  // AGATE_PREVIEW=/some/dir npm test writes every fixture's SVG there, for eyeballing.
+  const out = env.AGATE_PREVIEW;
+  if (out) writeFileSync(join(out, name.replace(/\.json$/, ".svg")), svg);
   return svg;
 }
 

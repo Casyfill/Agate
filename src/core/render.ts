@@ -2,7 +2,7 @@ import vegaEmbed, { type EmbedOptions, type Result } from "vega-embed";
 import type { Config } from "vega";
 import type { Loader } from "vega";
 import type { AnySpec, ResolvedChartOptions, ResolvedSpec, Row } from "./types";
-import { cloneSpec, declaredDatasetNames, ensureNamedData, withInitialValues } from "./spec";
+import { cloneSpec, declaredDatasetNames, ensureNamedData, withInitialValues, withSignalValues } from "./spec";
 import { errorMessage, type Logger } from "../util/log";
 
 export interface RenderInput {
@@ -31,6 +31,11 @@ function defaultToContainerWidth(spec: AnySpec, mode: "vega" | "vega-lite"): Any
   }
   const autosize = spec.autosize ?? { type: "fit-x", contains: "padding" };
   return { ...spec, width: "container", autosize };
+}
+
+/** Signals a spec can declare to learn about its surroundings (see withSignalValues). */
+function environmentSignals(): Record<string, unknown> {
+  return { agateDark: document.body.classList.contains("theme-dark") };
 }
 
 function stopBubbling(evt: Event): void {
@@ -69,7 +74,9 @@ export class AgateRenderer {
   async render(input: RenderInput): Promise<void> {
     const gen = ++this.generation;
     const { resolved, options } = input;
+    const env = environmentSignals();
     const key = JSON.stringify([
+      env,
       resolved.spec,
       resolved.mode,
       options.theme,
@@ -102,6 +109,7 @@ export class AgateRenderer {
         spec = withInitialValues(spec, resolved.mode, name, input.datasets[name]);
       }
       spec = defaultToContainerWidth(spec, resolved.mode);
+      spec = withSignalValues(spec, resolved.mode, env);
 
       const embedOptions: EmbedOptions = {
         mode: resolved.mode,

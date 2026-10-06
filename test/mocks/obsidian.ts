@@ -93,8 +93,13 @@ export type App = FakeApp;
 // --- network -----------------------------------------------------------------
 
 export const requestUrlCalls: string[] = [];
-export async function requestUrl(req: { url: string }): Promise<{ text: string; json: unknown }> {
+/** Queue of failures for the next calls: an Error (network) or a number (HTTP status). */
+export const requestUrlFailures: Array<Error | number> = [];
+export async function requestUrl(req: { url: string; headers?: Record<string, string> }): Promise<{ text: string; json: unknown }> {
   requestUrlCalls.push(req.url);
+  const fail = requestUrlFailures.shift();
+  if (typeof fail === "number") throw Object.assign(new Error(`Request failed, status ${fail}`), { status: fail });
+  if (fail) throw fail;
   return { text: `remote:${req.url}`, json: null };
 }
 

@@ -169,6 +169,25 @@ export function cloneSpec<T>(spec: T): T {
   return JSON.parse(JSON.stringify(spec)) as T;
 }
 
+/**
+ * Environment signals (D5): values Agate knows and a spec cannot, such as `agateDark`.
+ * Only signals (Vega) or params (Vega-Lite) the spec declares itself are touched, and only
+ * their `value`, so the spec still runs with its own defaults in the Vega editor.
+ */
+export function withSignalValues(spec: AnySpec, mode: Mode, values: Record<string, unknown>): AnySpec {
+  const key = mode === "vega-lite" ? "params" : "signals";
+  const list = spec[key];
+  if (!Array.isArray(list)) return spec;
+  let changed = false;
+  const next = (list as Array<Record<string, unknown>>).map((sig) => {
+    if (!sig || typeof sig.name !== "string" || !(sig.name in values)) return sig;
+    if (sig.update !== undefined || sig.expr !== undefined || sig.init !== undefined) return sig;
+    changed = true;
+    return { ...sig, value: values[sig.name] };
+  });
+  return changed ? { ...spec, [key]: next } : spec;
+}
+
 /** Put initial rows into the named dataset so the first Vega run already has data (no empty-extent warnings, no flash). */
 export function withInitialValues(spec: AnySpec, mode: Mode, datasetName: string, rows: unknown[]): AnySpec {
   if (mode === "vega-lite") {

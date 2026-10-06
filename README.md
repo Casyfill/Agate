@@ -63,6 +63,18 @@ If you do not use the Vega Visualizations plugin, a setting lets Agate also hand
 
 Tips: hidden properties are still converted when the spec refers to them, so a spec never breaks because a column was hidden. Vega-Lite specs without a width fill their container. For one small chart per note, use a Vega-Lite `facet` on `file.name`.
 
+## One small chart per note
+
+A spec can ask Agate to load data for every row. Put a path, link or URL to a CSV/JSON in a property (or a formula that builds one), then declare it in the spec:
+
+```json
+"usermeta": { "agate": { "rowData": { "name": "series", "from": "formula.csv" } } }
+```
+
+Dataset `series` then holds every row's records, each with its note's `file`, `note` and `formula` fields and a `rowIndex`, so the spec can draw one strip per note. Add `"cells": "cells"` next to it to also get the view's visible properties as table cells, and the Properties menu decides the columns. `test-vault/Markets` shows both: twelve [FRED](https://fred.stlouisfed.org) series as a table with a cubism-style horizon column. Remote URLs need **Load remote data** on; responses are cached for 10 minutes ("Refresh remote data" clears them).
+
+A spec that declares a signal (Vega) or param (Vega-Lite) named `agateDark` with a plain `value` gets `true` in dark mode and is re-rendered when the mode changes; the horizon examples use it to reverse their colour ramp. In the Vega editor the spec's own default applies.
+
 ## Settings
 
 Vault-wide defaults, each overridable per chart (view options in a base, envelope keys in a block): a default spec folder (a spec path that does not resolve on its own is looked up there, so `spec: ratings.vl.json` finds `charts/ratings.vl.json`), theme (`obsidian` follows your Obsidian theme and light/dark mode live; the Vega named themes are also there), a config override block, an optional theme file in the vault, renderer (SVG or canvas), the export menu, interactivity (off renders a static picture), the dataset name, remote data loading, and whether Agate should also handle ```` ```vega ```` / ```` ```vega-lite ```` blocks (off by default; conflicts with the obsidian-vega plugin).
@@ -79,7 +91,7 @@ Agate exposes `app.plugins.plugins.agate.api` (and fires `agate:ready`): registe
 
 ## Development
 
-Prerequisites: Node 22 or newer (`.nvmrc`), Obsidian 1.13.0 or newer.
+Prerequisites: Node 22.12 or newer (`.nvmrc`), Obsidian 1.13.0 or newer.
 
 ```sh
 npm install

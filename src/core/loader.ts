@@ -12,6 +12,76 @@ export interface LoaderDeps {
 
 const SCHEME_RE = /^([a-z][a-z0-9+.-]*):/i;
 
+/** At most this many requests in flight per host; a dozen parallel fetches get HTTP/2 streams reset. */
+const PER_HOST = 2;
+/** Retries after a network error, 5xx or 429, with this base delay (doubled each time). */
+const RETRIES = 2;
+const RETRY_DELAY_MS = 400;
+
+const active = new Map<string, number>();
+const waiting = new Map<string, Array<() => void>>();
+
+async function acquire(host: string): Promise<void> {
+  if ((active.get(host) ?? 0) < PER_HOST) {
+    active.set(host, (active.get(host) ?? 0) + 1);
+    return;
+  }
+  await new Promise<void>((resolve) => {
+    const q = waiting.get(host) ?? [];
+    q.push(resolve);
+    waiting.set(host, q);
+  });
+}
+
+function release(host: string): void {
+  const next = waiting.get(host)?.shift();
+  if (next) {
+    next(); // hand the slot over without decrementing
+    return;
+  }
+  const n = (active.get(host) ?? 1) - 1;
+  if (n > 0) active.set(host, n);
+  else active.delete(host);
+}
+
+const sleep = (ms: number) => new Promise<void>((r) => window.setTimeout(r, ms));
+
+/** requestUrl throws with `status` on HTTP errors; anything else is a network error. */
+function retryable(err: unknown): boolean {
+  const status = (err as { status?: unknown } | null)?.status;
+  if (typeof status !== "number") return true;
+  return status === 429 || status >= 500;
+}
+
+/** GET a remote URL through Obsidian (no CORS), per-host limited, retrying transient failures. */
+export async function fetchRemote(uri: string): Promise<string> {
+  let host = uri;
+  try {
+    host = new URL(uri).host;
+  } catch {
+    /* keep the whole string as the key */
+  }
+  await acquire(host);
+  try {
+    let lastErr: unknown;
+    for (let attempt = 0; attempt <= RETRIES; attempt++) {
+      if (attempt > 0) await sleep(RETRY_DELAY_MS * 2 ** (attempt - 1));
+      try {
+        const res = await requestUrl({ url: uri, headers: { Accept: "text/csv, application/json;q=0.9, */*;q=0.8" } });
+        return res.text;
+      } catch (err) {
+        lastErr = err;
+        if (!retryable(err)) break;
+      }
+    }
+    const status = (lastErr as { status?: unknown } | null)?.status;
+    const msg = typeof status === "number" ? `HTTP ${status}` : lastErr instanceof Error ? lastErr.message : String(lastErr);
+    throw new Error(`${msg} (${uri})`);
+  } finally {
+    release(host);
+  }
+}
+
 /**
  * A Vega loader that reads `data.url` from the vault, dispatches custom schemes to
  * registered providers, and blocks http(s) unless the vault setting allows it (ADR-0001 D5).
@@ -30,8 +100,7 @@ export function createVaultLoader(deps: LoaderDeps): Loader {
             `Remote URL blocked: ${uri}. Enable "Load remote URLs" in Agate settings to allow it.`,
           );
         }
-        const res = await requestUrl({ url: uri });
-        return res.text;
+        return fetchRemote(uri);
       }
       if (scheme === "data" || scheme === "blob") {
         return originalLoad(uri, options as never);

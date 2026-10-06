@@ -45,6 +45,7 @@ export default defineConfig([
       "obsidianmd/no-static-styles-assignment": "off",
       "obsidianmd/rule-custom-message": "off",
       "obsidianmd/no-nodejs-modules": "off",
+      "obsidianmd/no-global-this": "off",
       "obsidianmd/ui/sentence-case": "off",
       "@typescript-eslint/no-unsafe-assignment": "off",
       "@typescript-eslint/no-unsafe-member-access": "off",

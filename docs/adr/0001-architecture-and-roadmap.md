@@ -297,6 +297,15 @@ Settings (`settings.ts`, stored in `data.json`, migrated by a `settingsVersion` 
 
 The resolved config is computed once per render and passed to vega-embed as `config`; `css-change`, a settings change, or a theme-file edit invalidates it and re-embeds affected charts. Per-chart options can name a theme too (`theme: quartz` in an envelope, a `dropdown` view option in Surface A), which is how one chart in a vault can diverge from the house style.
 
+### D12. Per-row data and table cells (added 2026-10-06)
+
+Small charts per note need data per note, and Bases formulas cannot fetch anything. Two spec-level declarations under `usermeta.agate` (Vega and Vega-Lite both carry `usermeta` untouched), so the behaviour travels with the spec file:
+
+- `rowData: {name, from, format?}` (or a list of them). For each base row, Agate reads property `from` (`note.data`, `formula.csv`), loads it through the D5 loader (vault path, link, scheme, or http(s) if allowed), parses it with `vega.read` (format from `format`, else the extension, else sniffed), and emits the records into dataset `name` with the parent's `file`, `note`, `formula`, `group` and `rowIndex` copied on. A list value becomes `{index, value}` records. Rows load in parallel (6 at a time); a failed row is logged and skipped, and only when every row fails does the chart show the error. Remote text is cached in memory for 10 minutes per URL, cleared by the "Refresh remote data" command. Records keep base row order.
+- `cells: "<name>"`. One record per row and visible property (`config.getOrder()`, display names from `getDisplayName`), with `rowIndex`, `column`, `property`, `label`, `value` and `text`. Lets a spec draw the view as a table whose columns follow the Properties menu, with a chart in one column. Bases view only; the code block has no Properties menu.
+
+Both live in `src/core/data/` as pure functions; the Bases view and the plugin wire them in. Rejected: rendering per-row SVG files into the vault for `image()` cells in the core Table (vault churn, sync noise, static) and formula-only `html()` sparklines (not Agate).
+
 ## Roadmap
 
 ### v0.1 (primary)
