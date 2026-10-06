@@ -43,6 +43,10 @@ The block is called ```` ```agate ```` so the two plugins can coexist. A bare sp
 
 If you do not use the Vega Visualizations plugin, a setting lets Agate also handle ```` ```vega ```` and ```` ```vega-lite ```` blocks, so existing notes render through Agate with its themes and vault loader. With both plugins enabled that setting is left off: Obsidian allows one handler per block language.
 
+### 3. Charts other plugins don't draw
+
+Because the chart is a full Vega spec and Agate can hand it the vault's links, folder tree and per-note external data, you can build things like a DaisyDisk-style sunburst of your vault, a force graph or a timeline arc diagram of how notes link, your trips on a globe you can spin, a sankey across properties, or a table of notes with a live horizon chart column. All of them are in the test vault (`Surfaces/12 Gallery`); `docs/why-agate.md` lists them with links to the specs.
+
 ## Quick start
 
 1. Install and enable Agate (Bases, a core plugin, must be on).

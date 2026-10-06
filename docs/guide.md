@@ -181,7 +181,6 @@ These examples use Vega layouts that other Obsidian chart plugins do not have. E
 | Sankey (genre → status → rating) | `reading-sankey.vg.json` | any categorical properties; change the three formulas | none |
 | Linked dashboard (brush filters other panels) | `reading-dashboard.vl.json` | books with `published`, `genre`, `pages`, `rating` | `open` |
 | Mood beeswarm | `mood-beeswarm.vg.json` | daily notes with `date`, `mood`, `energy`, `sleep` | `open`, `agateDark` |
-| Tag cloud | `tag-cloud.vg.json` | notes with tags | none |
 
 The extras, all declared under `usermeta.agate` in the spec:
 

@@ -46,11 +46,3 @@ Drag across the publication timeline; the genre bars and the scatter follow. Cli
 One dot per day, rows by mood, colour by energy, size by sleep. Click a dot to open that day.
 
 ![[Journal.base#Mood swarm]]
-
-## Tag clouds
-
-Tags on the ideas, and activity tags across the journal. Toggle "Leaf only", edit the hidden-tags box.
-
-![[Ideas.base#Tag cloud]]
-
-![[Journal.base#Activity cloud]]

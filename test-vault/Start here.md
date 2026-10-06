@@ -36,6 +36,6 @@ This vault exists to exercise the plugin. Each note in `Surfaces/` covers one wa
 9. [[Surfaces/Canvas.canvas]] — text card, `.base` card, note card, static map card
 10. [[Surfaces/10 Markets table]] — per-row CSV from FRED, table cells, horizon chart (needs network)
 11. [[Surfaces/11 Tooltip images]] — cover image from a note's URL in the tooltip (needs network)
-12. [[Surfaces/12 Gallery]] — sunburst, link graph, arc diagram, travel globe, sankey, linked dashboard, beeswarm, tag clouds
+12. [[Surfaces/12 Gallery]] — sunburst, link graph, arc diagram, travel globe, sankey, linked dashboard, beeswarm
 
 Also open [[Library/Books.base]] directly and switch views from the toolbar.

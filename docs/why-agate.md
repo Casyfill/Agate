@@ -1,12 +1,30 @@
 # Why Agate
 
-> Draft, 2026-10-06. Not reviewed. Claims about other plugins come from their listings and READMEs as of this date and need checking before this is published anywhere.
+> Draft, 2026-10-06 (gallery added the same day). Not reviewed. Claims about other plugins come from their listings and READMEs as of this date and need checking before this is published anywhere.
 
 ## The short version
 
 Agate is for people who want charts over their notes and are willing to write a chart spec to get exactly the chart they mean. Bases picks the notes; Vega draws them. Nothing in between invents a query language or a chart model of its own.
 
-If you want a bar chart in two clicks and never want to see JSON, one of the simpler Bases chart plugins will serve you better. If you want a horizon table of twelve market series pulled live from FRED, a map, a brushable scatter plot, or a chart that looks the same in your vault and in a paper, Agate is built for that.
+If you want a bar chart in two clicks and never want to see JSON, one of the simpler Bases chart plugins will serve you better. If you want a horizon table of twelve market series pulled live from FRED, a map of your travels on a globe you can spin, a picture of how your notes link up over time, a brushable scatter plot, or a chart that looks the same in your vault and in a paper, Agate is built for that.
+
+## What you can build with Agate and not with the others
+
+Every example below is a spec file in the repo's test vault with notes to match; `Surfaces/12 Gallery` in the test vault embeds them all. As far as their listings show, none of the Bases chart plugins draws any of these.
+
+| Example | What it shows | Why it needs Agate | Spec |
+|---|---|---|---|
+| Horizon table | One row per note with its properties as columns and a cubism-style horizon chart of an external time series; hover runs a cursor across all rows | Per-row data (each note's CSV or URL), table cells that follow the Properties menu, dark-mode aware colours | [`horizon-table.vg.json`](../test-vault/charts/horizon-table.vg.json) |
+| Vault sunburst | DaisyDisk-style rings of folders sized by bytes; click to zoom into a folder, click a file to open it | The folder tree with totals, Vega's partition layout, open on click | [`vault-sunburst.vg.json`](../test-vault/charts/vault-sunburst.vg.json) |
+| Link graph | The notes of a base and the links between them, force-directed, coloured by a property; hover lights up neighbours | Links between the base's notes from Obsidian's link index; Vega's force layout. Unlike the core graph view, the base decides which notes are in and properties drive size and colour | [`link-graph.vg.json`](../test-vault/charts/link-graph.vg.json) |
+| Arc diagram over time | The same links, notes placed on a timeline by creation date; long arcs are ideas reaching back | Links dataset plus a time scale | [`link-arcs.vg.json`](../test-vault/charts/link-arcs.vg.json) |
+| Travel globe | Trips as great-circle routes between place notes on an orthographic globe you drag to spin, or a flat projection | Vega's map projections; trips link places with ordinary `[[links]]` | [`travel-globe.vg.json`](../test-vault/charts/travel-globe.vg.json) |
+| Sankey | Notes flowing across three properties (genre → status → rating band) | Built from Vega transforms; no chart plugin option list can express it | [`reading-sankey.vg.json`](../test-vault/charts/reading-sankey.vg.json) |
+| Linked dashboard | Brush a timeline and the other panels filter | Vega-Lite selections across views, on top of the Bases toolbar filters | [`reading-dashboard.vl.json`](../test-vault/charts/reading-dashboard.vl.json) |
+| Mood beeswarm | One dot per daily note, never overlapping, colour and size from properties; click a dot to open the day | Force layout along a time axis, open on click | [`mood-beeswarm.vg.json`](../test-vault/charts/mood-beeswarm.vg.json) |
+| Tooltip images | A cover picture in the tooltip, from a URL a formula builds per note | A tooltip field titled `image` | [`covers-tooltip.vl.json`](../test-vault/charts/covers-tooltip.vl.json) |
+
+How each one works, and the `usermeta.agate` switches they use (`rowData`, `cells`, `edges`, `tree`, `open`, `agateDark`), is in the [user guide](guide.md), sections 6 to 10.
 
 ## What Agate bets on
 
@@ -15,6 +33,7 @@ If you want a bar chart in two clicks and never want to see JSON, one of the sim
 3. Specs stay portable. A spec file is plain Vega or Vega-Lite; it runs in the Vega editor with sample rows. Agate's extras live under `usermeta`, which Vega ignores.
 4. The chart is a Bases view, so it appears wherever a base can: its own tab, embeds, code blocks, the sidebar, Canvas.
 5. Notes can point at data that is not in the vault (per-row data), because many notes stand for something measured elsewhere.
+6. The vault's own structure is data too. Links between notes and the folder tree are handed to the spec like any other dataset, so graphs and hierarchies are charts, not separate features.
 
 ## The alternatives
 
@@ -31,13 +50,15 @@ If you want a bar chart in two clicks and never want to see JSON, one of the sim
 
 ## Pros
 
-- One grammar for everything from a bar chart to a world map, a horizon table or a linked scatterplot matrix.
+- One grammar for everything from a bar chart to a spinning globe, a horizon table, a zoomable sunburst or a link graph (see the table above).
 - The Bases toolbar drives the chart: filter, sort, group and show/hide properties without editing the spec, and selections survive those changes.
 - Field names are the Bases property ids users already see (`note.rating`, `formula.age`).
 - Specs are reusable across views, vaults and the Vega editor.
 - Theme `obsidian` follows the active theme and light/dark mode; `agateDark` lets a spec adapt its own colours.
 - Per-row data loads a CSV, JSON or URL for every note, with caching, retries and remote access off by default.
 - Table cells let a spec draw the view as a table whose columns follow the Properties menu, with a chart column.
+- Links between notes and the folder tree are datasets a spec can ask for, so graphs, arc diagrams, sunbursts and treemaps follow the base's filter.
+- Charts are a way into the vault: with `open: "click"` a click on a point, an arc or a node opens its note.
 - Extension API: other plugins can add data schemes, expression functions, themes and spec preprocessors, and render charts into their own views.
 - Tested headlessly: every example spec renders to SVG in CI.
 
@@ -50,6 +71,7 @@ If you want a bar chart in two clicks and never want to see JSON, one of the sim
 - In Canvas, dragging a card wins over in-chart brushing.
 - The remote-data cache lives in memory only; every app start fetches again.
 - Mobile is checked in device emulation only so far.
+- The gallery examples have been checked as headless renders, not yet click by click in Obsidian; the force layouts and the sankey are hand-built specs that are longer than a typical chart.
 - Pre-1.0, one maintainer. Add-ons are tied to Agate's bundled Vega version.
 
 ## When not to use Agate
@@ -61,5 +83,5 @@ If you want a bar chart in two clicks and never want to see JSON, one of the sim
 ## Open questions for the review
 
 - Which comparisons matter most to readers, and are any of the listed plugins abandoned or merged since?
-- Should the doc lead with the horizon table screenshot as the "why"?
-- Is the "willing to write a spec" framing right, or should Agate also ship a small gallery of ready-made specs to lower that bar?
+- Should the doc lead with screenshots of the gallery (horizon table, sunburst, globe) as the "why"?
+- The gallery lives in the test vault. Should the specs also ship with the plugin as templates (a "New chart from example" command), so users do not have to copy them from the repo?

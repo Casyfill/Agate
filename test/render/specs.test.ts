@@ -24,7 +24,7 @@ import type { Row } from "../../src/core/types";
 function rowsFor(name: string, hasRowData: boolean): Row[] {
   if (hasRowData) return marketRows();
   const md = (folder: string) => (p: string) => p.startsWith(`${folder}/`) && p.endsWith(".md");
-  if (name.startsWith("link-") || name.startsWith("tag-cloud")) return vaultRows(md("Ideas"));
+  if (name.startsWith("link-")) return vaultRows(md("Ideas"));
   if (name.startsWith("travel-")) return vaultRows((p) => md("Trips")(p) || md("Places")(p));
   if (name.startsWith("mood-")) return vaultRows(md("Journal"));
   if (name.startsWith("vault-")) return vaultRows(() => true);
@@ -110,8 +110,8 @@ async function renderFixture(name: string): Promise<string> {
   return svg;
 }
 
-/** Word clouds measure text on a canvas, which Node does not have; they render in Obsidian, not here. */
-const CANVAS_ONLY = new Set(["tag-cloud.vg.json"]);
+/** Specs whose layout needs a real canvas to measure text (none at the moment). */
+const CANVAS_ONLY = new Set<string>();
 
 const fixtures = readdirSync(chartsDir).filter((f) => f.endsWith(".json")).sort();
 

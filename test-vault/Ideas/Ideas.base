@@ -22,12 +22,6 @@ views:
       - topic
       - created
     specFile: charts/link-arcs.vg.json
-  - type: agate
-    name: Tag cloud
-    order:
-      - file.name
-      - file.tags
-    specFile: charts/tag-cloud.vg.json
   - type: table
     name: Table
     order:
