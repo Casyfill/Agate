@@ -1,0 +1,302 @@
+{
+  "$schema": "https://vega.github.io/schema/vega/v6.json",
+  "description": "Beeswarm of daily notes: one dot per day on a timeline, rows by note.mood, colour by energy, size by hours slept. Dots never overlap (force layout). Click a dot to open that day.",
+  "usermeta": {
+    "agate": {
+      "open": "click",
+      "recipe": {
+        "id": "beeswarm",
+        "name": "Beeswarm timeline",
+        "description": "One dot per note on a time axis, in rows by a property, never overlapping; colour and size from numbers. Built for daily notes with a mood or energy score.",
+        "roles": {
+          "date": {
+            "label": "When",
+            "types": [
+              "date"
+            ],
+            "prefer": [
+              "date",
+              "created"
+            ]
+          },
+          "row": {
+            "label": "Rows by",
+            "types": [
+              "number",
+              "text"
+            ],
+            "prefer": [
+              "mood",
+              "rating",
+              "status"
+            ]
+          },
+          "colour": {
+            "label": "Colour by (number)",
+            "types": [
+              "number"
+            ],
+            "optional": true,
+            "prefer": [
+              "energy"
+            ]
+          },
+          "size": {
+            "label": "Size by (number)",
+            "types": [
+              "number"
+            ],
+            "optional": true,
+            "prefer": [
+              "sleep"
+            ]
+          }
+        }
+      }
+    }
+  },
+  "autosize": {
+    "type": "fit-x",
+    "contains": "padding"
+  },
+  "padding": {
+    "left": 8,
+    "right": 8,
+    "top": 8,
+    "bottom": 8
+  },
+  "signals": [
+    {
+      "name": "width",
+      "init": "isFinite(containerSize()[0]) && containerSize()[0] > 0 ? containerSize()[0] : 720",
+      "on": [
+        {
+          "events": "window:resize",
+          "update": "isFinite(containerSize()[0]) && containerSize()[0] > 0 ? containerSize()[0] : 720"
+        }
+      ]
+    },
+    {
+      "name": "height",
+      "value": 340
+    },
+    {
+      "name": "agateDark",
+      "value": false,
+      "description": "Set by Agate in dark mode."
+    }
+  ],
+  "data": [
+    {
+      "name": "base"
+    },
+    {
+      "name": "days",
+      "source": "base",
+      "transform": [
+        {
+          "type": "formula",
+          "as": "t",
+          "expr": "toDate({{date.expr}} || datum.file.name)"
+        },
+        {
+          "type": "filter",
+          "expr": "isValid(datum.t) && isValid({{row.expr}})"
+        },
+        {
+          "type": "formula",
+          "as": "mood",
+          "expr": "{{row.expr}}"
+        },
+        {
+          "type": "formula",
+          "as": "energy",
+          "expr": "toNumber({{colour.expr}})"
+        },
+        {
+          "type": "formula",
+          "as": "sleep",
+          "expr": "toNumber({{size.expr}})"
+        }
+      ]
+    },
+    {
+      "name": "swarm",
+      "description": "Separate from days: the x scale reads its domain from days, and the layout reads the x scale.",
+      "source": "days",
+      "transform": [
+        {
+          "type": "formula",
+          "as": "tx",
+          "expr": "scale('x', datum.t)"
+        },
+        {
+          "type": "formula",
+          "as": "ty",
+          "expr": "scale('y', datum.mood)"
+        },
+        {
+          "type": "formula",
+          "as": "r",
+          "expr": "sqrt(scale('size', datum.sleep || 7)) / 2"
+        },
+        {
+          "type": "force",
+          "static": true,
+          "iterations": 200,
+          "forces": [
+            {
+              "force": "x",
+              "x": "tx",
+              "strength": 0.9
+            },
+            {
+              "force": "y",
+              "y": "ty",
+              "strength": 0.15
+            },
+            {
+              "force": "collide",
+              "radius": {
+                "expr": "datum.r + 1"
+              },
+              "iterations": 2
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "scales": [
+    {
+      "name": "x",
+      "type": "time",
+      "domain": {
+        "data": "days",
+        "field": "t"
+      },
+      "range": "width",
+      "nice": "month"
+    },
+    {
+      "name": "y",
+      "type": "point",
+      "domain": {
+        "data": "days",
+        "field": "mood",
+        "sort": {
+          "order": "descending"
+        }
+      },
+      "range": [
+        20,
+        {
+          "signal": "height - 30"
+        }
+      ],
+      "padding": 0.5
+    },
+    {
+      "name": "energyColour",
+      "type": "linear",
+      "domain": [
+        1,
+        5
+      ],
+      "range": {
+        "scheme": {
+          "signal": "agateDark ? 'goldred' : 'yelloworangered'"
+        }
+      }
+    },
+    {
+      "name": "size",
+      "type": "linear",
+      "domain": [
+        4,
+        10
+      ],
+      "range": [
+        20,
+        160
+      ],
+      "clamp": true
+    }
+  ],
+  "axes": [
+    {
+      "orient": "bottom",
+      "scale": "x",
+      "domain": false,
+      "grid": true,
+      "gridOpacity": 0.25,
+      "tickCount": "month"
+    },
+    {
+      "orient": "left",
+      "scale": "y",
+      "title": "{{row.label}}",
+      "domain": false,
+      "ticks": false,
+      "grid": true,
+      "gridOpacity": 0.15
+    }
+  ],
+  "legends": [
+    {
+      "fill": "energyColour",
+      "title": "{{colour.label}}",
+      "orient": "top-right",
+      "direction": "horizontal",
+      "gradientLength": 100
+    }
+  ],
+  "marks": [
+    {
+      "type": "symbol",
+      "from": {
+        "data": "swarm"
+      },
+      "encode": {
+        "enter": {
+          "shape": {
+            "value": "circle"
+          },
+          "cursor": {
+            "value": "pointer"
+          }
+        },
+        "update": {
+          "x": {
+            "field": "x"
+          },
+          "y": {
+            "field": "y"
+          },
+          "size": {
+            "scale": "size",
+            "field": "sleep"
+          },
+          "fill": {
+            "scale": "energyColour",
+            "field": "energy"
+          },
+          "stroke": {
+            "signal": "agateDark ? '#1e1e1e' : '#ffffff'"
+          },
+          "strokeWidth": {
+            "value": 0.75
+          },
+          "tooltip": {
+            "signal": "{title: timeFormat(datum.t, '%a %b %d'), '{{row.label}}': datum.mood, '{{colour.label}}': datum.energy, '{{size.label}}': datum.sleep}"
+          }
+        },
+        "hover": {
+          "strokeWidth": {
+            "value": 2
+          }
+        }
+      }
+    }
+  ]
+}

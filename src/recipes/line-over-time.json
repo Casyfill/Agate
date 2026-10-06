@@ -1,0 +1,104 @@
+{
+  "$schema": "https://vega.github.io/schema/vega-lite/v6.json",
+  "usermeta": {
+    "agate": {
+      "open": "click",
+      "recipe": {
+        "id": "line",
+        "name": "Line over time",
+        "description": "A number per note by date, one line per category if you pick one. Daily notes with a mood, a weight or a word count are typical.",
+        "roles": {
+          "date": {
+            "label": "When",
+            "types": [
+              "date"
+            ],
+            "prefer": [
+              "date",
+              "created"
+            ]
+          },
+          "value": {
+            "label": "Number",
+            "types": [
+              "number"
+            ]
+          },
+          "series": {
+            "label": "One line per",
+            "types": [
+              "text"
+            ],
+            "optional": true
+          }
+        }
+      }
+    }
+  },
+  "data": {
+    "name": "base"
+  },
+  "height": 220,
+  "layer": [
+    {
+      "mark": {
+        "type": "line",
+        "interpolate": "monotone",
+        "point": false
+      },
+      "encoding": {
+        "x": {
+          "field": "{{date}}",
+          "type": "temporal",
+          "title": "{{date.label}}"
+        },
+        "y": {
+          "field": "{{value}}",
+          "type": "quantitative",
+          "title": "{{value.label}}"
+        },
+        "color": {
+          "field": "{{series}}",
+          "type": "nominal",
+          "title": "{{series.label}}"
+        }
+      }
+    },
+    {
+      "mark": {
+        "type": "circle",
+        "size": 36,
+        "cursor": "pointer"
+      },
+      "encoding": {
+        "x": {
+          "field": "{{date}}",
+          "type": "temporal"
+        },
+        "y": {
+          "field": "{{value}}",
+          "type": "quantitative"
+        },
+        "color": {
+          "field": "{{series}}",
+          "type": "nominal"
+        },
+        "tooltip": [
+          {
+            "field": "file.name",
+            "title": "title"
+          },
+          {
+            "field": "{{date}}",
+            "type": "temporal",
+            "title": "{{date.label}}"
+          },
+          {
+            "field": "{{value}}",
+            "title": "{{value.label}}"
+          }
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,69 @@
+{
+  "$schema": "https://vega.github.io/schema/vega-lite/v6.json",
+  "usermeta": {
+    "agate": {
+      "open": "click",
+      "recipe": {
+        "id": "bars",
+        "name": "Notes per category",
+        "description": "Horizontal bars counting notes by a property. Sort the bars from the Bases toolbar.",
+        "roles": {
+          "category": {
+            "label": "Category",
+            "types": [
+              "text",
+              "link",
+              "boolean",
+              "number"
+            ],
+            "prefer": [
+              "genre",
+              "status",
+              "type",
+              "category",
+              "tags"
+            ]
+          },
+          "colour": {
+            "label": "Colour by",
+            "types": [
+              "text",
+              "boolean"
+            ],
+            "optional": true
+          }
+        }
+      }
+    }
+  },
+  "data": {
+    "name": "base"
+  },
+  "mark": {
+    "type": "bar",
+    "tooltip": true,
+    "cornerRadiusEnd": 3
+  },
+  "encoding": {
+    "y": {
+      "field": "{{category}}",
+      "type": "nominal",
+      "sort": "-x",
+      "title": "{{category.label}}"
+    },
+    "x": {
+      "aggregate": "count",
+      "title": "Notes"
+    },
+    "color": {
+      "field": "{{colour}}",
+      "type": "nominal",
+      "title": "{{colour.label}}"
+    }
+  },
+  "transform": [
+    {
+      "filter": "isValid({{category.expr}}) && {{category.expr}} !== ''"
+    }
+  ]
+}

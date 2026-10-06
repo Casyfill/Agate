@@ -1,0 +1,28 @@
+{
+  "$schema": "https://vega.github.io/schema/vega-lite/v6.json",
+  "description": "A user recipe: put a file like this in your recipe folder (Settings → Agate → Recipe folder) and it appears in the recipe picker.",
+  "usermeta": {
+    "agate": {
+      "recipe": {
+        "id": "decades",
+        "name": "Notes per decade",
+        "description": "Bars counting notes by the decade of a date property, stacked by an optional category.",
+        "roles": {
+          "date": { "label": "Date", "types": ["date"], "prefer": ["published", "date", "created"] },
+          "stack": { "label": "Stack by", "types": ["text"], "optional": true, "prefer": ["genre", "status"] }
+        }
+      }
+    }
+  },
+  "data": { "name": "base" },
+  "transform": [
+    { "filter": "isValid({{date.expr}})" },
+    { "calculate": "floor(year(toDate({{date.expr}})) / 10) * 10", "as": "decade" }
+  ],
+  "mark": { "type": "bar", "tooltip": true, "cornerRadiusEnd": 2 },
+  "encoding": {
+    "x": { "field": "decade", "type": "ordinal", "title": "{{date.label}} (decade)" },
+    "y": { "aggregate": "count", "title": "Notes" },
+    "color": { "field": "{{stack}}", "type": "nominal", "title": "{{stack.label}}" }
+  }
+}

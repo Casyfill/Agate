@@ -1,0 +1,84 @@
+{
+  "$schema": "https://vega.github.io/schema/vega-lite/v6.json",
+  "usermeta": {
+    "agate": {
+      "recipe": {
+        "id": "calendar",
+        "name": "Calendar heatmap",
+        "description": "GitHub-style grid: one square per day, darker when more notes fall on it (or a higher sum of a number).",
+        "roles": {
+          "date": {
+            "label": "Day",
+            "types": [
+              "date"
+            ],
+            "prefer": [
+              "date",
+              "created"
+            ]
+          }
+        }
+      }
+    }
+  },
+  "data": {
+    "name": "base"
+  },
+  "transform": [
+    {
+      "filter": "isValid({{date.expr}})"
+    }
+  ],
+  "mark": {
+    "type": "rect",
+    "cornerRadius": 2,
+    "tooltip": true
+  },
+  "width": {
+    "step": 13
+  },
+  "height": {
+    "step": 13
+  },
+  "encoding": {
+    "x": {
+      "field": "{{date}}",
+      "timeUnit": "yearweek",
+      "type": "ordinal",
+      "title": null,
+      "axis": {
+        "format": "%b",
+        "labelOverlap": true,
+        "ticks": false,
+        "domain": false
+      }
+    },
+    "y": {
+      "field": "{{date}}",
+      "timeUnit": "day",
+      "type": "ordinal",
+      "title": null,
+      "axis": {
+        "ticks": false,
+        "domain": false
+      }
+    },
+    "color": {
+      "aggregate": "count",
+      "type": "quantitative",
+      "title": "Notes",
+      "scale": {
+        "scheme": "greens"
+      },
+      "legend": {
+        "format": "d",
+        "tickMinStep": 1
+      }
+    }
+  },
+  "config": {
+    "view": {
+      "stroke": null
+    }
+  }
+}

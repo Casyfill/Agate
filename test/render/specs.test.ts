@@ -126,7 +126,10 @@ describe("fixture specs render headlessly with D4 rows", () => {
       expect(warnings.filter((w) => /Infinite extent/.test(w))).toEqual([]);
       // No Vega errors, except layouts that need a real canvas to measure text.
       if (!CANVAS_ONLY.has(name)) expect(warnings.filter((w) => w.startsWith("ERROR"))).toEqual([]);
-      if (svg.length > 50_000) {
+      if (name.startsWith("vault-")) {
+        // Charts of the whole test vault change with every file added to the repo; check structure, not bytes.
+        expect((svg.match(/<path\b/g) ?? []).length).toBeGreaterThan(50);
+      } else if (svg.length > 50_000) {
         const hash = createHash("sha256").update(svg).digest("hex").slice(0, 16);
         expect({ hash, shapes }).toMatchSnapshot();
       } else {

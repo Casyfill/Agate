@@ -1,0 +1,98 @@
+{
+  "$schema": "https://vega.github.io/schema/vega-lite/v6.json",
+  "usermeta": {
+    "agate": {
+      "open": "click",
+      "recipe": {
+        "id": "scatter",
+        "name": "Scatter plot",
+        "description": "Two numbers against each other, one point per note; optional colour and size.",
+        "roles": {
+          "x": {
+            "label": "Horizontal",
+            "types": [
+              "number",
+              "date"
+            ]
+          },
+          "y": {
+            "label": "Vertical",
+            "types": [
+              "number"
+            ]
+          },
+          "colour": {
+            "label": "Colour by",
+            "types": [
+              "text",
+              "boolean"
+            ],
+            "optional": true
+          },
+          "size": {
+            "label": "Size by",
+            "types": [
+              "number"
+            ],
+            "optional": true
+          }
+        }
+      }
+    }
+  },
+  "data": {
+    "name": "base"
+  },
+  "height": 280,
+  "mark": {
+    "type": "point",
+    "filled": true,
+    "cursor": "pointer"
+  },
+  "encoding": {
+    "x": {
+      "field": "{{x}}",
+      "type": "quantitative",
+      "title": "{{x.label}}",
+      "scale": {
+        "zero": false
+      }
+    },
+    "y": {
+      "field": "{{y}}",
+      "type": "quantitative",
+      "title": "{{y.label}}",
+      "scale": {
+        "zero": false
+      }
+    },
+    "color": {
+      "field": "{{colour}}",
+      "type": "nominal",
+      "title": "{{colour.label}}"
+    },
+    "size": {
+      "field": "{{size}}",
+      "type": "quantitative",
+      "title": "{{size.label}}"
+    },
+    "tooltip": [
+      {
+        "field": "file.name",
+        "title": "title"
+      },
+      {
+        "field": "{{x}}",
+        "title": "{{x.label}}"
+      },
+      {
+        "field": "{{y}}",
+        "title": "{{y.label}}"
+      },
+      {
+        "field": "{{colour}}",
+        "title": "{{colour.label}}"
+      }
+    ]
+  }
+}

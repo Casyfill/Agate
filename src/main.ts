@@ -1,4 +1,4 @@
-import { Notice, Plugin, TFile, addIcon } from "obsidian";
+import { Notice, Plugin, TFile, TFolder, Vault, addIcon, normalizePath } from "obsidian";
 import { AGATE_ICON_ID, AGATE_ICON_SVG } from "./icon";
 import { CHART_VIEW_ICON_ID, CHART_VIEW_ICON_SVG } from "./chart-icon";
 import type { Config, Loader } from "vega";
@@ -9,6 +9,8 @@ import { createVaultLoader } from "./core/loader";
 import { parseJsonOrYaml, resolveVaultFile } from "./core/spec";
 import { resolveChartOptions } from "./core/options";
 import { RowDataCache, expandRowData, rowDataDefs } from "./core/data/rowdata";
+import { parseRecipe, type Recipe } from "./core/recipes";
+import { builtinRecipes } from "./recipes";
 import type {
   AnySpec,
   ChartOptions,
@@ -68,6 +70,28 @@ export default class AgatePlugin extends Plugin {
         }
         view.dumpFirstRow();
         new Notice("Agate: dumped to the developer console (Cmd/Ctrl+Shift+I).");
+      },
+    });
+
+    this.addCommand({
+      id: "new-chart-from-recipe",
+      name: "New chart from recipe (in the last chart view)",
+      checkCallback: (checking) => {
+        const view = this.lastBasesView?.deref();
+        if (!view) return false;
+        if (!checking) void view.openRecipePicker();
+        return true;
+      },
+    });
+
+    this.addCommand({
+      id: "copy-chart-prompt",
+      name: "Copy chart prompt for an LLM (from the last chart view)",
+      checkCallback: (checking) => {
+        const view = this.lastBasesView?.deref();
+        if (!view) return false;
+        if (!checking) void view.copyChartPrompt();
+        return true;
       },
     });
 
@@ -213,6 +237,29 @@ export default class AgatePlugin extends Plugin {
       datasets[def.name] = records;
     }
     return datasets;
+  }
+
+  /** Built-in recipes, then the ones in the recipe folder (D13). A broken recipe file is skipped with a warning. */
+  async loadRecipes(): Promise<Recipe[]> {
+    const recipes = builtinRecipes();
+    const folderPath = this.settings.recipeFolder.trim();
+    const folder = folderPath ? this.app.vault.getAbstractFileByPath(normalizePath(folderPath)) : null;
+    if (!(folder instanceof TFolder)) return recipes;
+    const files: TFile[] = [];
+    Vault.recurseChildren(folder, (f) => {
+      if (f instanceof TFile && /\.(json|ya?ml)$/i.test(f.path)) files.push(f);
+    });
+    for (const file of files.sort((a, b) => a.path.localeCompare(b.path))) {
+      try {
+        const parsed = parseJsonOrYaml(await this.app.vault.cachedRead(file));
+        if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) continue;
+        const recipe = parseRecipe(parsed as AnySpec, file.path, file.basename.replace(/\.(vl|vg)$/, ""));
+        if (recipe) recipes.push(recipe);
+      } catch (err) {
+        this.log.warn(`recipe ${file.path} skipped:`, errorMessage(err));
+      }
+    }
+    return recipes;
   }
 
   preprocess(spec: AnySpec, ctx: SpecContext): AnySpec {

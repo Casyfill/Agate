@@ -64,7 +64,7 @@ How each one works, and the `usermeta.agate` switches they use (`rowData`, `cell
 
 ## Cons and limits
 
-- You have to write or adapt Vega(-Lite) JSON. The learning curve is real, and the error messages are Vega's.
+- Charts beyond the recipes mean writing or adapting Vega(-Lite) JSON. Recipes cover the common cases by asking only which property goes where, and "Copy prompt for an LLM" hands an assistant everything it needs, but the error messages are still Vega's.
 - `main.js` is about 0.9 MB because Vega, Vega-Lite and vega-embed are bundled.
 - No charts inside core Table cells: Obsidian has no API for plugins to render there yet. The table layout is Agate's own view instead.
 - Bases data reaches Agate only through a mounted Bases view; there is no headless query, so the `base:` code block renders a hidden view and shows the Bases toolbar.
@@ -84,4 +84,4 @@ How each one works, and the `usermeta.agate` switches they use (`rowData`, `cell
 
 - Which comparisons matter most to readers, and are any of the listed plugins abandoned or merged since?
 - Should the doc lead with screenshots of the gallery (horizon table, sunburst, globe) as the "why"?
-- The gallery lives in the test vault. Should the specs also ship with the plugin as templates (a "New chart from example" command), so users do not have to copy them from the repo?
+- The gallery layouts now ship as recipes. Should community recipes be fetched from a shared repository (needs network access and vetting), or stay copy-a-file?

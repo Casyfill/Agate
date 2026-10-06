@@ -28,7 +28,7 @@ export default defineConfig([
       // Product and feature names the sentence-case rule would otherwise lowercase.
       "obsidianmd/ui/sentence-case": [
         "warn",
-        { brands: ["Agate", "Bases", "Vega", "Vega-Lite", "Obsidian", "obsidian-vega", "vega-embed"], acronyms: ["URLs", "SVG", "PNG", "JSON", "YAML"] },
+        { brands: ["Agate", "Bases", "Vega", "Vega-Lite", "Obsidian", "obsidian-vega", "vega-embed"], acronyms: ["URLs", "SVG", "PNG", "JSON", "YAML", "LLM"] },
       ],
     },
   },

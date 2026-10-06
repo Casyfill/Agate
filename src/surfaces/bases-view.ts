@@ -1,5 +1,6 @@
 import {
   BasesView,
+  Notice,
   type BasesAllOptions,
   type BasesPropertyId,
   type BasesViewConfig,
@@ -15,6 +16,10 @@ import { edgesDatasetName, linkEdges, pathTree, treeDatasetName } from "../core/
 import { detectMode, loadSpecFile, parseJsonOrYaml, referencedProperties } from "../core/spec";
 import type { AnySpec, ChartOptions, ResolvedSpec } from "../core/types";
 import { CHART_VIEW_ICON_ID } from "../chart-icon";
+import { inferPropertyTypes, type PropertyInfo } from "../core/recipes";
+import { buildChartPrompt } from "../core/prompt";
+import { RecipeSuggestModal } from "../ui/recipe-modal";
+import type { Row } from "../core/types";
 
 export const AGATE_VIEW_TYPE = "agate";
 
@@ -74,6 +79,41 @@ export class AgateBasesView extends BasesView {
     log.info("dump: allProperties", this.allProperties, "order", this.config.getOrder());
     log.info("dump: value shapes", describeEntry(entry, props));
     log.info("dump: converted row", groupsToRows([groups[0]], props).slice(0, 1)[0]);
+  }
+
+  /** Every property of the base as rows, plus their inferred types, for recipes and the LLM prompt (D13). */
+  private chartContext(): { rows: Row[]; properties: PropertyInfo[] } {
+    const ids = [...new Set<BasesPropertyId>([...this.config.getOrder(), ...(this.allProperties ?? [])])];
+    const rows = groupsToRows(this.data?.groupedData ?? [], ids);
+    const properties = inferPropertyTypes(rows.slice(0, 300), ids, (id) => this.config.getDisplayName(id as BasesPropertyId));
+    return { rows, properties };
+  }
+
+  /** Pick a recipe, map its roles to this base's properties, write the spec and point this view at it. */
+  async openRecipePicker(): Promise<void> {
+    const { properties } = this.chartContext();
+    const recipes = await this.plugin.loadRecipes();
+    new RecipeSuggestModal(this.app, recipes, {
+      properties,
+      folder: this.plugin.settings.specFolder || "charts",
+      onCreated: (path) => {
+        this.config.set("specFile", path);
+        this.scheduleRender();
+      },
+    }).open();
+  }
+
+  /** Copy a prompt describing this base (properties, types, sample rows, Agate rules) for any LLM. */
+  async copyChartPrompt(): Promise<void> {
+    const { rows, properties } = this.chartContext();
+    const text = buildChartPrompt({
+      viewName: this.config.name,
+      datasetName: this.plugin.resolveOptions(this.readChartOptions()).dataset,
+      properties,
+      rows,
+    });
+    await navigator.clipboard.writeText(text);
+    new Notice("Agate: chart prompt copied. Paste it into your assistant, describe the chart, and save the reply as a spec file.");
   }
 
   private specFilePath(): string | null {
@@ -198,10 +238,15 @@ export class AgateBasesView extends BasesView {
     this.renderer.destroy();
     this.containerEl.empty();
     const box = this.containerEl.createDiv({ cls: "agate-placeholder" });
-    box.createDiv({ text: "No spec yet." });
+    box.createDiv({ cls: "agate-placeholder-title", text: "No chart yet" });
+    const actions = box.createDiv({ cls: "agate-placeholder-actions" });
+    const recipe = actions.createEl("button", { cls: "mod-cta", text: "Pick a recipe" });
+    recipe.addEventListener("click", () => void this.openRecipePicker());
+    const prompt = actions.createEl("button", { text: "Copy prompt for an LLM" });
+    prompt.addEventListener("click", () => void this.copyChartPrompt());
     box.createDiv({
       cls: "agate-placeholder-hint",
-      text: "Open the view options (chevron next to the view name) and set a Spec file, or paste a Vega-Lite spec into Inline spec.",
+      text: "A recipe asks which of this base's properties to use and writes the spec for you. The prompt describes this base for any AI assistant. Or set a Spec file in the view options (chevron next to the view name).",
     });
   }
 }

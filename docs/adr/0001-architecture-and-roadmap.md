@@ -310,6 +310,15 @@ Small charts per note need data per note, and Bases formulas cannot fetch anythi
 
 All of these live in `src/core/data/` and `src/core/spec.ts` as pure functions; the Bases view and the plugin wire them in. Rejected: rendering per-row SVG files into the vault for `image()` cells in the core Table (vault churn, sync noise, static) and formula-only `html()` sparklines (not Agate).
 
+### D13. Recipes and the LLM prompt (added 2026-10-06)
+
+The hard part of a first chart is not JSON syntax but binding a spec to the user's own properties. Two aids, both reached from the empty Agate view ("Pick a recipe", "Copy prompt for an LLM") and from commands:
+
+- Recipes. A recipe is a Vega or Vega-Lite spec with `usermeta.agate.recipe: {id, name, description, roles}` and placeholders: `{{role}}` (property id, for `field`), `{{role.expr}}` (a quoted accessor, `datum["note"]["my rating"]`, safe for any property name) and `{{role.label}}` (display name). Roles declare accepted types (number, date, text, list, link, boolean), whether they are optional, and preferred property names. The picker infers each property's type from the view's rows, suggests a mapping, shows one dropdown per role filtered by type, writes the filled spec into the spec folder and sets the view's `specFile`. An unset optional role removes every object holding its placeholder as a whole value (an encoding channel, a legend, a tooltip entry); its `.expr` becomes `null`. Twelve recipes ship in `src/recipes/` (simple charts plus the gallery layouts); specs with a recipe block in the Recipe folder setting join them. The produced spec records `usermeta.agate.fromRecipe` for a later "re-map" command.
+- LLM prompt. "Copy chart prompt" puts on the clipboard the view's properties with inferred types and display names, three sample rows trimmed to those properties, the row format, and Agate's rules and extras, with a slot for what the user wants. The error box gets "Copy error" for the next round. Agate makes no network call and holds no API key; a direct integration can come later through an Obsidian AI plugin's API if one exists.
+
+Rejected: a general chart wizard. The Vega GUI builders (Lyra, Voyager/Polestar) are unmaintained research projects, heavy to embed, and know nothing of Bases fields or `usermeta.agate`; role mapping covers the part a wizard would help with.
+
 ## Roadmap
 
 ### v0.1 (primary)

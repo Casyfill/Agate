@@ -101,6 +101,35 @@
   text-align: center;
 }
 
+.agate-placeholder-title {
+  color: var(--text-normal);
+  font-weight: var(--font-semibold);
+}
+
+.agate-placeholder-actions {
+  display: flex;
+  gap: var(--size-4-2);
+  justify-content: center;
+  flex-wrap: wrap;
+  margin: var(--size-4-3) 0 var(--size-4-2);
+}
+
+/* Recipe picker (D13) */
+.agate-recipe-name {
+  font-weight: var(--font-medium);
+}
+
+.agate-recipe-desc,
+.agate-recipe-source {
+  color: var(--text-muted);
+  font-size: var(--font-ui-smaller);
+}
+
+.agate-error-copy {
+  margin-top: var(--size-4-2);
+  font-size: var(--font-ui-smaller);
+}
+
 .agate-placeholder-hint {
   font-size: var(--font-ui-small);
   color: var(--text-faint);

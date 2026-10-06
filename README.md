@@ -49,6 +49,8 @@ Because the chart is a full Vega spec and Agate can hand it the vault's links, f
 
 ## Quick start
 
+The quickest start needs no JSON: add an **Agate chart** view to a base and press **Pick a recipe**; Agate asks which properties to use and writes the spec. Or press **Copy prompt for an LLM** and let an assistant write it. The manual way:
+
 1. Install and enable Agate (Bases, a core plugin, must be on).
 2. Create a spec file, say `charts/ratings.vl.json`:
    ```json

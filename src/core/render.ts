@@ -227,7 +227,13 @@ export class AgateRenderer {
     this.hostEl.empty();
     const box = this.hostEl.createDiv({ cls: "agate-error" });
     box.createDiv({ cls: "agate-error-title", text: "Agate could not render this chart" });
-    box.createEl("pre", { cls: "agate-error-message", text: errorMessage(err) });
+    const message = errorMessage(err);
+    box.createEl("pre", { cls: "agate-error-message", text: message });
+    const copy = box.createEl("button", { cls: "agate-error-copy", text: "Copy error" });
+    copy.addEventListener("click", () => {
+      // Pasted into an LLM together with the spec, this is usually enough to get a fix.
+      void navigator.clipboard.writeText(`Agate (Vega) error:\n${message}`).then(() => copy.setText("Copied"));
+    });
     this.log.warn("render error:", err);
   }
 
