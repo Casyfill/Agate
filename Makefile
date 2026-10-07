@@ -7,7 +7,7 @@ SHELL := /bin/bash
 VERSION ?=
 BRANCH  := $(shell git rev-parse --abbrev-ref HEAD)
 
-.PHONY: help install dev build check typecheck lint test test-watch install-local clean preflight release
+.PHONY: help install dev build check typecheck lint test test-watch install-local demo clean preflight release
 
 help: ## List targets
 	@grep -E '^[a-zA-Z_-]+:.*?## ' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  %-14s %s\n", $$1, $$2}'
@@ -38,6 +38,11 @@ test-watch: ## vitest in watch mode
 
 install-local: ## Symlink the build into test-vault (or AGATE_VAULT=/path make install-local)
 	npm run install:local
+
+demo: ## Regenerate demo-vault notes and data, build, and link the plugin into it
+	node scripts/demo-vault.mjs
+	npm run build
+	AGATE_VAULT=demo-vault npm run install:local
 
 clean: ## Remove build output and dependencies
 	rm -rf main.js node_modules

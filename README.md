@@ -45,7 +45,7 @@ If you do not use the Vega Visualizations plugin, a setting lets Agate also hand
 
 ### 3. Charts other plugins don't draw
 
-Because the chart is a full Vega spec and Agate can hand it the vault's links, folder tree and per-note external data, you can build things like a DaisyDisk-style sunburst of your vault, a force graph or a timeline arc diagram of how notes link, your trips on a globe you can spin, a sankey across properties, or a table of notes with a live horizon chart column. All of them are in the test vault (`Surfaces/12 Gallery`); `docs/why-agate.md` lists them with links to the specs.
+Because the chart is a full Vega spec and Agate can hand it the vault's links, folder tree and per-note external data, you can build things like a DaisyDisk-style sunburst of your vault, a force graph or a timeline arc diagram of how notes link, your trips on a globe you can spin, a sankey across properties, or a table of notes with a live horizon chart column. Try them in `demo-vault/`, a made-up personal vault with a hike dashboard, travel, board games, projects, meetings and journal charts (`make demo`, then open the folder in Obsidian); the test vault's `Surfaces/12 Gallery` has more. `docs/why-agate.md` lists them with links to the specs.
 
 ## Quick start
 

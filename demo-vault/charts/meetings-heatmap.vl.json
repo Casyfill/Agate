@@ -1,0 +1,120 @@
+{
+  "$schema": "https://vega.github.io/schema/vega-lite/v6.json",
+  "description": "Who I meet: people (from each meeting's attendees) by week, darker = more meetings; the bars are total hours in the period. Narrow the period with a Bases filter on date.",
+  "data": {
+    "name": "base"
+  },
+  "transform": [
+    {
+      "filter": "datum.note.type === 'meeting'"
+    },
+    {
+      "flatten": [
+        "note.attendees"
+      ],
+      "as": [
+        "who"
+      ]
+    },
+    {
+      "calculate": "replace(replace(replace(datum.who + '', regexp('^\\\\[\\\\[|\\\\]\\\\]$|\\\\|.*$', 'g'), ''), regexp('^.*/'), ''), regexp('\\\\.md$'), '')",
+      "as": "person"
+    },
+    {
+      "calculate": "toDate(datum.note.date)",
+      "as": "d"
+    },
+    {
+      "joinaggregate": [
+        {
+          "op": "sum",
+          "field": "note.duration",
+          "as": "minutes"
+        }
+      ],
+      "groupby": [
+        "person"
+      ]
+    }
+  ],
+  "hconcat": [
+    {
+      "width": 470,
+      "height": {
+        "step": 18
+      },
+      "mark": {
+        "type": "rect",
+        "cornerRadius": 2,
+        "tooltip": true
+      },
+      "encoding": {
+        "x": {
+          "field": "d",
+          "timeUnit": "yearweek",
+          "type": "ordinal",
+          "title": null,
+          "axis": {
+            "format": "%b %d",
+            "labelOverlap": true,
+            "labelAngle": 0
+          }
+        },
+        "y": {
+          "field": "person",
+          "type": "nominal",
+          "sort": {
+            "field": "minutes",
+            "order": "descending"
+          },
+          "title": null
+        },
+        "color": {
+          "aggregate": "count",
+          "type": "quantitative",
+          "title": "Meetings",
+          "scale": {
+            "scheme": "blues"
+          },
+          "legend": {
+            "format": "d"
+          }
+        }
+      }
+    },
+    {
+      "width": 140,
+      "height": {
+        "step": 18
+      },
+      "mark": {
+        "type": "bar",
+        "cornerRadiusEnd": 3,
+        "tooltip": true,
+        "color": "#027aff"
+      },
+      "encoding": {
+        "y": {
+          "field": "person",
+          "type": "nominal",
+          "sort": {
+            "field": "minutes",
+            "order": "descending"
+          },
+          "title": null,
+          "axis": null
+        },
+        "x": {
+          "aggregate": "sum",
+          "field": "note.duration",
+          "type": "quantitative",
+          "title": "Hours",
+          "axis": {
+            "labelExpr": "format(datum.value / 60, '.0f')",
+            "tickCount": 3
+          }
+        }
+      }
+    }
+  ]
+}

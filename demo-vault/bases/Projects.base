@@ -1,0 +1,14 @@
+filters:
+  and:
+    - type == "project"
+views:
+  - type: agate
+    name: Timeline
+    order: [file.name, area, status, start, due, priority]
+    sort:
+      - property: start
+        direction: ASC
+    specFile: charts/project-gantt.vl.json
+  - type: table
+    name: Table
+    order: [file.name, area, status, priority, start, due]

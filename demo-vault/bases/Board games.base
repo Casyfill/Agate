@@ -1,0 +1,22 @@
+filters:
+  or:
+    - type == "boardgame"
+    - type == "play"
+views:
+  - type: agate
+    name: Collection
+    order: [file.name, complexity, time, players, theme, played_times]
+    specFile: charts/boardgame-collection.vl.json
+  - type: agate
+    name: Game nights
+    order: [file.name, date, game, winner]
+    specFile: charts/boardgame-plays.vl.json
+  - type: table
+    name: Games
+    filters:
+      and:
+        - type == "boardgame"
+    order: [file.name, players, time, complexity, theme, played_times, price]
+    sort:
+      - property: played_times
+        direction: DESC

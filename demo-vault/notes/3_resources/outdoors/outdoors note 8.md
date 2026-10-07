@@ -1,0 +1,6 @@
+---
+type: resource
+tags: [resource/outdoors]
+area: outdoors
+---
+summary up idea source summary plan review thought decision draft step idea decision detail source sketch up review summary review summary follow up note detail draft next step step detail plan up context decision sketch decision plan decision thought draft up thought idea source note question follow idea draft summary reference source detail up up follow up summary up decision follow next idea decision idea follow thought sketch note sketch up context next step review note thought draft plan draft up detail note draft follow follow thought plan decision draft up step question draft review plan detail follow plan up next follow source draft plan draft decision idea up next context sketch follow draft plan summary draft source thought plan note question thought note detail step summary context context plan question question context idea note review review question draft summary plan up step question idea thought thought context next review plan sketch next note decision reference summary summary follow context question source draft idea draft question question question plan summary plan draft step draft up idea sketch detail source reference detail summary note reference step note review.

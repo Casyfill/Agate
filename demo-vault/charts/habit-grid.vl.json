@@ -1,0 +1,106 @@
+{
+  "$schema": "https://vega.github.io/schema/vega-lite/v6.json",
+  "description": "Habits from daily notes (the habits list): one row per habit, one square per week, darker = more days that week. The line under it is the weekly mood average.",
+  "data": {
+    "name": "base"
+  },
+  "transform": [
+    {
+      "calculate": "toDate(datum.note.date)",
+      "as": "d"
+    }
+  ],
+  "vconcat": [
+    {
+      "width": 620,
+      "height": {
+        "step": 22
+      },
+      "transform": [
+        {
+          "flatten": [
+            "note.habits"
+          ],
+          "as": [
+            "habit"
+          ]
+        },
+        {
+          "filter": "isValid(datum.habit)"
+        }
+      ],
+      "mark": {
+        "type": "rect",
+        "cornerRadius": 3,
+        "tooltip": true
+      },
+      "encoding": {
+        "x": {
+          "field": "d",
+          "timeUnit": "yearweek",
+          "type": "ordinal",
+          "title": null,
+          "axis": {
+            "format": "%b",
+            "labelOverlap": true,
+            "ticks": false,
+            "domain": false
+          }
+        },
+        "y": {
+          "field": "habit",
+          "type": "nominal",
+          "title": null,
+          "sort": [
+            "gym",
+            "walk",
+            "read",
+            "meditate"
+          ]
+        },
+        "color": {
+          "aggregate": "count",
+          "type": "quantitative",
+          "title": "Days",
+          "scale": {
+            "scheme": "greens",
+            "domain": [
+              0,
+              7
+            ]
+          }
+        }
+      }
+    },
+    {
+      "width": 620,
+      "height": 70,
+      "mark": {
+        "type": "line",
+        "interpolate": "monotone",
+        "point": true
+      },
+      "encoding": {
+        "x": {
+          "field": "d",
+          "timeUnit": "yearweek",
+          "type": "ordinal",
+          "title": null,
+          "axis": null
+        },
+        "y": {
+          "aggregate": "mean",
+          "field": "note.mood",
+          "type": "quantitative",
+          "title": "Mood",
+          "scale": {
+            "domain": [
+              1,
+              5
+            ]
+          }
+        }
+      }
+    }
+  ]
+}

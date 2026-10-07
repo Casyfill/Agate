@@ -1,0 +1,436 @@
+{
+  "$schema": "https://vega.github.io/schema/vega/v6.json",
+  "description": "People and projects, linked when they met about a project (meeting notes: attendees + project). Thicker = more meetings, bigger = more meetings overall. Hover to isolate one person's or project's links.",
+  "autosize": {
+    "type": "fit-x",
+    "contains": "padding"
+  },
+  "padding": 8,
+  "signals": [
+    {
+      "name": "width",
+      "init": "isFinite(containerSize()[0]) && containerSize()[0] > 0 ? containerSize()[0] : 720",
+      "on": [
+        {
+          "events": "window:resize",
+          "update": "isFinite(containerSize()[0]) && containerSize()[0] > 0 ? containerSize()[0] : 720"
+        }
+      ]
+    },
+    {
+      "name": "height",
+      "value": 440
+    },
+    {
+      "name": "cx",
+      "update": "width / 2"
+    },
+    {
+      "name": "cy",
+      "update": "height / 2"
+    },
+    {
+      "name": "hover",
+      "value": null,
+      "on": [
+        {
+          "events": "@node:mouseover",
+          "update": "datum.name"
+        },
+        {
+          "events": "@node:mouseout",
+          "update": "null"
+        }
+      ]
+    },
+    {
+      "name": "minMeetings",
+      "value": 2,
+      "bind": {
+        "input": "range",
+        "min": 1,
+        "max": 10,
+        "step": 1,
+        "name": "Hide links with fewer meetings than "
+      }
+    }
+  ],
+  "data": [
+    {
+      "name": "base"
+    },
+    {
+      "name": "pairs",
+      "source": "base",
+      "transform": [
+        {
+          "type": "filter",
+          "expr": "datum.note.type === 'meeting' && isValid(datum.note.project) && isArray(datum.note.attendees)"
+        },
+        {
+          "type": "flatten",
+          "fields": [
+            "note.attendees"
+          ],
+          "as": [
+            "who"
+          ]
+        },
+        {
+          "type": "formula",
+          "as": "person",
+          "expr": "replace(replace(replace(datum.who + '', regexp('^\\\\[\\\\[|\\\\]\\\\]$|\\\\|.*$', 'g'), ''), regexp('^.*/'), ''), regexp('\\\\.md$'), '')"
+        },
+        {
+          "type": "formula",
+          "as": "proj",
+          "expr": "replace(replace(replace(datum.note.project + '', regexp('^\\\\[\\\\[|\\\\]\\\\]$|\\\\|.*$', 'g'), ''), regexp('^.*/'), ''), regexp('\\\\.md$'), '')"
+        },
+        {
+          "type": "aggregate",
+          "groupby": [
+            "person",
+            "proj"
+          ],
+          "ops": [
+            "count",
+            "sum"
+          ],
+          "fields": [
+            null,
+            "note.duration"
+          ],
+          "as": [
+            "n",
+            "minutes"
+          ]
+        },
+        {
+          "type": "filter",
+          "expr": "datum.n >= minMeetings"
+        }
+      ]
+    },
+    {
+      "name": "pnodes",
+      "source": "pairs",
+      "transform": [
+        {
+          "type": "aggregate",
+          "groupby": [
+            "person"
+          ],
+          "ops": [
+            "sum"
+          ],
+          "fields": [
+            "n"
+          ],
+          "as": [
+            "w"
+          ]
+        },
+        {
+          "type": "formula",
+          "as": "name",
+          "expr": "datum.person"
+        },
+        {
+          "type": "formula",
+          "as": "kind",
+          "expr": "'person'"
+        }
+      ]
+    },
+    {
+      "name": "jnodes",
+      "source": "pairs",
+      "transform": [
+        {
+          "type": "aggregate",
+          "groupby": [
+            "proj"
+          ],
+          "ops": [
+            "sum"
+          ],
+          "fields": [
+            "n"
+          ],
+          "as": [
+            "w"
+          ]
+        },
+        {
+          "type": "formula",
+          "as": "name",
+          "expr": "datum.proj"
+        },
+        {
+          "type": "formula",
+          "as": "kind",
+          "expr": "'project'"
+        }
+      ]
+    },
+    {
+      "name": "forceLinks",
+      "source": "pairs",
+      "transform": [
+        {
+          "type": "project",
+          "fields": [
+            "person",
+            "proj",
+            "n"
+          ],
+          "as": [
+            "source",
+            "target",
+            "n"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "neighbours",
+      "source": "pairs",
+      "transform": [
+        {
+          "type": "filter",
+          "expr": "hover !== null && (datum.person === hover || datum.proj === hover)"
+        },
+        {
+          "type": "formula",
+          "as": "other",
+          "expr": "datum.person === hover ? datum.proj : datum.person"
+        }
+      ]
+    },
+    {
+      "name": "nodes",
+      "source": [
+        "pnodes",
+        "jnodes"
+      ],
+      "transform": [
+        {
+          "type": "project",
+          "fields": [
+            "name",
+            "kind",
+            "w"
+          ]
+        },
+        {
+          "type": "force",
+          "static": true,
+          "iterations": 300,
+          "forces": [
+            {
+              "force": "center",
+              "x": {
+                "signal": "cx"
+              },
+              "y": {
+                "signal": "cy"
+              }
+            },
+            {
+              "force": "collide",
+              "radius": {
+                "expr": "sqrt(datum.w) * 2.6 + 10"
+              }
+            },
+            {
+              "force": "nbody",
+              "strength": -260
+            },
+            {
+              "force": "link",
+              "links": "forceLinks",
+              "id": "name",
+              "distance": 110
+            },
+            {
+              "force": "x",
+              "x": {
+                "expr": "cx"
+              },
+              "strength": 0.05
+            },
+            {
+              "force": "y",
+              "y": {
+                "expr": "cy"
+              },
+              "strength": 0.08
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "links",
+      "source": "pairs",
+      "transform": [
+        {
+          "type": "lookup",
+          "from": "nodes",
+          "key": "name",
+          "fields": [
+            "person",
+            "proj"
+          ],
+          "as": [
+            "s",
+            "t"
+          ]
+        },
+        {
+          "type": "filter",
+          "expr": "isValid(datum.s) && isValid(datum.t)"
+        },
+        {
+          "type": "linkpath",
+          "sourceX": "s.x",
+          "sourceY": "s.y",
+          "targetX": "t.x",
+          "targetY": "t.y",
+          "shape": "line"
+        }
+      ]
+    }
+  ],
+  "scales": [
+    {
+      "name": "size",
+      "type": "sqrt",
+      "domain": {
+        "data": "nodes",
+        "field": "w"
+      },
+      "range": [
+        60,
+        1100
+      ]
+    },
+    {
+      "name": "kindColour",
+      "type": "ordinal",
+      "domain": [
+        "person",
+        "project"
+      ],
+      "range": "category"
+    }
+  ],
+  "legends": [
+    {
+      "fill": "kindColour",
+      "orient": "top-left",
+      "title": null,
+      "symbolType": "circle"
+    }
+  ],
+  "marks": [
+    {
+      "type": "path",
+      "from": {
+        "data": "links"
+      },
+      "interactive": false,
+      "encode": {
+        "update": {
+          "path": {
+            "field": "path"
+          },
+          "stroke": {
+            "value": "gray"
+          },
+          "strokeWidth": {
+            "signal": "1 + sqrt(datum.n) * 0.8"
+          },
+          "strokeOpacity": {
+            "signal": "hover === null ? 0.3 : (datum.person === hover || datum.proj === hover ? 0.85 : 0.06)"
+          }
+        }
+      }
+    },
+    {
+      "type": "symbol",
+      "name": "node",
+      "from": {
+        "data": "nodes"
+      },
+      "encode": {
+        "enter": {
+          "cursor": {
+            "value": "pointer"
+          }
+        },
+        "update": {
+          "x": {
+            "field": "x"
+          },
+          "y": {
+            "field": "y"
+          },
+          "size": {
+            "scale": "size",
+            "field": "w"
+          },
+          "shape": {
+            "signal": "datum.kind === 'project' ? 'square' : 'circle'"
+          },
+          "fill": {
+            "scale": "kindColour",
+            "field": "kind"
+          },
+          "fillOpacity": {
+            "signal": "hover === null || hover === datum.name || indexof(pluck(data('neighbours'), 'other'), datum.name) >= 0 ? 1 : 0.2"
+          },
+          "tooltip": {
+            "signal": "{title: datum.name, 'Kind': datum.kind, 'Meetings': datum.w}"
+          }
+        }
+      }
+    },
+    {
+      "type": "text",
+      "style": "text",
+      "from": {
+        "data": "nodes"
+      },
+      "interactive": false,
+      "encode": {
+        "update": {
+          "x": {
+            "field": "x"
+          },
+          "y": {
+            "signal": "datum.y + sqrt(scale('size', datum.w)) / 2 + 3"
+          },
+          "align": {
+            "value": "center"
+          },
+          "baseline": {
+            "value": "top"
+          },
+          "fontSize": {
+            "value": 10
+          },
+          "fontWeight": {
+            "signal": "datum.kind === 'project' ? 'bold' : 'normal'"
+          },
+          "text": {
+            "field": "name"
+          },
+          "opacity": {
+            "signal": "hover === null || hover === datum.name || indexof(pluck(data('neighbours'), 'other'), datum.name) >= 0 ? 0.9 : 0.15"
+          }
+        }
+      }
+    }
+  ]
+}

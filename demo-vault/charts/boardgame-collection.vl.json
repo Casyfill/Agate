@@ -1,0 +1,204 @@
+{
+  "$schema": "https://vega.github.io/schema/vega-lite/v6.json",
+  "description": "The collection: complexity against playing time, bubble size = times played this year (from the play notes). Games not played this year show as dashed rings. Click a game to open it.",
+  "usermeta": {
+    "agate": {
+      "open": "click"
+    }
+  },
+  "data": {
+    "name": "base"
+  },
+  "transform": [
+    {
+      "filter": "datum.note.type === 'play' || datum.note.type === 'boardgame'"
+    },
+    {
+      "calculate": "datum.note.type === 'play' ? replace(replace(replace(datum.note.game + '', regexp('^\\\\[\\\\[|\\\\]\\\\]$|\\\\|.*$', 'g'), ''), regexp('^.*/'), ''), regexp('\\\\.md$'), '') : datum.file.name",
+      "as": "game"
+    },
+    {
+      "joinaggregate": [
+        {
+          "op": "valid",
+          "field": "note.winner",
+          "as": "plays"
+        }
+      ],
+      "groupby": [
+        "game"
+      ]
+    },
+    {
+      "filter": "datum.note.type === 'boardgame'"
+    }
+  ],
+  "height": 320,
+  "layer": [
+    {
+      "mark": {
+        "type": "circle",
+        "opacity": 0.75,
+        "stroke": "#fff",
+        "strokeWidth": 0.5,
+        "cursor": "pointer"
+      },
+      "transform": [
+        {
+          "filter": "datum.plays > 0"
+        }
+      ],
+      "encoding": {
+        "x": {
+          "field": "note.complexity",
+          "type": "quantitative",
+          "title": "Complexity (1–5)",
+          "scale": {
+            "domain": [
+              1,
+              4.6
+            ]
+          }
+        },
+        "y": {
+          "field": "note.time",
+          "type": "quantitative",
+          "title": "Playing time (min)",
+          "scale": {
+            "type": "log",
+            "domain": [
+              10,
+              600
+            ]
+          }
+        },
+        "size": {
+          "field": "plays",
+          "type": "quantitative",
+          "title": "Plays this year",
+          "scale": {
+            "range": [
+              40,
+              1400
+            ]
+          },
+          "legend": {
+            "symbolFillColor": "#8889",
+            "symbolStrokeColor": "#8889"
+          }
+        },
+        "color": {
+          "field": "note.theme",
+          "type": "nominal",
+          "title": "Theme"
+        },
+        "tooltip": [
+          {
+            "field": "file.name",
+            "title": "title"
+          },
+          {
+            "field": "plays",
+            "title": "Plays"
+          },
+          {
+            "field": "note.players_min",
+            "title": "Min players"
+          },
+          {
+            "field": "note.players",
+            "title": "Max players"
+          },
+          {
+            "field": "note.time",
+            "title": "Minutes"
+          },
+          {
+            "field": "note.complexity",
+            "title": "Complexity"
+          }
+        ]
+      }
+    },
+    {
+      "mark": {
+        "type": "point",
+        "size": 120,
+        "strokeWidth": 1.5,
+        "strokeDash": [
+          3,
+          2
+        ],
+        "color": "#fb464c",
+        "cursor": "pointer"
+      },
+      "transform": [
+        {
+          "filter": "datum.plays === 0"
+        }
+      ],
+      "encoding": {
+        "x": {
+          "field": "note.complexity",
+          "type": "quantitative"
+        },
+        "y": {
+          "field": "note.time",
+          "type": "quantitative"
+        },
+        "tooltip": [
+          {
+            "field": "file.name",
+            "title": "title"
+          },
+          {
+            "value": "never played this year",
+            "title": "Shelf of shame"
+          }
+        ]
+      }
+    },
+    {
+      "mark": {
+        "type": "text",
+        "dy": -12,
+        "fontSize": 10
+      },
+      "transform": [
+        {
+          "filter": "datum.plays > 0"
+        },
+        {
+          "window": [
+            {
+              "op": "rank",
+              "as": "r"
+            }
+          ],
+          "sort": [
+            {
+              "field": "plays",
+              "order": "descending"
+            }
+          ]
+        },
+        {
+          "filter": "datum.r <= 5"
+        }
+      ],
+      "encoding": {
+        "x": {
+          "field": "note.complexity",
+          "type": "quantitative"
+        },
+        "y": {
+          "field": "note.time",
+          "type": "quantitative"
+        },
+        "text": {
+          "field": "file.name"
+        }
+      }
+    }
+  ]
+}

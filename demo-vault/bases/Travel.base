@@ -1,0 +1,22 @@
+filters:
+  or:
+    - type == "trip"
+    - type == "place"
+views:
+  - type: agate
+    name: Globe
+    order: [file.name, date, from, to, trip]
+    specFile: charts/travel-globe.vg.json
+  - type: agate
+    name: Countries
+    order: [file.name, country]
+    specFile: charts/countries-visited.vl.json
+  - type: table
+    name: Trips
+    filters:
+      and:
+        - type == "trip"
+    order: [file.name, date, from, to, mode, trip]
+    sort:
+      - property: date
+        direction: DESC

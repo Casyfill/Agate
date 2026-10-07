@@ -1,0 +1,163 @@
+{
+  "$schema": "https://vega.github.io/schema/vega-lite/v6.json",
+  "description": "Multi-day hike dashboard. Each day note links its GPS track (CSV: time, lat, lon, ele_m, hr) in `track`; Agate loads them all (rowData). Distance, speed and climb are computed here from the raw points. Drag across the elevation profile: speed and heart rate zoom to that stretch and the map highlights it. Click the route to open that day's note.",
+  "usermeta": { "agate": { "rowData": { "name": "track", "from": "note.track" }, "open": "click" } },
+  "data": { "name": "track" },
+  "transform": [
+    { "calculate": "toDate(datum.time)", "as": "t" },
+    { "calculate": "datum.note.day", "as": "day" },
+    { "calculate": "'Day ' + datum.note.day + ': ' + datum.note.from + ' → ' + datum.note.to", "as": "stage" },
+    {
+      "window": [
+        { "op": "lag", "field": "lat", "as": "lat0" },
+        { "op": "lag", "field": "lon", "as": "lon0" },
+        { "op": "lag", "field": "t", "as": "t0" },
+        { "op": "lag", "field": "ele_m", "as": "ele0" }
+      ],
+      "groupby": ["day"],
+      "sort": [{ "field": "t" }]
+    },
+    {
+      "calculate": "isValid(datum.lat0) ? 2 * 6371000 * asin(sqrt(pow(sin((datum.lat - datum.lat0) * PI / 360), 2) + cos(datum.lat0 * PI / 180) * cos(datum.lat * PI / 180) * pow(sin((datum.lon - datum.lon0) * PI / 360), 2))) : 0",
+      "as": "seg_m"
+    },
+    { "calculate": "isValid(datum.t0) ? (datum.t - datum.t0) / 3600000 : 0", "as": "dt_h" },
+    { "calculate": "isValid(datum.ele0) ? max(0, datum.ele_m - datum.ele0) * 3.28084 : 0", "as": "climb_ft" },
+    { "calculate": "datum.dt_h > 0 ? datum.seg_m / 1609.34 / datum.dt_h : 0", "as": "mph_raw" },
+    { "window": [{ "op": "sum", "field": "seg_m", "as": "cum_m" }], "sort": [{ "field": "t" }], "frame": [null, 0] },
+    { "window": [{ "op": "mean", "field": "mph_raw", "as": "mph" }], "groupby": ["day"], "sort": [{ "field": "t" }], "frame": [-8, 8] },
+    { "calculate": "datum.cum_m / 1609.34", "as": "mi" },
+    { "calculate": "datum.ele_m * 3.28084", "as": "ele_ft" },
+    { "calculate": "datum.mph > 0.4 ? datum.dt_h : 0", "as": "moving_h" }
+  ],
+  "spacing": 14,
+  "vconcat": [
+    {
+      "width": 660,
+      "height": 22,
+      "transform": [
+        {
+          "aggregate": [
+            { "op": "max", "field": "mi", "as": "mi" },
+            { "op": "sum", "field": "climb_ft", "as": "climb" },
+            { "op": "max", "field": "ele_ft", "as": "top" },
+            { "op": "sum", "field": "moving_h", "as": "moving" },
+            { "op": "distinct", "field": "day", "as": "days" }
+          ]
+        },
+        {
+          "calculate": "format(datum.mi, '.1f') + ' mi   ·   ' + format(datum.climb, ',.0f') + ' ft climbed   ·   high point ' + format(datum.top, ',.0f') + ' ft   ·   ' + format(datum.moving, '.1f') + ' h moving over ' + datum.days + ' days'",
+          "as": "label"
+        }
+      ],
+      "mark": { "type": "text", "align": "left", "baseline": "middle", "fontSize": 14, "fontWeight": "bold" },
+      "encoding": { "x": { "value": 0 }, "y": { "value": 11 }, "text": { "field": "label" } }
+    },
+    {
+      "spacing": 18,
+      "hconcat": [
+        {
+          "width": 250,
+          "height": 330,
+          "projection": { "type": "mercator" },
+          "layer": [
+            {
+              "mark": { "type": "line", "strokeWidth": 3, "strokeCap": "round", "strokeJoin": "round", "cursor": "pointer" },
+              "encoding": {
+                "longitude": { "field": "lon", "type": "quantitative" },
+                "latitude": { "field": "lat", "type": "quantitative" },
+                "order": { "field": "t", "type": "temporal" },
+                "color": { "field": "stage", "type": "nominal", "title": null, "legend": { "orient": "bottom", "direction": "vertical", "labelLimit": 280 } },
+                "detail": { "field": "day" },
+                "opacity": { "value": 0.85 }
+              }
+            },
+            {
+              "transform": [{ "filter": { "param": "span", "empty": false } }],
+              "mark": { "type": "line", "strokeWidth": 7, "strokeCap": "round", "opacity": 0.45 },
+              "encoding": {
+                "longitude": { "field": "lon", "type": "quantitative" },
+                "latitude": { "field": "lat", "type": "quantitative" },
+                "order": { "field": "t", "type": "temporal" },
+                "detail": { "field": "day" },
+                "color": { "value": "#f2b134" }
+              }
+            },
+            {
+              "transform": [
+                { "window": [{ "op": "row_number", "as": "k" }], "groupby": ["day"], "sort": [{ "field": "t", "order": "descending" }] },
+                { "filter": "datum.k === 1" }
+              ],
+              "layer": [
+                {
+                  "mark": { "type": "point", "filled": true, "size": 50, "shape": "triangle-up", "color": "#888" },
+                  "encoding": {
+                    "longitude": { "field": "lon", "type": "quantitative" },
+                    "latitude": { "field": "lat", "type": "quantitative" },
+                    "tooltip": [
+                      { "field": "note.to", "title": "title" },
+                      { "field": "stage", "title": "Stage" },
+                      { "field": "ele_ft", "title": "Elevation (ft)", "format": ",.0f" }
+                    ]
+                  }
+                },
+                {
+                  "mark": { "type": "text", "align": "left", "dx": 7, "dy": -6, "fontSize": 10 },
+                  "encoding": {
+                    "longitude": { "field": "lon", "type": "quantitative" },
+                    "latitude": { "field": "lat", "type": "quantitative" },
+                    "text": { "field": "note.to" }
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "spacing": 8,
+          "vconcat": [
+            {
+              "width": 390,
+              "height": 150,
+              "params": [{ "name": "span", "select": { "type": "interval", "encodings": ["x"] } }],
+              "mark": { "type": "area", "line": { "strokeWidth": 1.5 }, "opacity": 0.55, "interpolate": "monotone" },
+              "encoding": {
+                "x": { "field": "mi", "type": "quantitative", "title": "Miles (drag to zoom)", "axis": { "grid": false } },
+                "y": { "field": "ele_ft", "type": "quantitative", "title": "Elevation (ft)", "scale": { "zero": false }, "stack": null },
+                "color": { "field": "stage", "type": "nominal", "legend": null },
+                "detail": { "field": "day" },
+                "tooltip": [
+                  { "field": "stage", "title": "Stage" },
+                  { "field": "mi", "title": "Mile", "format": ".1f" },
+                  { "field": "ele_ft", "title": "Elevation (ft)", "format": ",.0f" }
+                ]
+              }
+            },
+            {
+              "width": 390,
+              "height": 80,
+              "mark": { "type": "line", "strokeWidth": 1.5, "interpolate": "monotone" },
+              "encoding": {
+                "x": { "field": "mi", "type": "quantitative", "title": null, "scale": { "domain": { "param": "span" } } },
+                "y": { "field": "mph", "type": "quantitative", "title": "Speed (mph)" },
+                "color": { "field": "stage", "type": "nominal", "legend": null },
+                "detail": { "field": "day" }
+              }
+            },
+            {
+              "width": 390,
+              "height": 80,
+              "mark": { "type": "line", "strokeWidth": 1.5, "interpolate": "monotone" },
+              "encoding": {
+                "x": { "field": "mi", "type": "quantitative", "title": "Miles", "scale": { "domain": { "param": "span" } } },
+                "y": { "field": "hr", "type": "quantitative", "title": "Heart rate", "scale": { "zero": false } },
+                "color": { "field": "stage", "type": "nominal", "legend": null },
+                "detail": { "field": "day" }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,129 @@
+{
+  "$schema": "https://vega.github.io/schema/vega-lite/v6.json",
+  "description": "Projects as bars from start to due, coloured by status; the rule is today. Sort and filter from the Bases toolbar; click a bar to open the project.",
+  "usermeta": {
+    "agate": {
+      "open": "click"
+    }
+  },
+  "data": {
+    "name": "base"
+  },
+  "transform": [
+    {
+      "filter": "isValid(datum.note.start) && isValid(datum.note.due)"
+    }
+  ],
+  "height": {
+    "step": 24
+  },
+  "layer": [
+    {
+      "mark": {
+        "type": "bar",
+        "cornerRadius": 4,
+        "height": {
+          "band": 0.7
+        },
+        "cursor": "pointer"
+      },
+      "encoding": {
+        "y": {
+          "field": "file.name",
+          "type": "nominal",
+          "sort": null,
+          "title": null
+        },
+        "x": {
+          "field": "note.start",
+          "type": "temporal",
+          "title": null,
+          "axis": {
+            "format": "%b %Y",
+            "grid": true
+          }
+        },
+        "x2": {
+          "field": "note.due"
+        },
+        "color": {
+          "field": "note.status",
+          "type": "nominal",
+          "title": "Status",
+          "scale": {
+            "domain": [
+              "active",
+              "paused",
+              "idea",
+              "done"
+            ],
+            "range": [
+              "#44cf6e",
+              "#e9973f",
+              "#a68af9",
+              "#7f8c9a"
+            ]
+          }
+        },
+        "opacity": {
+          "condition": {
+            "test": "datum.note.status === 'done'",
+            "value": 0.5
+          },
+          "value": 0.95
+        },
+        "tooltip": [
+          {
+            "field": "file.name",
+            "title": "title"
+          },
+          {
+            "field": "note.area",
+            "title": "Area"
+          },
+          {
+            "field": "note.status",
+            "title": "Status"
+          },
+          {
+            "field": "note.start",
+            "type": "temporal",
+            "title": "Start"
+          },
+          {
+            "field": "note.due",
+            "type": "temporal",
+            "title": "Due"
+          },
+          {
+            "field": "note.priority",
+            "title": "Priority"
+          }
+        ]
+      }
+    },
+    {
+      "data": {
+        "values": [
+          {}
+        ]
+      },
+      "mark": {
+        "type": "rule",
+        "strokeDash": [
+          4,
+          3
+        ],
+        "color": "#fb464c"
+      },
+      "encoding": {
+        "x": {
+          "datum": {
+            "expr": "now()"
+          },
+          "type": "temporal"
+        }
+      }
+    }
+  ]
+}

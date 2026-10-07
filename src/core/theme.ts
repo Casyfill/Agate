@@ -65,6 +65,8 @@ export function obsidianTheme(): Config {
     header: { labelColor: text, titleColor: text, labelFont: font, titleFont: font },
     view: { stroke: "transparent" },
     mark: { color: accent },
+    // Vega-Lite gives text marks a black default of their own; follow the theme's text colour instead.
+    text: { color: text },
     range: { category },
     style: {
       "guide-label": { fill: muted, font, fontSize: labelFontSize },

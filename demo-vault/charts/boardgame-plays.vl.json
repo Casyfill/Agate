@@ -1,0 +1,217 @@
+{
+  "$schema": "https://vega.github.io/schema/vega-lite/v6.json",
+  "description": "Game nights: a year of plays by day, who wins (share of games won, by player), and the most played games. Players come from each play note's participants list.",
+  "data": {
+    "name": "base"
+  },
+  "transform": [
+    {
+      "filter": "datum.note.type === 'play'"
+    },
+    {
+      "calculate": "toDate(datum.note.date)",
+      "as": "d"
+    },
+    {
+      "calculate": "replace(replace(replace(datum.note.game + '', regexp('^\\\\[\\\\[|\\\\]\\\\]$|\\\\|.*$', 'g'), ''), regexp('^.*/'), ''), regexp('\\\\.md$'), '')",
+      "as": "game"
+    },
+    {
+      "calculate": "toNumber(datum.note.duration)",
+      "as": "dur"
+    }
+  ],
+  "vconcat": [
+    {
+      "width": 640,
+      "height": 110,
+      "title": {
+        "text": "Plays per day",
+        "anchor": "start",
+        "fontSize": 12
+      },
+      "mark": {
+        "type": "rect",
+        "cornerRadius": 2,
+        "tooltip": true
+      },
+      "encoding": {
+        "x": {
+          "field": "d",
+          "timeUnit": "yearweek",
+          "type": "ordinal",
+          "title": null,
+          "axis": {
+            "format": "%b",
+            "labelOverlap": true,
+            "ticks": false,
+            "domain": false
+          }
+        },
+        "y": {
+          "field": "d",
+          "timeUnit": "day",
+          "type": "ordinal",
+          "title": null,
+          "axis": {
+            "ticks": false,
+            "domain": false
+          }
+        },
+        "color": {
+          "aggregate": "count",
+          "type": "quantitative",
+          "title": "Plays",
+          "scale": {
+            "scheme": "purples"
+          },
+          "legend": {
+            "format": "d",
+            "tickMinStep": 1
+          }
+        }
+      }
+    },
+    {
+      "hconcat": [
+        {
+          "width": 230,
+          "height": 190,
+          "title": {
+            "text": "Who wins",
+            "anchor": "start",
+            "fontSize": 12
+          },
+          "transform": [
+            {
+              "flatten": [
+                "note.participants"
+              ],
+              "as": [
+                "who"
+              ]
+            },
+            {
+              "calculate": "datum.who === datum.note.winner ? 1 : 0",
+              "as": "won"
+            },
+            {
+              "aggregate": [
+                {
+                  "op": "mean",
+                  "field": "won",
+                  "as": "rate"
+                },
+                {
+                  "op": "count",
+                  "as": "games"
+                }
+              ],
+              "groupby": [
+                "who"
+              ]
+            }
+          ],
+          "mark": {
+            "type": "bar",
+            "cornerRadiusEnd": 3,
+            "tooltip": true
+          },
+          "encoding": {
+            "y": {
+              "field": "who",
+              "type": "nominal",
+              "sort": "-x",
+              "title": null
+            },
+            "x": {
+              "field": "rate",
+              "type": "quantitative",
+              "title": "Share of games won",
+              "axis": {
+                "format": "%"
+              }
+            },
+            "color": {
+              "condition": {
+                "test": "datum.who === 'Me'",
+                "value": "#e9973f"
+              },
+              "value": "#7f8c9a"
+            }
+          }
+        },
+        {
+          "width": 330,
+          "height": 190,
+          "title": {
+            "text": "Most played",
+            "anchor": "start",
+            "fontSize": 12
+          },
+          "transform": [
+            {
+              "aggregate": [
+                {
+                  "op": "count",
+                  "as": "plays"
+                },
+                {
+                  "op": "sum",
+                  "field": "dur",
+                  "as": "minutes"
+                }
+              ],
+              "groupby": [
+                "game"
+              ]
+            },
+            {
+              "window": [
+                {
+                  "op": "rank",
+                  "as": "r"
+                }
+              ],
+              "sort": [
+                {
+                  "field": "plays",
+                  "order": "descending"
+                }
+              ]
+            },
+            {
+              "filter": "datum.r <= 10"
+            }
+          ],
+          "mark": {
+            "type": "bar",
+            "cornerRadiusEnd": 3,
+            "tooltip": true
+          },
+          "encoding": {
+            "y": {
+              "field": "game",
+              "type": "nominal",
+              "sort": "-x",
+              "title": null
+            },
+            "x": {
+              "field": "plays",
+              "type": "quantitative",
+              "title": "Plays"
+            },
+            "color": {
+              "field": "minutes",
+              "type": "quantitative",
+              "title": "Minutes",
+              "scale": {
+                "scheme": "purples"
+              }
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
