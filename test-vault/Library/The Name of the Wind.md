@@ -2,6 +2,7 @@
 tags:
   - book
 author: Patrick Rothfuss
+isbn: "9780756404741"
 genre: fantasy
 rating: 4
 pages: 662

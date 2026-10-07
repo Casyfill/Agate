@@ -1,0 +1,26 @@
+filters:
+  or:
+    - file.inFolder("Trips")
+    - file.inFolder("Places")
+views:
+  - type: agate
+    name: Globe
+    order:
+      - file.name
+      - date
+      - from
+      - to
+      - mode
+    specFile: charts/travel-globe.vg.json
+  - type: table
+    name: Trips
+    filters:
+      and:
+        - file.inFolder("Trips")
+    order:
+      - file.name
+      - date
+      - from
+      - to
+      - mode
+      - trip

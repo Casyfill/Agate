@@ -1,0 +1,375 @@
+{
+  "$schema": "https://vega.github.io/schema/vega/v6.json",
+  "description": "The Bases view as a table: the visible properties as text columns (Properties menu order), last value and change, then one wide cubism-style horizon column. Bands use cubism's ColorBrewer Greens/Blues; in dark mode (agateDark, set by Agate) the ramp is reversed so small changes stay close to the background. Per-row CSV from formula.csv; cells from Agate's table dataset.",
+  "usermeta": {
+    "agate": {
+      "rowData": { "name": "series", "from": "formula.csv" },
+      "cells": "cells"
+    }
+  },
+  "autosize": { "type": "fit-x", "contains": "padding" },
+  "padding": { "top": 0, "bottom": 2, "left": 0, "right": 0 },
+
+  "signals": [
+    {
+      "name": "width",
+      "init": "isFinite(containerSize()[0]) && containerSize()[0] > 0 ? containerSize()[0] : 900",
+      "on": [
+        {
+          "events": "window:resize",
+          "update": "isFinite(containerSize()[0]) && containerSize()[0] > 0 ? containerSize()[0] : 900"
+        }
+      ]
+    },
+    { "name": "agateDark", "value": false, "description": "Set by Agate: true when Obsidian is in dark mode." },
+    { "name": "posScheme", "value": "greens" },
+    { "name": "negScheme", "value": "blues" },
+    {
+      "name": "bandT",
+      "description": "Where band 0..3 samples the scheme. Light: light to dark, as in cubism. Dark: reversed, so small changes stay near the background.",
+      "update": "agateDark ? [0.9, 0.7, 0.5, 0.3] : [0.35, 0.55, 0.75, 0.95]"
+    },
+    { "name": "rowH", "value": 30 },
+    { "name": "hdrH", "value": 28 },
+    { "name": "lastW", "value": 84 },
+    { "name": "chgW", "value": 64 },
+    { "name": "gap", "value": 12 },
+    { "name": "colsW", "update": "length(data('columns')) > 0 ? peek(data('columns')).x1 : 0" },
+    { "name": "hx0", "update": "colsW + lastW + chgW + gap" },
+    { "name": "hw", "update": "max(120, width - hx0)" },
+    { "name": "bodyH", "description": "Bottom of the last row.", "update": "hdrH + rowH * max(1, length(data('names')))" },
+    { "name": "ftrH", "description": "Room below the rows for the hover date.", "value": 18 },
+    { "name": "height", "update": "bodyH + ftrH" },
+    {
+      "name": "days",
+      "value": 365,
+      "bind": { "input": "select", "options": [30, 91, 182, 365, 730], "name": "Window (days) " }
+    },
+    {
+      "name": "scaleMode",
+      "value": "row",
+      "bind": { "input": "radio", "options": ["row", "shared"], "labels": ["per row", "shared"], "name": "Band scale " }
+    },
+    {
+      "name": "hoverT",
+      "value": null,
+      "on": [
+        { "events": "@overlay:mousemove, @overlay:touchmove", "update": "invert('x', clamp(x(), hx0, hx0 + hw))" },
+        { "events": "@overlay:mouseout, @overlay:touchend", "update": "null" }
+      ]
+    }
+  ],
+
+  "data": [
+    { "name": "series" },
+    { "name": "cells" },
+    {
+      "name": "names",
+      "source": "base",
+      "transform": [
+        { "type": "window", "ops": ["row_number"], "as": ["order"] },
+        { "type": "formula", "as": "rowIndex", "expr": "datum.order - 1" }
+      ]
+    },
+    {
+      "name": "cellLen",
+      "source": "cells",
+      "transform": [{ "type": "formula", "as": "len", "expr": "length(datum.text)" }]
+    },
+    {
+      "name": "columns",
+      "source": "cellLen",
+      "transform": [
+        { "type": "aggregate", "groupby": ["column", "label"], "ops": ["max"], "fields": ["len"], "as": ["maxLen"] },
+        { "type": "formula", "as": "w", "expr": "clamp(max(datum.maxLen, length(datum.label)) * 7.4 + 20, 48, 220)" },
+        { "type": "collect", "sort": { "field": "column" } },
+        { "type": "window", "ops": ["sum"], "fields": ["w"], "as": ["x1"], "frame": [null, 0] },
+        { "type": "formula", "as": "x0", "expr": "datum.x1 - datum.w" }
+      ]
+    },
+    {
+      "name": "cellsX",
+      "source": "cells",
+      "transform": [
+        { "type": "lookup", "from": "columns", "key": "column", "fields": ["column"], "values": ["x0", "w"] }
+      ]
+    },
+    {
+      "name": "points",
+      "source": "series",
+      "transform": [
+        { "type": "formula", "as": "t", "expr": "toDate(datum.observation_date)" },
+        { "type": "formula", "as": "v", "expr": "toNumber(datum[datum.note.fred])" },
+        { "type": "filter", "expr": "isValid(datum.t) && isFinite(datum.v) && datum.v > 0" },
+        { "type": "joinaggregate", "ops": ["max"], "fields": ["t"], "as": ["tmax"] },
+        { "type": "filter", "expr": "datum.t >= datum.tmax - days * 864e5" },
+        { "type": "joinaggregate", "groupby": ["rowIndex"], "ops": ["argmin"], "fields": ["t"], "as": ["first"] },
+        { "type": "formula", "as": "chg", "expr": "datum.v / datum.first.v - 1" },
+        { "type": "formula", "as": "mag", "expr": "abs(datum.chg)" },
+        { "type": "joinaggregate", "groupby": ["rowIndex"], "ops": ["max"], "fields": ["mag"], "as": ["extRow"] },
+        { "type": "joinaggregate", "ops": ["max"], "fields": ["mag"], "as": ["extAll"] },
+        { "type": "formula", "as": "ext", "expr": "scaleMode === 'shared' ? datum.extAll : datum.extRow" },
+        { "type": "formula", "as": "s", "expr": "datum.ext > 0 ? datum.chg / datum.ext * 4 : 0" },
+        { "type": "formula", "as": "p0", "expr": "clamp(datum.s, 0, 1)" },
+        { "type": "formula", "as": "p1", "expr": "clamp(datum.s - 1, 0, 1)" },
+        { "type": "formula", "as": "p2", "expr": "clamp(datum.s - 2, 0, 1)" },
+        { "type": "formula", "as": "p3", "expr": "clamp(datum.s - 3, 0, 1)" },
+        { "type": "formula", "as": "n0", "expr": "clamp(-datum.s, 0, 1)" },
+        { "type": "formula", "as": "n1", "expr": "clamp(-datum.s - 1, 0, 1)" },
+        { "type": "formula", "as": "n2", "expr": "clamp(-datum.s - 2, 0, 1)" },
+        { "type": "formula", "as": "n3", "expr": "clamp(-datum.s - 3, 0, 1)" }
+      ]
+    },
+    {
+      "name": "bands",
+      "source": "points",
+      "transform": [
+        { "type": "project", "fields": ["rowIndex", "t", "p0", "n0", "p1", "n1", "p2", "n2", "p3", "n3"] },
+        { "type": "fold", "fields": ["p0", "n0", "p1", "n1", "p2", "n2", "p3", "n3"], "as": ["key", "h"] },
+        { "type": "formula", "as": "b", "expr": "toNumber(substring(datum.key, 1))" },
+        { "type": "formula", "as": "neg", "expr": "indexof(datum.key, 'n') === 0" }
+      ]
+    },
+    {
+      "name": "current",
+      "source": "points",
+      "transform": [
+        { "type": "filter", "expr": "hoverT === null || datum.t <= hoverT" },
+        { "type": "aggregate", "groupby": ["rowIndex"], "ops": ["argmax"], "fields": ["t"], "as": ["cur"] }
+      ]
+    }
+  ],
+
+  "scales": [
+    { "name": "x", "type": "utc", "domain": { "data": "points", "field": "t" }, "range": [{ "signal": "hx0" }, { "signal": "hx0 + hw" }] },
+    {
+      "name": "rows",
+      "type": "band",
+      "domain": { "data": "names", "field": "rowIndex", "sort": true },
+      "range": [{ "signal": "hdrH" }, { "signal": "bodyH" }]
+    },
+    { "name": "pos", "type": "linear", "domain": [0, 1], "range": { "scheme": { "signal": "posScheme" } } },
+    { "name": "neg", "type": "linear", "domain": [0, 1], "range": { "scheme": { "signal": "negScheme" } } }
+  ],
+
+  "marks": [
+    {
+      "type": "text",
+      "style": "guide-label",
+      "from": { "data": "columns" },
+      "interactive": false,
+      "encode": {
+        "update": {
+          "x": { "signal": "datum.x0 + 6" },
+          "y": { "signal": "hdrH - 8" },
+          "baseline": { "value": "bottom" },
+          "fontWeight": { "value": "bold" },
+          "limit": { "signal": "datum.w - 10" },
+          "text": { "field": "label" }
+        }
+      }
+    },
+    {
+      "type": "text",
+      "style": "guide-label",
+      "interactive": false,
+      "encode": {
+        "update": {
+          "x": { "signal": "colsW + lastW - 6" },
+          "y": { "signal": "hdrH - 8" },
+          "align": { "value": "right" },
+          "baseline": { "value": "bottom" },
+          "fontWeight": { "value": "bold" },
+          "text": { "value": "Last" }
+        }
+      }
+    },
+    {
+      "type": "text",
+      "style": "guide-label",
+      "interactive": false,
+      "encode": {
+        "update": {
+          "x": { "signal": "colsW + lastW + chgW - 6" },
+          "y": { "signal": "hdrH - 8" },
+          "align": { "value": "right" },
+          "baseline": { "value": "bottom" },
+          "fontWeight": { "value": "bold" },
+          "text": { "signal": "'Δ ' + days + 'd'" }
+        }
+      }
+    },
+    {
+      "type": "group",
+      "encode": { "update": { "x": { "value": 0 }, "y": { "signal": "hdrH" }, "width": { "signal": "width" }, "height": { "value": 0 } } },
+      "axes": [
+        {
+          "orient": "top",
+          "scale": "x",
+          "labelFlush": 40,
+          "labelOverlap": true,
+          "labelBound": true,
+          "domain": false,
+          "tickCount": { "signal": "ceil(hw / 110)" }
+        }
+      ]
+    },
+    {
+      "type": "rect",
+      "style": "guide-label",
+      "interactive": false,
+      "encode": {
+        "update": {
+          "x": { "value": 0 },
+          "x2": { "signal": "width" },
+          "y": { "signal": "hdrH - 1" },
+          "height": { "value": 1 },
+          "opacity": { "value": 0.35 }
+        }
+      }
+    },
+    {
+      "type": "rect",
+      "style": "guide-label",
+      "from": { "data": "names" },
+      "interactive": false,
+      "encode": {
+        "update": {
+          "x": { "value": 0 },
+          "x2": { "signal": "width" },
+          "y": { "scale": "rows", "field": "rowIndex", "offset": { "signal": "rowH - 1" } },
+          "height": { "value": 1 },
+          "opacity": { "value": 0.15 }
+        }
+      }
+    },
+    {
+      "type": "text",
+      "style": "text",
+      "from": { "data": "cellsX" },
+      "interactive": false,
+      "encode": {
+        "update": {
+          "x": { "signal": "datum.x0 + 6" },
+          "y": { "scale": "rows", "field": "rowIndex", "offset": { "signal": "rowH / 2" } },
+          "baseline": { "value": "middle" },
+          "fontSize": { "value": 12 },
+          "limit": { "signal": "datum.w - 10" },
+          "text": { "field": "text" }
+        }
+      }
+    },
+    {
+      "type": "text",
+      "style": "text",
+      "from": { "data": "current" },
+      "interactive": false,
+      "encode": {
+        "update": {
+          "x": { "signal": "colsW + lastW - 6" },
+          "y": { "scale": "rows", "field": "rowIndex", "offset": { "signal": "rowH / 2" } },
+          "align": { "value": "right" },
+          "baseline": { "value": "middle" },
+          "fontSize": { "value": 12 },
+          "text": { "signal": "format(datum.cur.v, datum.cur.v >= 1000 ? ',.0f' : ',.2f')" }
+        }
+      }
+    },
+    {
+      "type": "text",
+      "from": { "data": "current" },
+      "interactive": false,
+      "encode": {
+        "update": {
+          "x": { "signal": "colsW + lastW + chgW - 6" },
+          "y": { "scale": "rows", "field": "rowIndex", "offset": { "signal": "rowH / 2" } },
+          "align": { "value": "right" },
+          "baseline": { "value": "middle" },
+          "fontSize": { "value": 12 },
+          "fill": { "signal": "scale(datum.cur.chg >= 0 ? 'pos' : 'neg', agateDark ? 0.45 : 0.8)" },
+          "text": { "signal": "format(datum.cur.chg, '+.1%')" }
+        }
+      }
+    },
+    {
+      "type": "group",
+      "name": "strip",
+      "from": { "facet": { "name": "stripData", "data": "bands", "groupby": ["rowIndex"] } },
+      "encode": {
+        "update": {
+          "x": { "signal": "hx0" },
+          "width": { "signal": "hw" },
+          "y": { "scale": "rows", "field": "rowIndex" },
+          "height": { "signal": "rowH - 1" },
+          "clip": { "value": true }
+        }
+      },
+      "marks": [
+        {
+          "type": "group",
+          "from": { "facet": { "name": "bandData", "data": "stripData", "groupby": ["key", "b", "neg"] } },
+          "sort": { "field": "datum.b" },
+          "marks": [
+            {
+              "type": "area",
+              "from": { "data": "bandData" },
+              "interactive": false,
+              "sort": { "field": "datum.t" },
+              "encode": {
+                "update": {
+                  "x": { "scale": "x", "field": "t", "offset": { "signal": "-hx0" } },
+                  "y": { "signal": "datum.neg ? 0 : (rowH - 1) * (1 - datum.h)" },
+                  "y2": { "signal": "datum.neg ? (rowH - 1) * datum.h : rowH - 1" },
+                  "fill": { "signal": "datum.neg ? scale('neg', bandT[datum.b]) : scale('pos', bandT[datum.b])" },
+                  "interpolate": { "value": "linear" }
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "rect",
+      "style": "guide-label",
+      "interactive": false,
+      "encode": {
+        "update": {
+          "x": { "signal": "hoverT === null ? hx0 : scale('x', hoverT)" },
+          "width": { "value": 1 },
+          "y": { "signal": "hdrH" },
+          "y2": { "signal": "bodyH" },
+          "opacity": { "signal": "hoverT === null ? 0 : 1" }
+        }
+      }
+    },
+    {
+      "type": "text",
+      "style": "guide-label",
+      "interactive": false,
+      "encode": {
+        "update": {
+          "x": { "signal": "hoverT === null ? hx0 : clamp(scale('x', hoverT), hx0 + 40, hx0 + hw - 40)" },
+          "y": { "signal": "bodyH + 4" },
+          "align": { "value": "center" },
+          "baseline": { "value": "top" },
+          "fontWeight": { "value": "bold" },
+          "text": { "signal": "hoverT === null ? '' : utcFormat(hoverT, '%b %d, %Y')" }
+        }
+      }
+    },
+    {
+      "type": "rect",
+      "name": "overlay",
+      "encode": {
+        "update": {
+          "x": { "signal": "hx0" },
+          "x2": { "signal": "hx0 + hw" },
+          "y": { "signal": "hdrH" },
+          "y2": { "signal": "bodyH" },
+          "fill": { "value": "transparent" }
+        }
+      }
+    }
+  ]
+}

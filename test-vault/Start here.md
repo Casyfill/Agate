@@ -19,6 +19,8 @@ This vault exists to exercise the plugin. Each note in `Surfaces/` covers one wa
 - `charts/` — Vega-Lite (`*.vl.json`) and Vega (`*.vg.json`) specs. They reference a dataset named `base`; Agate fills it with the query result.
 - `geo/world-110m.json` — TopoJSON for the map tests (from the `world-atlas` package, ISC licence).
 - `data/sales.csv` — for the `data.url` loader test.
+- `Markets/` — twelve FRED series notes and `Markets.base` (per-row data example).
+- `Ideas/`, `Places/`, `Trips/`, `Journal/`, `Vault.base` — data for the gallery (`Surfaces/12 Gallery`).
 - `Surfaces/` — one note per surface, numbered in the order worth trying.
 
 ## Surfaces
@@ -32,5 +34,8 @@ This vault exists to exercise the plugin. Each note in `Surfaces/` covers one wa
 7. [[Surfaces/7 Geo]] — geoshape + TopoJSON, no add-on
 8. [[Surfaces/8 Broken]] — every failure mode shows an error box
 9. [[Surfaces/Canvas.canvas]] — text card, `.base` card, note card, static map card
+10. [[Surfaces/10 Markets table]] — per-row CSV from FRED, table cells, horizon chart (needs network)
+11. [[Surfaces/11 Tooltip images]] — cover image from a note's URL in the tooltip (needs network)
+12. [[Surfaces/12 Gallery]] — sunburst, link graph, arc diagram, travel globe, sankey, linked dashboard, beeswarm
 
 Also open [[Library/Books.base]] directly and switch views from the toolbar.

@@ -1,0 +1,54 @@
+{
+  "$schema": "https://vega.github.io/schema/vega-lite/v6.json",
+  "description": "Linked views over the books in the base: drag across the publication timeline and the genre bars and the pages-vs-rating scatter follow. The Bases toolbar filters the data; the brush explores within it.",
+  "usermeta": { "agate": { "open": "click" } },
+  "data": { "name": "base" },
+  "transform": [
+    { "calculate": "toDate(datum.note.published)", "as": "published" },
+    { "calculate": "datum.note.genre || 'unknown'", "as": "genre" },
+    { "calculate": "year(datum.published)", "as": "year" }
+  ],
+  "vconcat": [
+    {
+      "width": 560,
+      "height": 90,
+      "params": [{ "name": "era", "select": { "type": "interval", "encodings": ["x"] } }],
+      "mark": { "type": "bar", "tooltip": true },
+      "encoding": {
+        "x": { "field": "year", "type": "quantitative", "bin": { "maxbins": 24 }, "title": "Published (drag to select)", "axis": { "format": "d" } },
+        "y": { "aggregate": "count", "title": "Books" }
+      }
+    },
+    {
+      "hconcat": [
+        {
+          "width": 220,
+          "height": 200,
+          "transform": [{ "filter": { "param": "era" } }],
+          "mark": { "type": "bar", "tooltip": true },
+          "encoding": {
+            "y": { "field": "genre", "type": "nominal", "sort": "-x", "title": null },
+            "x": { "aggregate": "count", "title": "Books in selection" },
+            "color": { "field": "genre", "type": "nominal", "legend": null }
+          }
+        },
+        {
+          "width": 300,
+          "height": 200,
+          "mark": { "type": "point", "filled": true, "size": 90, "cursor": "pointer" },
+          "encoding": {
+            "x": { "field": "note.pages", "type": "quantitative", "title": "Pages", "scale": { "zero": false } },
+            "y": { "field": "note.rating", "type": "quantitative", "title": "Rating", "scale": { "domain": [0, 5] } },
+            "color": { "condition": { "param": "era", "field": "genre", "type": "nominal", "legend": null }, "value": "lightgray" },
+            "opacity": { "condition": { "param": "era", "value": 0.95 }, "value": 0.3 },
+            "tooltip": [
+              { "field": "file.name", "title": "title" },
+              { "field": "note.author", "title": "Author" },
+              { "field": "published", "type": "temporal", "timeUnit": "year", "title": "Published" }
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}

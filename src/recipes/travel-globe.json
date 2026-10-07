@@ -1,0 +1,601 @@
+{
+  "$schema": "https://vega.github.io/schema/vega/v6.json",
+  "description": "Trips as great-circle routes on a globe. Place notes carry lat/lon; trip notes link from: and to: places. Drag to spin, switch to a flat map below; hover for details, click a route or a city to open its note.",
+  "usermeta": {
+    "agate": {
+      "open": "click",
+      "recipe": {
+        "id": "globe",
+        "name": "Travel globe",
+        "description": "Great-circle routes between place notes on a globe you can spin. Place notes need latitude and longitude; trip notes link a from and a to place.",
+        "roles": {
+          "lat": {
+            "label": "Latitude (place notes)",
+            "types": [
+              "number"
+            ],
+            "prefer": [
+              "lat",
+              "latitude"
+            ]
+          },
+          "lon": {
+            "label": "Longitude (place notes)",
+            "types": [
+              "number"
+            ],
+            "prefer": [
+              "lon",
+              "lng",
+              "longitude"
+            ]
+          },
+          "from": {
+            "label": "From (trip notes)",
+            "types": [
+              "link",
+              "text"
+            ],
+            "prefer": [
+              "from",
+              "origin"
+            ]
+          },
+          "to": {
+            "label": "To (trip notes)",
+            "types": [
+              "link",
+              "text"
+            ],
+            "prefer": [
+              "to",
+              "destination"
+            ]
+          },
+          "date": {
+            "label": "Date (trip notes)",
+            "types": [
+              "date"
+            ],
+            "optional": true,
+            "prefer": [
+              "date",
+              "start"
+            ]
+          },
+          "group": {
+            "label": "Colour routes by",
+            "types": [
+              "text"
+            ],
+            "optional": true,
+            "prefer": [
+              "trip",
+              "purpose",
+              "mode"
+            ]
+          }
+        }
+      }
+    }
+  },
+  "autosize": {
+    "type": "fit-x",
+    "contains": "padding"
+  },
+  "padding": 8,
+  "signals": [
+    {
+      "name": "width",
+      "init": "isFinite(containerSize()[0]) && containerSize()[0] > 0 ? containerSize()[0] : 720",
+      "on": [
+        {
+          "events": "window:resize",
+          "update": "isFinite(containerSize()[0]) && containerSize()[0] > 0 ? containerSize()[0] : 720"
+        }
+      ]
+    },
+    {
+      "name": "agateDark",
+      "value": false,
+      "description": "Set by Agate in dark mode."
+    },
+    {
+      "name": "projection",
+      "value": "orthographic",
+      "bind": {
+        "input": "select",
+        "options": [
+          "orthographic",
+          "equalEarth",
+          "naturalEarth1",
+          "mercator"
+        ],
+        "name": "Projection "
+      }
+    },
+    {
+      "name": "globe",
+      "update": "projection === 'orthographic'"
+    },
+    {
+      "name": "height",
+      "update": "globe ? min(width, 520) : min(width * 0.55, 520)"
+    },
+    {
+      "name": "down",
+      "value": null,
+      "on": [
+        {
+          "events": "mousedown",
+          "update": "xy()"
+        },
+        {
+          "events": "window:mouseup",
+          "update": "null"
+        }
+      ]
+    },
+    {
+      "name": "rot0",
+      "value": [
+        30,
+        -25
+      ],
+      "on": [
+        {
+          "events": "mousedown",
+          "update": "[rotX, rotY]"
+        }
+      ]
+    },
+    {
+      "name": "rotX",
+      "value": 30,
+      "on": [
+        {
+          "events": "[mousedown, window:mouseup] > window:mousemove",
+          "update": "rot0[0] + (x() - down[0]) * 0.35"
+        }
+      ]
+    },
+    {
+      "name": "rotY",
+      "value": -25,
+      "on": [
+        {
+          "events": "[mousedown, window:mouseup] > window:mousemove",
+          "update": "globe ? clamp(rot0[1] - (y() - down[1]) * 0.35, -80, 80) : 0"
+        }
+      ]
+    },
+    {
+      "name": "hoverTrip",
+      "value": null,
+      "on": [
+        {
+          "events": "@route:mouseover",
+          "update": "datum.trip"
+        },
+        {
+          "events": "@route:mouseout",
+          "update": "null"
+        }
+      ]
+    }
+  ],
+  "projections": [
+    {
+      "name": "proj",
+      "type": {
+        "signal": "projection"
+      },
+      "rotate": [
+        {
+          "signal": "rotX"
+        },
+        {
+          "signal": "globe ? rotY : 0"
+        },
+        0
+      ],
+      "fit": {
+        "signal": "globe ? {type: 'Sphere'} : data('countries')"
+      },
+      "size": {
+        "signal": "[width, height]"
+      }
+    }
+  ],
+  "data": [
+    {
+      "name": "base"
+    },
+    {
+      "name": "countries",
+      "url": "geo/world-110m.json",
+      "format": {
+        "type": "topojson",
+        "feature": "countries"
+      }
+    },
+    {
+      "name": "sphere",
+      "values": [
+        {
+          "type": "Sphere"
+        }
+      ]
+    },
+    {
+      "name": "graticule",
+      "transform": [
+        {
+          "type": "graticule",
+          "step": [
+            20,
+            20
+          ]
+        }
+      ]
+    },
+    {
+      "name": "places",
+      "source": "base",
+      "transform": [
+        {
+          "type": "filter",
+          "expr": "isValid({{lat.expr}}) && isValid({{lon.expr}})"
+        },
+        {
+          "type": "formula",
+          "as": "name",
+          "expr": "datum.file.name"
+        },
+        {
+          "type": "formula",
+          "as": "lon",
+          "expr": "toNumber({{lon.expr}})"
+        },
+        {
+          "type": "formula",
+          "as": "lat",
+          "expr": "toNumber({{lat.expr}})"
+        }
+      ]
+    },
+    {
+      "name": "trips",
+      "source": "base",
+      "transform": [
+        {
+          "type": "filter",
+          "expr": "isValid({{from.expr}}) && isValid({{to.expr}})"
+        },
+        {
+          "type": "formula",
+          "as": "fromName",
+          "expr": "replace(replace(replace({{from.expr}} + '', regexp('^\\\\[\\\\[|\\\\]\\\\]$|\\\\|.*$', 'g'), ''), regexp('^.*/'), ''), regexp('\\\\.md$'), '')"
+        },
+        {
+          "type": "formula",
+          "as": "toName",
+          "expr": "replace(replace(replace({{to.expr}} + '', regexp('^\\\\[\\\\[|\\\\]\\\\]$|\\\\|.*$', 'g'), ''), regexp('^.*/'), ''), regexp('\\\\.md$'), '')"
+        },
+        {
+          "type": "lookup",
+          "from": "places",
+          "key": "name",
+          "fields": [
+            "fromName",
+            "toName"
+          ],
+          "as": [
+            "a",
+            "b"
+          ]
+        },
+        {
+          "type": "filter",
+          "expr": "isValid(datum.a) && isValid(datum.b)"
+        },
+        {
+          "type": "formula",
+          "as": "trip",
+          "expr": "{{group.expr}} || datum.file.name"
+        },
+        {
+          "type": "formula",
+          "as": "when",
+          "expr": "toDate({{date.expr}})"
+        },
+        {
+          "type": "formula",
+          "as": "geo",
+          "expr": "{type: 'LineString', coordinates: [[datum.a.lon, datum.a.lat], [datum.b.lon, datum.b.lat]]}"
+        }
+      ]
+    },
+    {
+      "name": "visits",
+      "source": "trips",
+      "transform": [
+        {
+          "type": "aggregate",
+          "groupby": [
+            "toName"
+          ],
+          "ops": [
+            "count"
+          ],
+          "as": [
+            "n"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "cities",
+      "source": "places",
+      "transform": [
+        {
+          "type": "lookup",
+          "from": "visits",
+          "key": "toName",
+          "fields": [
+            "name"
+          ],
+          "values": [
+            "n"
+          ],
+          "default": 0
+        },
+        {
+          "type": "geopoint",
+          "projection": "proj",
+          "fields": [
+            "lon",
+            "lat"
+          ]
+        },
+        {
+          "type": "formula",
+          "as": "visible",
+          "expr": "!globe || sin(-rotY * PI / 180) * sin(datum.lat * PI / 180) + cos(-rotY * PI / 180) * cos(datum.lat * PI / 180) * cos((datum.lon + rotX) * PI / 180) > 0"
+        }
+      ]
+    }
+  ],
+  "scales": [
+    {
+      "name": "tripColour",
+      "type": "ordinal",
+      "domain": {
+        "data": "trips",
+        "field": "trip",
+        "sort": true
+      },
+      "range": "category"
+    },
+    {
+      "name": "visitSize",
+      "type": "sqrt",
+      "domain": [
+        0,
+        6
+      ],
+      "range": [
+        16,
+        220
+      ],
+      "clamp": true
+    }
+  ],
+  "legends": [
+    {
+      "stroke": "tripColour",
+      "orient": "bottom-left",
+      "title": "{{group.label}}",
+      "symbolType": "stroke",
+      "direction": "vertical"
+    }
+  ],
+  "marks": [
+    {
+      "type": "shape",
+      "from": {
+        "data": "sphere"
+      },
+      "interactive": false,
+      "encode": {
+        "update": {
+          "fill": {
+            "signal": "agateDark ? '#16222e' : '#e8f1f8'"
+          },
+          "stroke": {
+            "signal": "agateDark ? '#2f4152' : '#c9d9e6'"
+          }
+        }
+      },
+      "transform": [
+        {
+          "type": "geoshape",
+          "projection": "proj"
+        }
+      ]
+    },
+    {
+      "type": "shape",
+      "from": {
+        "data": "graticule"
+      },
+      "interactive": false,
+      "encode": {
+        "update": {
+          "stroke": {
+            "signal": "agateDark ? '#ffffff' : '#000000'"
+          },
+          "strokeOpacity": {
+            "value": 0.06
+          },
+          "strokeWidth": {
+            "value": 0.5
+          },
+          "fill": {
+            "value": null
+          }
+        }
+      },
+      "transform": [
+        {
+          "type": "geoshape",
+          "projection": "proj"
+        }
+      ]
+    },
+    {
+      "type": "shape",
+      "from": {
+        "data": "countries"
+      },
+      "interactive": false,
+      "encode": {
+        "update": {
+          "fill": {
+            "signal": "agateDark ? '#33404c' : '#d6dde3'"
+          },
+          "stroke": {
+            "signal": "agateDark ? '#1e2a35' : '#ffffff'"
+          },
+          "strokeWidth": {
+            "value": 0.5
+          }
+        }
+      },
+      "transform": [
+        {
+          "type": "geoshape",
+          "projection": "proj"
+        }
+      ]
+    },
+    {
+      "type": "shape",
+      "name": "route",
+      "from": {
+        "data": "trips"
+      },
+      "encode": {
+        "enter": {
+          "cursor": {
+            "value": "pointer"
+          }
+        },
+        "update": {
+          "stroke": {
+            "scale": "tripColour",
+            "field": "trip"
+          },
+          "strokeWidth": {
+            "signal": "hoverTrip === datum.trip ? 3.5 : 2"
+          },
+          "strokeOpacity": {
+            "signal": "hoverTrip === null || hoverTrip === datum.trip ? 0.9 : 0.2"
+          },
+          "strokeCap": {
+            "value": "round"
+          },
+          "fill": {
+            "value": null
+          },
+          "tooltip": {
+            "signal": "{title: datum.fromName + ' → ' + datum.toName, 'Date': timeFormat(datum.when, '%b %d, %Y'), 'Group': datum.trip}"
+          }
+        }
+      },
+      "transform": [
+        {
+          "type": "geoshape",
+          "projection": "proj",
+          "field": "datum.geo"
+        }
+      ]
+    },
+    {
+      "type": "symbol",
+      "from": {
+        "data": "cities"
+      },
+      "encode": {
+        "enter": {
+          "shape": {
+            "value": "circle"
+          },
+          "cursor": {
+            "value": "pointer"
+          }
+        },
+        "update": {
+          "x": {
+            "field": "x"
+          },
+          "y": {
+            "field": "y"
+          },
+          "size": {
+            "scale": "visitSize",
+            "field": "n"
+          },
+          "fill": {
+            "signal": "agateDark ? '#f2f2f2' : '#222222'"
+          },
+          "stroke": {
+            "signal": "agateDark ? '#16222e' : '#ffffff'"
+          },
+          "strokeWidth": {
+            "value": 1.5
+          },
+          "opacity": {
+            "signal": "datum.visible ? 1 : 0"
+          },
+          "tooltip": {
+            "signal": "datum.visible ? {title: datum.name, 'Arrivals': datum.n} : null"
+          }
+        }
+      }
+    },
+    {
+      "type": "text",
+      "style": "text",
+      "from": {
+        "data": "cities"
+      },
+      "interactive": false,
+      "encode": {
+        "update": {
+          "x": {
+            "field": "x"
+          },
+          "y": {
+            "signal": "datum.y - 8"
+          },
+          "align": {
+            "value": "center"
+          },
+          "baseline": {
+            "value": "bottom"
+          },
+          "fontSize": {
+            "value": 10
+          },
+          "text": {
+            "field": "name"
+          },
+          "opacity": {
+            "signal": "datum.visible ? 0.85 : 0"
+          }
+        }
+      }
+    }
+  ]
+}

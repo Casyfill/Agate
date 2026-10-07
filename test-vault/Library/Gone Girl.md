@@ -2,6 +2,7 @@
 tags:
   - book
 author: Gillian Flynn
+isbn: "9780307588371"
 genre: thriller
 rating: 3
 pages: 415

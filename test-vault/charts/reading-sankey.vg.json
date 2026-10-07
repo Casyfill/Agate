@@ -1,0 +1,147 @@
+{
+  "$schema": "https://vega.github.io/schema/vega/v6.json",
+  "description": "Sankey of the books in the base: genre → status → rating band, one unit of flow per note. Built from scratch with Vega transforms (Vega has no sankey layout). Change the stages in the formulas at the top of the rows dataset.",
+  "autosize": { "type": "fit-x", "contains": "padding" },
+  "padding": { "top": 4, "left": 4, "right": 4, "bottom": 4 },
+
+  "signals": [
+    {
+      "name": "width",
+      "init": "isFinite(containerSize()[0]) && containerSize()[0] > 0 ? containerSize()[0] : 720",
+      "on": [{ "events": "window:resize", "update": "isFinite(containerSize()[0]) && containerSize()[0] > 0 ? containerSize()[0] : 720" }]
+    },
+    { "name": "height", "value": 360 },
+    { "name": "top", "value": 24 },
+    { "name": "nodeW", "value": 12 },
+    { "name": "gap", "value": 10 },
+    { "name": "total", "update": "max(1, length(data('rows')))" },
+    { "name": "maxNodes", "update": "max(1, length(data('n0')), length(data('n1')), length(data('n2')))" },
+    { "name": "k", "update": "(height - top - (maxNodes - 1) * gap) / total" },
+    { "name": "stageX", "update": "[0, (width - nodeW) / 2, width - nodeW]" },
+    { "name": "stageTitles", "value": ["Genre", "Status", "Rating"] },
+    { "name": "hoverLink", "value": null, "on": [
+      { "events": "@link:mouseover", "update": "datum.key" },
+      { "events": "@link:mouseout", "update": "null" }
+    ] }
+  ],
+
+  "data": [
+    { "name": "base" },
+    {
+      "name": "rows",
+      "source": "base",
+      "transform": [
+        { "type": "formula", "as": "s0", "expr": "datum.note.genre || 'unknown'" },
+        { "type": "formula", "as": "s1", "expr": "datum.note.status || 'no status'" },
+        { "type": "formula", "as": "s2", "expr": "!isValid(datum.note.rating) ? 'unrated' : datum.note.rating >= 4 ? '★ 4–5' : datum.note.rating >= 3 ? '★ 3' : '★ 1–2'" }
+      ]
+    },
+    { "name": "n0", "source": "rows", "transform": [{ "type": "aggregate", "groupby": ["s0"], "as": ["value"] }, { "type": "formula", "as": "label", "expr": "datum.s0" }, { "type": "formula", "as": "stage", "expr": "0" }] },
+    { "name": "n1", "source": "rows", "transform": [{ "type": "aggregate", "groupby": ["s1"], "as": ["value"] }, { "type": "formula", "as": "label", "expr": "datum.s1" }, { "type": "formula", "as": "stage", "expr": "1" }] },
+    { "name": "n2", "source": "rows", "transform": [{ "type": "aggregate", "groupby": ["s2"], "as": ["value"] }, { "type": "formula", "as": "label", "expr": "datum.s2" }, { "type": "formula", "as": "stage", "expr": "2" }] },
+    {
+      "name": "nodes",
+      "source": ["n0", "n1", "n2"],
+      "transform": [
+        { "type": "formula", "as": "id", "expr": "datum.stage + ':' + datum.label" },
+        { "type": "window", "groupby": ["stage"], "sort": { "field": ["value", "label"], "order": ["descending", "ascending"] }, "ops": ["row_number", "sum"], "fields": [null, "value"], "as": ["rank", "cum"] },
+        { "type": "formula", "as": "y0", "expr": "top + (datum.cum - datum.value) * k + (datum.rank - 1) * gap" },
+        { "type": "formula", "as": "y1", "expr": "datum.y0 + datum.value * k" },
+        { "type": "formula", "as": "x", "expr": "stageX[datum.stage]" }
+      ]
+    },
+    { "name": "l01", "source": "rows", "transform": [{ "type": "aggregate", "groupby": ["s0", "s1"], "as": ["value"] }, { "type": "formula", "as": "src", "expr": "'0:' + datum.s0" }, { "type": "formula", "as": "dst", "expr": "'1:' + datum.s1" }] },
+    { "name": "l12", "source": "rows", "transform": [{ "type": "aggregate", "groupby": ["s1", "s2"], "as": ["value"] }, { "type": "formula", "as": "src", "expr": "'1:' + datum.s1" }, { "type": "formula", "as": "dst", "expr": "'2:' + datum.s2" }] },
+    {
+      "name": "links",
+      "source": ["l01", "l12"],
+      "transform": [
+        { "type": "formula", "as": "key", "expr": "datum.src + '>' + datum.dst" },
+        { "type": "lookup", "from": "nodes", "key": "id", "fields": ["src", "dst"], "as": ["a", "b"] },
+        { "type": "formula", "as": "aY", "expr": "datum.a.y0" },
+        { "type": "formula", "as": "bY", "expr": "datum.b.y0" },
+        { "type": "window", "groupby": ["src"], "sort": { "field": "bY" }, "ops": ["sum"], "fields": ["value"], "as": ["outCum"] },
+        { "type": "window", "groupby": ["dst"], "sort": { "field": "aY" }, "ops": ["sum"], "fields": ["value"], "as": ["inCum"] },
+        { "type": "formula", "as": "sy", "expr": "datum.a.y0 + (datum.outCum - datum.value / 2) * k" },
+        { "type": "formula", "as": "ty", "expr": "datum.b.y0 + (datum.inCum - datum.value / 2) * k" },
+        { "type": "formula", "as": "sx", "expr": "datum.a.x + nodeW" },
+        { "type": "formula", "as": "tx", "expr": "datum.b.x" },
+        { "type": "linkpath", "sourceX": "sx", "sourceY": "sy", "targetX": "tx", "targetY": "ty", "shape": "diagonal", "orient": "horizontal" }
+      ]
+    }
+  ],
+
+  "scales": [
+    { "name": "colour", "type": "ordinal", "domain": { "data": "n0", "field": "label", "sort": true }, "range": "category" }
+  ],
+
+  "marks": [
+    {
+      "type": "group",
+      "encode": { "update": { "width": { "signal": "width" }, "height": { "signal": "height" } } },
+      "data": [{ "name": "titles", "values": [{ "i": 0 }, { "i": 1 }, { "i": 2 }] }],
+      "marks": [
+        {
+          "type": "text",
+          "style": "guide-label",
+          "from": { "data": "titles" },
+          "interactive": false,
+          "encode": {
+            "update": {
+              "x": { "signal": "stageX[datum.i] + (datum.i === 2 ? nodeW : 0)" },
+              "y": { "value": 12 },
+              "align": { "signal": "datum.i === 2 ? 'right' : 'left'" },
+              "fontWeight": { "value": "bold" },
+              "text": { "signal": "stageTitles[datum.i]" }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "type": "path",
+      "name": "link",
+      "from": { "data": "links" },
+      "encode": {
+        "update": {
+          "path": { "field": "path" },
+          "stroke": { "signal": "scale('colour', datum.src === '0:' + datum.s0 ? datum.s0 : datum.s1)" },
+          "strokeWidth": { "signal": "max(1, datum.value * k)" },
+          "strokeOpacity": { "signal": "hoverLink === null ? 0.35 : hoverLink === datum.key ? 0.75 : 0.12" },
+          "tooltip": { "signal": "{title: datum.a.label + ' → ' + datum.b.label, 'Notes': datum.value}" }
+        }
+      }
+    },
+    {
+      "type": "rect",
+      "from": { "data": "nodes" },
+      "encode": {
+        "update": {
+          "x": { "field": "x" },
+          "width": { "signal": "nodeW" },
+          "y": { "field": "y0" },
+          "y2": { "field": "y1" },
+          "cornerRadius": { "value": 2 },
+          "fill": { "signal": "datum.stage === 0 ? scale('colour', datum.label) : 'gray'" },
+          "tooltip": { "signal": "{title: datum.label, 'Notes': datum.value}" }
+        }
+      }
+    },
+    {
+      "type": "text",
+      "style": "text",
+      "from": { "data": "nodes" },
+      "interactive": false,
+      "encode": {
+        "update": {
+          "x": { "signal": "datum.stage === 2 ? datum.x - 6 : datum.x + nodeW + 6" },
+          "y": { "signal": "(datum.y0 + datum.y1) / 2" },
+          "align": { "signal": "datum.stage === 2 ? 'right' : 'left'" },
+          "baseline": { "value": "middle" },
+          "fontSize": { "value": 11 },
+          "text": { "signal": "datum.label + '  ' + datum.value" }
+        }
+      }
+    }
+  ]
+}

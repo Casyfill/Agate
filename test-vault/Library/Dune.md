@@ -2,6 +2,7 @@
 tags:
   - book
 author: Frank Herbert
+isbn: "9780441172719"
 genre: sci-fi
 rating: 4
 pages: 412

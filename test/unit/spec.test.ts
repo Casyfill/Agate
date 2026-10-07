@@ -157,3 +157,35 @@ describe("vault resolution", () => {
     await expect(loadSpecFile(app, "missing.json", null)).rejects.toThrow(/not found/);
   });
 });
+
+describe("withSignalValues (environment signals)", async () => {
+  const { withSignalValues } = await import("../../src/core/spec");
+
+  it("sets the value of declared Vega signals and VL params, leaves computed ones alone", () => {
+    const vg = { signals: [{ name: "agateDark", value: false }, { name: "other", value: 1 }, { name: "x", update: "1" }] };
+    expect(withSignalValues(vg, "vega", { agateDark: true, x: 5 }).signals).toEqual([
+      { name: "agateDark", value: true },
+      { name: "other", value: 1 },
+      { name: "x", update: "1" },
+    ]);
+    const vl = { params: [{ name: "agateDark", value: false }] };
+    expect(withSignalValues(vl, "vega-lite", { agateDark: true }).params).toEqual([{ name: "agateDark", value: true }]);
+  });
+
+  it("returns the spec untouched when it declares none", () => {
+    const spec = { mark: "bar" };
+    expect(withSignalValues(spec, "vega-lite", { agateDark: true })).toBe(spec);
+  });
+});
+
+describe("open on click (D12)", async () => {
+  const { notePathOf, openOnEvent } = await import("../../src/core/spec");
+  it("reads usermeta.agate.open and finds file.path on a datum", () => {
+    expect(openOnEvent({})).toBeNull();
+    expect(openOnEvent({ usermeta: { agate: { open: "click" } } })).toBe("click");
+    expect(openOnEvent({ usermeta: { agate: { open: "hover" } } })).toBeNull();
+    expect(notePathOf({ file: { path: "Ideas/A.md" } })).toBe("Ideas/A.md");
+    expect(notePathOf({ group: "x" })).toBeNull();
+    expect(notePathOf(null)).toBeNull();
+  });
+});

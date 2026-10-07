@@ -2,6 +2,7 @@
 tags:
   - book
 author: Daniel Kahneman
+isbn: "9780374533557"
 genre: non-fiction
 rating: 3
 pages: 499

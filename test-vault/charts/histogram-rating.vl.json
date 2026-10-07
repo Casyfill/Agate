@@ -1,0 +1,36 @@
+{
+  "$schema": "https://vega.github.io/schema/vega-lite/v6.json",
+  "usermeta": {
+    "agate": {
+      "fromRecipe": {
+        "id": "histogram",
+        "roles": {
+          "value": "file.size"
+        }
+      }
+    }
+  },
+  "data": {
+    "name": "base"
+  },
+  "height": 200,
+  "mark": {
+    "type": "bar",
+    "tooltip": true,
+    "cornerRadiusEnd": 2
+  },
+  "encoding": {
+    "x": {
+      "field": "file.size",
+      "type": "quantitative",
+      "bin": {
+        "maxbins": 20
+      },
+      "title": "file size"
+    },
+    "y": {
+      "aggregate": "count",
+      "title": "Notes"
+    }
+  }
+}

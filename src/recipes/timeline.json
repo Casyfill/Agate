@@ -1,0 +1,88 @@
+{
+  "$schema": "https://vega.github.io/schema/vega-lite/v6.json",
+  "usermeta": {
+    "agate": {
+      "open": "click",
+      "recipe": {
+        "id": "timeline",
+        "name": "Timeline",
+        "description": "One dot per note on a time axis, optionally in rows by a category. Click a dot to open the note.",
+        "roles": {
+          "date": {
+            "label": "When",
+            "types": [
+              "date"
+            ],
+            "prefer": [
+              "date",
+              "published",
+              "created",
+              "due",
+              "start"
+            ]
+          },
+          "row": {
+            "label": "Rows by",
+            "types": [
+              "text",
+              "boolean"
+            ],
+            "optional": true,
+            "prefer": [
+              "status",
+              "type",
+              "project"
+            ]
+          }
+        }
+      }
+    }
+  },
+  "data": {
+    "name": "base"
+  },
+  "height": 200,
+  "mark": {
+    "type": "circle",
+    "size": 110,
+    "opacity": 0.85,
+    "cursor": "pointer"
+  },
+  "encoding": {
+    "x": {
+      "field": "{{date}}",
+      "type": "temporal",
+      "title": "{{date.label}}"
+    },
+    "y": {
+      "field": "{{row}}",
+      "type": "nominal",
+      "title": "{{row.label}}"
+    },
+    "color": {
+      "field": "{{row}}",
+      "type": "nominal",
+      "legend": null
+    },
+    "tooltip": [
+      {
+        "field": "file.name",
+        "title": "title"
+      },
+      {
+        "field": "{{date}}",
+        "type": "temporal",
+        "title": "{{date.label}}"
+      },
+      {
+        "field": "{{row}}",
+        "title": "{{row.label}}"
+      }
+    ]
+  },
+  "transform": [
+    {
+      "filter": "isValid({{date.expr}})"
+    }
+  ]
+}

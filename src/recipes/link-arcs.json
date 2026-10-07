@@ -1,0 +1,358 @@
+{
+  "$schema": "https://vega.github.io/schema/vega/v6.json",
+  "description": "Arc diagram: notes on a timeline by note.created, links between them as arcs (Agate's edges dataset). Long arcs are ideas that reach back in time. Hover a note to isolate its links; click to open it.",
+  "usermeta": {
+    "agate": {
+      "edges": "edges",
+      "open": "click",
+      "recipe": {
+        "id": "arcs",
+        "name": "Arc diagram over time",
+        "description": "Notes on a timeline, links between them as arcs. Long arcs are ideas that reach back in time.",
+        "roles": {
+          "date": {
+            "label": "When",
+            "types": [
+              "date"
+            ],
+            "prefer": [
+              "created",
+              "date"
+            ]
+          },
+          "colour": {
+            "label": "Colour by",
+            "types": [
+              "text",
+              "boolean"
+            ],
+            "optional": true,
+            "prefer": [
+              "topic",
+              "type",
+              "status"
+            ]
+          }
+        }
+      }
+    }
+  },
+  "autosize": {
+    "type": "fit-x",
+    "contains": "padding"
+  },
+  "padding": {
+    "left": 12,
+    "right": 12,
+    "top": 8,
+    "bottom": 8
+  },
+  "signals": [
+    {
+      "name": "width",
+      "init": "isFinite(containerSize()[0]) && containerSize()[0] > 0 ? containerSize()[0] : 720",
+      "on": [
+        {
+          "events": "window:resize",
+          "update": "isFinite(containerSize()[0]) && containerSize()[0] > 0 ? containerSize()[0] : 720"
+        }
+      ]
+    },
+    {
+      "name": "baseY",
+      "update": "min(width / 2.4, 300)"
+    },
+    {
+      "name": "height",
+      "update": "baseY + 130"
+    },
+    {
+      "name": "hoverIdx",
+      "value": null,
+      "on": [
+        {
+          "events": "@node:mouseover",
+          "update": "datum.idx"
+        },
+        {
+          "events": "@node:mouseout",
+          "update": "null"
+        }
+      ]
+    }
+  ],
+  "data": [
+    {
+      "name": "base"
+    },
+    {
+      "name": "edges"
+    },
+    {
+      "name": "nodes",
+      "source": "base",
+      "transform": [
+        {
+          "type": "window",
+          "ops": [
+            "row_number"
+          ],
+          "as": [
+            "n"
+          ]
+        },
+        {
+          "type": "formula",
+          "as": "idx",
+          "expr": "datum.n - 1"
+        },
+        {
+          "type": "formula",
+          "as": "t",
+          "expr": "toDate({{date.expr}} || datum.file.ctime)"
+        },
+        {
+          "type": "formula",
+          "as": "topic",
+          "expr": "{{colour.expr}} || 'other'"
+        },
+        {
+          "type": "filter",
+          "expr": "isValid(datum.t)"
+        }
+      ]
+    },
+    {
+      "name": "arcs",
+      "source": "edges",
+      "transform": [
+        {
+          "type": "lookup",
+          "from": "nodes",
+          "key": "idx",
+          "fields": [
+            "source",
+            "target"
+          ],
+          "as": [
+            "s",
+            "t"
+          ]
+        },
+        {
+          "type": "filter",
+          "expr": "isValid(datum.s) && isValid(datum.t)"
+        },
+        {
+          "type": "formula",
+          "as": "x1",
+          "expr": "min(scale('x', datum.s.t), scale('x', datum.t.t))"
+        },
+        {
+          "type": "formula",
+          "as": "x2",
+          "expr": "max(scale('x', datum.s.t), scale('x', datum.t.t))"
+        },
+        {
+          "type": "formula",
+          "as": "rx",
+          "expr": "(datum.x2 - datum.x1) / 2"
+        },
+        {
+          "type": "formula",
+          "as": "ry",
+          "expr": "datum.rx * min(1, (baseY - 20) / (width / 2))"
+        },
+        {
+          "type": "formula",
+          "as": "path",
+          "expr": "'M' + datum.x1 + ',' + baseY + ' A' + datum.rx + ',' + datum.ry + ' 0 0,1 ' + datum.x2 + ',' + baseY"
+        }
+      ]
+    }
+  ],
+  "scales": [
+    {
+      "name": "x",
+      "type": "time",
+      "domain": {
+        "data": "nodes",
+        "field": "t"
+      },
+      "range": "width",
+      "nice": "month"
+    },
+    {
+      "name": "colour",
+      "type": "ordinal",
+      "domain": {
+        "data": "nodes",
+        "field": "topic",
+        "sort": true
+      },
+      "range": "category"
+    }
+  ],
+  "legends": [
+    {
+      "fill": "colour",
+      "orient": "top-right",
+      "title": "{{colour.label}}",
+      "symbolType": "circle",
+      "direction": "horizontal"
+    }
+  ],
+  "marks": [
+    {
+      "type": "rule",
+      "interactive": false,
+      "encode": {
+        "update": {
+          "x": {
+            "value": 0
+          },
+          "x2": {
+            "signal": "width"
+          },
+          "y": {
+            "signal": "baseY"
+          },
+          "stroke": {
+            "value": "gray"
+          },
+          "strokeOpacity": {
+            "value": 0.4
+          }
+        }
+      }
+    },
+    {
+      "type": "path",
+      "from": {
+        "data": "arcs"
+      },
+      "interactive": false,
+      "encode": {
+        "update": {
+          "path": {
+            "field": "path"
+          },
+          "stroke": {
+            "scale": "colour",
+            "signal": "datum.s.topic"
+          },
+          "strokeWidth": {
+            "signal": "hoverIdx !== null && (datum.source === hoverIdx || datum.target === hoverIdx) ? 2.5 : 1.25"
+          },
+          "strokeOpacity": {
+            "signal": "hoverIdx === null ? 0.55 : (datum.source === hoverIdx || datum.target === hoverIdx ? 1 : 0.08)"
+          }
+        }
+      }
+    },
+    {
+      "type": "symbol",
+      "name": "node",
+      "from": {
+        "data": "nodes"
+      },
+      "encode": {
+        "enter": {
+          "shape": {
+            "value": "circle"
+          },
+          "size": {
+            "value": 90
+          },
+          "cursor": {
+            "value": "pointer"
+          }
+        },
+        "update": {
+          "x": {
+            "scale": "x",
+            "field": "t"
+          },
+          "y": {
+            "signal": "baseY"
+          },
+          "fill": {
+            "scale": "colour",
+            "field": "topic"
+          },
+          "tooltip": {
+            "signal": "{title: datum.file.name, 'Created': timeFormat(datum.t, '%b %d, %Y'), 'Group': datum.topic}"
+          }
+        }
+      }
+    },
+    {
+      "type": "text",
+      "style": "text",
+      "from": {
+        "data": "nodes"
+      },
+      "interactive": false,
+      "encode": {
+        "update": {
+          "x": {
+            "scale": "x",
+            "field": "t"
+          },
+          "y": {
+            "signal": "baseY + 10"
+          },
+          "angle": {
+            "value": 50
+          },
+          "align": {
+            "value": "left"
+          },
+          "baseline": {
+            "value": "middle"
+          },
+          "fontSize": {
+            "value": 10
+          },
+          "limit": {
+            "value": 150
+          },
+          "text": {
+            "field": "file.name"
+          },
+          "opacity": {
+            "signal": "hoverIdx === null || hoverIdx === datum.idx ? 0.9 : 0.35"
+          }
+        }
+      }
+    },
+    {
+      "type": "text",
+      "style": "guide-label",
+      "from": {
+        "data": "nodes"
+      },
+      "interactive": false,
+      "encode": {
+        "update": {
+          "x": {
+            "scale": "x",
+            "field": "t"
+          },
+          "y": {
+            "signal": "baseY - 8"
+          },
+          "align": {
+            "value": "center"
+          },
+          "fontSize": {
+            "value": 10
+          },
+          "text": {
+            "signal": "hoverIdx === datum.idx ? timeFormat(datum.t, '%b %Y') : ''"
+          }
+        }
+      }
+    }
+  ]
+}

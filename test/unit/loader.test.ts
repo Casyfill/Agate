@@ -1,6 +1,6 @@
-import { beforeEach, describe, expect, it } from "vitest";
-import { FakeApp, requestUrlCalls } from "obsidian";
-import { createVaultLoader } from "../../src/core/loader";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import { FakeApp, requestUrlCalls, requestUrlFailures } from "obsidian";
+import { createVaultLoader, fetchRemote } from "../../src/core/loader";
 import type { DataSchemeProvider } from "../../src/core/types";
 
 const app = new FakeApp({
@@ -15,6 +15,7 @@ function make(allowRemote = false, schemes = new Map<string, DataSchemeProvider>
 describe("vault loader (D5)", () => {
   beforeEach(() => {
     requestUrlCalls.length = 0;
+    requestUrlFailures.length = 0;
   });
 
   it("reads vault files by path and relative to the note", async () => {
@@ -47,5 +48,39 @@ describe("vault loader (D5)", () => {
 
   it("rejects unknown schemes", async () => {
     await expect(make().load("ftp://host/file")).rejects.toThrow(/Unknown URL scheme "ftp:\/\/"/);
+  });
+
+  it("retries network errors and 5xx, not 4xx, and names the URL when it gives up", async () => {
+    // The loader uses window.setTimeout (popout-safe in Obsidian); Node has no window.
+    vi.stubGlobal("window", globalThis);
+    vi.useFakeTimers();
+    try {
+      requestUrlFailures.push(new Error("net::ERR_HTTP2_PROTOCOL_ERROR"), 503);
+      const ok = fetchRemote("https://a.test/x.csv");
+      await vi.runAllTimersAsync();
+      await expect(ok).resolves.toBe("remote:https://a.test/x.csv");
+      expect(requestUrlCalls).toHaveLength(3);
+
+      requestUrlCalls.length = 0;
+      requestUrlFailures.push(404);
+      await expect(fetchRemote("https://a.test/missing.csv")).rejects.toThrow("HTTP 404 (https://a.test/missing.csv)");
+      expect(requestUrlCalls).toHaveLength(1);
+
+      requestUrlFailures.push(new Error("reset"), new Error("reset"), new Error("reset"));
+      const bad = fetchRemote("https://a.test/y.csv");
+      const settled = expect(bad).rejects.toThrow("reset (https://a.test/y.csv)");
+      await vi.runAllTimersAsync();
+      await settled;
+    } finally {
+      vi.useRealTimers();
+      vi.unstubAllGlobals();
+    }
+  });
+
+  it("keeps at most two requests in flight per host", async () => {
+    const urls = Array.from({ length: 6 }, (_, i) => `https://b.test/${i}.csv`);
+    const results = await Promise.all(urls.map((u) => fetchRemote(u)));
+    expect(results).toHaveLength(6);
+    expect(requestUrlCalls).toEqual(urls);
   });
 });

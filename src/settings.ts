@@ -1,6 +1,7 @@
 import { App, PluginSettingTab, type SettingDefinitionItem } from "obsidian";
 import type AgatePlugin from "./main";
 import type { Renderer } from "./core/types";
+import { AGATE_ICON_ID } from "./icon";
 
 /** Vault-wide defaults (ADR-0001 D11). Per-chart options override these. */
 export interface AgateSettings {
@@ -13,6 +14,8 @@ export interface AgateSettings {
   themeFile: string;
   /** Folder tried when a spec path does not resolve on its own, e.g. `charts`. */
   specFolder: string;
+  /** Folder whose specs with usermeta.agate.recipe join the built-in recipes (D13). */
+  recipeFolder: string;
   renderer: Renderer;
   actions: boolean;
   interactive: boolean;
@@ -29,6 +32,7 @@ export const DEFAULT_SETTINGS: AgateSettings = {
   configOverrides: "",
   themeFile: "",
   specFolder: "",
+  recipeFolder: "",
   renderer: "svg",
   actions: false,
   interactive: true,
@@ -51,6 +55,8 @@ export class AgateSettingTab extends PluginSettingTab {
     private readonly plugin: AgatePlugin,
   ) {
     super(app, plugin);
+    // Shown next to "Agate" in the settings sidebar (Obsidian 1.11+); registered with addIcon in main.ts.
+    this.icon = AGATE_ICON_ID;
   }
 
   getSettingDefinitions(): SettingDefinitionItem<Key>[] {
@@ -116,6 +122,12 @@ export class AgateSettingTab extends PluginSettingTab {
             control: { type: "folder", key: "specFolder", placeholder: "charts" },
           },
           {
+            name: "Recipe folder",
+            desc: "Your own chart recipes: specs in this folder with usermeta.agate.recipe appear in the recipe picker next to the built-in ones.",
+            aliases: ["templates", "recipes"],
+            control: { type: "folder", key: "recipeFolder", placeholder: "charts/recipes" },
+          },
+          {
             name: "Default dataset name",
             desc: 'Name of the Vega dataset that receives Bases rows. Specs reference it as {"data": {"name": "…"}}.',
             control: {
@@ -160,7 +172,7 @@ export class AgateSettingTab extends PluginSettingTab {
   async setControlValue(key: string, value: unknown): Promise<void> {
     const k = key as Key;
     if (k === "datasetName" && typeof value === "string") value = value.trim() || DEFAULT_SETTINGS.datasetName;
-    if ((k === "themeFile" || k === "specFolder") && typeof value === "string") value = value.trim().replace(/^\/+|\/+$/g, "");
+    if ((k === "themeFile" || k === "specFolder" || k === "recipeFolder") && typeof value === "string") value = value.trim().replace(/^\/+|\/+$/g, "");
     (this.plugin.settings as unknown as Record<string, unknown>)[k] = value;
     await this.plugin.saveSettings();
   }

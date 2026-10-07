@@ -1,0 +1,141 @@
+{
+  "$schema": "https://vega.github.io/schema/vega/v6.json",
+  "description": "Force-directed graph of the notes in the base and the links between them (Agate's edges dataset). Colour is note.topic, size is links in and out. Hover a note to light up its neighbours; click to open it.",
+  "usermeta": { "agate": { "edges": "edges", "open": "click" } },
+  "autosize": { "type": "fit-x", "contains": "padding" },
+  "padding": 8,
+
+  "signals": [
+    {
+      "name": "width",
+      "init": "isFinite(containerSize()[0]) && containerSize()[0] > 0 ? containerSize()[0] : 720",
+      "on": [{ "events": "window:resize", "update": "isFinite(containerSize()[0]) && containerSize()[0] > 0 ? containerSize()[0] : 720" }]
+    },
+    { "name": "height", "value": 460 },
+    { "name": "cx", "update": "width / 2" },
+    { "name": "cy", "update": "height / 2" },
+    { "name": "linkDistance", "value": 60, "bind": { "input": "range", "min": 20, "max": 160, "step": 5, "name": "Link distance " } },
+    { "name": "repulsion", "value": -120, "bind": { "input": "range", "min": -400, "max": -10, "step": 10, "name": "Repulsion " } },
+    { "name": "hoverIdx", "value": null, "on": [
+      { "events": "@node:mouseover", "update": "datum.idx" },
+      { "events": "@node:mouseout", "update": "null" }
+    ] }
+  ],
+
+  "data": [
+    { "name": "base" },
+    { "name": "edges" },
+    {
+      "name": "forceLinks",
+      "description": "A copy for the force layout, which replaces source/target with node objects.",
+      "source": "edges",
+      "transform": [{ "type": "project", "fields": ["source", "target"] }]
+    },
+    {
+      "name": "neighbours",
+      "source": "edges",
+      "transform": [
+        { "type": "filter", "expr": "hoverIdx !== null && (datum.source === hoverIdx || datum.target === hoverIdx)" },
+        { "type": "formula", "as": "other", "expr": "datum.source === hoverIdx ? datum.target : datum.source" }
+      ]
+    },
+    {
+      "name": "degree",
+      "source": "edges",
+      "transform": [
+        { "type": "fold", "fields": ["source", "target"], "as": ["end", "idx"] },
+        { "type": "aggregate", "groupby": ["idx"], "ops": ["count"], "as": ["deg"] }
+      ]
+    },
+    {
+      "name": "nodes",
+      "source": "base",
+      "transform": [
+        { "type": "window", "ops": ["row_number"], "as": ["n"] },
+        { "type": "formula", "as": "idx", "expr": "datum.n - 1" },
+        { "type": "lookup", "from": "degree", "key": "idx", "fields": ["idx"], "values": ["deg"], "default": 0 },
+        { "type": "formula", "as": "topic", "expr": "datum.note.topic || 'other'" },
+        {
+          "type": "force",
+          "iterations": 300,
+          "static": true,
+          "forces": [
+            { "force": "center", "x": { "signal": "cx" }, "y": { "signal": "cy" } },
+            { "force": "collide", "radius": { "expr": "sqrt(datum.deg + 1) * 6 + 4" } },
+            { "force": "nbody", "strength": { "signal": "repulsion" } },
+            { "force": "link", "links": "forceLinks", "distance": { "signal": "linkDistance" } },
+            { "force": "x", "x": { "expr": "cx" }, "strength": 0.04 },
+            { "force": "y", "y": { "expr": "cy" }, "strength": 0.06 }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "links",
+      "source": "edges",
+      "transform": [
+        { "type": "lookup", "from": "nodes", "key": "idx", "fields": ["source", "target"], "as": ["s", "t"] },
+        { "type": "filter", "expr": "isValid(datum.s) && isValid(datum.t)" },
+        { "type": "linkpath", "sourceX": "s.x", "sourceY": "s.y", "targetX": "t.x", "targetY": "t.y", "shape": "curve", "orient": "horizontal" }
+      ]
+    }
+  ],
+
+  "scales": [
+    { "name": "colour", "type": "ordinal", "domain": { "data": "nodes", "field": "topic", "sort": true }, "range": "category" },
+    { "name": "r", "type": "sqrt", "domain": [0, 10], "range": [30, 400], "clamp": true }
+  ],
+
+  "legends": [
+    { "fill": "colour", "orient": "top-left", "title": "Topic", "symbolType": "circle", "direction": "vertical" }
+  ],
+
+  "marks": [
+    {
+      "type": "path",
+      "from": { "data": "links" },
+      "interactive": false,
+      "encode": {
+        "update": {
+          "path": { "field": "path" },
+          "stroke": { "signal": "hoverIdx !== null && (datum.source === hoverIdx || datum.target === hoverIdx) ? scale('colour', datum.s.topic) : 'gray'" },
+          "strokeWidth": { "signal": "hoverIdx !== null && (datum.source === hoverIdx || datum.target === hoverIdx) ? 2 : 1" },
+          "strokeOpacity": { "signal": "hoverIdx === null ? 0.35 : (datum.source === hoverIdx || datum.target === hoverIdx ? 0.9 : 0.1)" }
+        }
+      }
+    },
+    {
+      "type": "symbol",
+      "name": "node",
+      "from": { "data": "nodes" },
+      "encode": {
+        "enter": { "shape": { "value": "circle" }, "cursor": { "value": "pointer" } },
+        "update": {
+          "x": { "field": "x" },
+          "y": { "field": "y" },
+          "size": { "scale": "r", "field": "deg" },
+          "fill": { "scale": "colour", "field": "topic" },
+          "fillOpacity": { "signal": "hoverIdx === null || hoverIdx === datum.idx || indexof(pluck(data('neighbours'), 'other'), datum.idx) >= 0 ? 1 : 0.25" },
+          "tooltip": { "signal": "{title: datum.file.name, 'Topic': datum.topic, 'Status': datum.note.status, 'Links': datum.deg}" }
+        }
+      }
+    },
+    {
+      "type": "text",
+      "style": "text",
+      "from": { "data": "nodes" },
+      "interactive": false,
+      "encode": {
+        "update": {
+          "x": { "field": "x" },
+          "y": { "signal": "datum.y + sqrt(scale('r', datum.deg)) / 2 + 3" },
+          "align": { "value": "center" },
+          "baseline": { "value": "top" },
+          "fontSize": { "value": 10 },
+          "text": { "field": "file.name" },
+          "opacity": { "signal": "hoverIdx === null ? (datum.deg >= 3 ? 0.9 : 0) : (hoverIdx === datum.idx || indexof(pluck(data('neighbours'), 'other'), datum.idx) >= 0 ? 1 : 0)" }
+        }
+      }
+    }
+  ]
+}

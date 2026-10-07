@@ -4,6 +4,26 @@ All notable changes to Agate. The format follows [Keep a Changelog](https://keep
 
 ## [Unreleased]
 
+### Added
+
+- Per-row data: a spec can declare `usermeta.agate.rowData: {name, from}`. For every base row Agate loads what the `from` property points at (vault path, link, URL, or an inline list), parses it (CSV, TSV, JSON) and puts the records, each carrying its parent row's `file`, `note`, `formula`, `group` and `rowIndex`, into the named dataset. One small chart per note without a facet over a list property. Remote responses are cached for 10 minutes.
+- Table cells: `usermeta.agate.cells: "cells"` gives a spec one record per row and visible property (Properties menu order, display names), so a chart can draw the Bases view as a table with a chart column.
+- Command "Refresh remote data and re-render charts".
+- `agateDark` environment signal: a Vega signal or Vega-Lite param of that name (with a plain `value`) is set to true when Obsidian is in dark mode, and the chart re-renders when the mode changes. Outside Agate the spec keeps its own default.
+- Recipes: **Pick a recipe** in an empty Agate view (or the **New chart from recipe** command) lists twelve built-in charts; Agate asks which property fills each role, offering only properties of the right type, writes the spec into the spec folder and points the view at it. Specs with `usermeta.agate.recipe` in the new **Recipe folder** setting join the list.
+- **Copy prompt for an LLM** (button and command): the base's properties, types and sample rows plus Agate's conventions, ready to paste into any assistant. The error box has **Copy error**.
+- Structure datasets: `usermeta.agate.edges` gives a spec the links between the notes of the base (from Obsidian's resolved link index, by row position, ready for Vega's force layout); `usermeta.agate.tree` gives the folder hierarchy with per-folder byte and file totals and ancestor lists, ready for `stratify` and `partition`.
+- Open on click: `usermeta.agate.open: "click"` (or `"dblclick"`) opens the note behind a mark; Cmd/Ctrl opens it in a new tab.
+- Gallery (`test-vault/Surfaces/12 Gallery`): DaisyDisk-style zoomable vault sunburst, link graph, arc diagram over time, travel globe with great-circle routes, reading sankey, linked dashboard and mood beeswarm; with test notes in `Ideas/`, `Places/`, `Trips/`, `Journal/`.
+- Tooltip images: a tooltip field titled `image` shows as a picture (styled to fit the tooltip). Example: the Books base builds `formula.cover` from each note's `isbn` with Open Library covers (`charts/covers-tooltip.vl.json`).
+- Draft docs: `docs/guide.md` (getting started, building charts, tips, per-note data) and `docs/why-agate.md` (pros and cons against alternatives).
+- Example: `test-vault/Markets`, twelve FRED series (indices, VIX, rates, FX, oil, crypto) drawn as a cubism-style horizon table (`charts/horizon-table.vg.json`) and as plain horizon strips (`charts/horizon.vg.json`).
+
+### Changed
+
+- The Agate chart view has its own line icon in the Bases view picker (a rounded square with a rising spline), drawn in the same style and stroke as Table, Cards and List. The settings tab carries the Agate icon (Obsidian 1.13.7 does not draw icons for community-plugin tabs yet).
+- Remote loads run at most two at a time per host and retry network errors, 429 and 5xx twice with backoff; the error names the URL.
+
 ## [0.0.2] - 2026-09-27
 
 ### Added

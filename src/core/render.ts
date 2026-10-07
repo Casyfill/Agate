@@ -2,7 +2,15 @@ import vegaEmbed, { type EmbedOptions, type Result } from "vega-embed";
 import type { Config } from "vega";
 import type { Loader } from "vega";
 import type { AnySpec, ResolvedChartOptions, ResolvedSpec, Row } from "./types";
-import { cloneSpec, declaredDatasetNames, ensureNamedData, withInitialValues } from "./spec";
+import {
+  cloneSpec,
+  declaredDatasetNames,
+  ensureNamedData,
+  notePathOf,
+  openOnEvent,
+  withInitialValues,
+  withSignalValues,
+} from "./spec";
 import { errorMessage, type Logger } from "../util/log";
 
 export interface RenderInput {
@@ -12,6 +20,8 @@ export interface RenderInput {
   loader: Loader;
   /** Rows per dataset name, injected after embed. */
   datasets: Record<string, Row[]>;
+  /** Opens a note by vault path; used when the spec sets `usermeta.agate.open`. */
+  openNote?: (path: string, newLeaf: boolean) => void;
 }
 
 /**
@@ -31,6 +41,11 @@ function defaultToContainerWidth(spec: AnySpec, mode: "vega" | "vega-lite"): Any
   }
   const autosize = spec.autosize ?? { type: "fit-x", contains: "padding" };
   return { ...spec, width: "container", autosize };
+}
+
+/** Signals a spec can declare to learn about its surroundings (see withSignalValues). */
+function environmentSignals(): Record<string, unknown> {
+  return { agateDark: document.body.classList.contains("theme-dark") };
 }
 
 function stopBubbling(evt: Event): void {
@@ -69,7 +84,9 @@ export class AgateRenderer {
   async render(input: RenderInput): Promise<void> {
     const gen = ++this.generation;
     const { resolved, options } = input;
+    const env = environmentSignals();
     const key = JSON.stringify([
+      env,
       resolved.spec,
       resolved.mode,
       options.theme,
@@ -102,6 +119,7 @@ export class AgateRenderer {
         spec = withInitialValues(spec, resolved.mode, name, input.datasets[name]);
       }
       spec = defaultToContainerWidth(spec, resolved.mode);
+      spec = withSignalValues(spec, resolved.mode, env);
 
       const embedOptions: EmbedOptions = {
         mode: resolved.mode,
@@ -117,6 +135,16 @@ export class AgateRenderer {
 
       const result = await vegaEmbed(this.chartEl, spec, embedOptions);
       this.isolateHover(this.chartEl);
+      const openOn = openOnEvent(resolved.spec);
+      const openNote = input.openNote;
+      if (openOn && openNote && options.interactive) {
+        result.view.addEventListener(openOn, (evt, item) => {
+          const path = notePathOf(item?.datum);
+          if (!path) return;
+          const e = evt as MouseEvent;
+          openNote(path, e.metaKey || e.ctrlKey);
+        });
+      }
       if (gen !== this.generation) {
         // A newer render started while we were embedding; drop this one.
         result.finalize();
@@ -199,7 +227,13 @@ export class AgateRenderer {
     this.hostEl.empty();
     const box = this.hostEl.createDiv({ cls: "agate-error" });
     box.createDiv({ cls: "agate-error-title", text: "Agate could not render this chart" });
-    box.createEl("pre", { cls: "agate-error-message", text: errorMessage(err) });
+    const message = errorMessage(err);
+    box.createEl("pre", { cls: "agate-error-message", text: message });
+    const copy = box.createEl("button", { cls: "agate-error-copy", text: "Copy error" });
+    copy.addEventListener("click", () => {
+      // Pasted into an LLM together with the spec, this is usually enough to get a fix.
+      void navigator.clipboard.writeText(`Agate (Vega) error:\n${message}`).then(() => copy.setText("Copied"));
+    });
     this.log.warn("render error:", err);
   }
 

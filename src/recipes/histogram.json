@@ -1,0 +1,49 @@
+{
+  "$schema": "https://vega.github.io/schema/vega-lite/v6.json",
+  "usermeta": {
+    "agate": {
+      "recipe": {
+        "id": "histogram",
+        "name": "Histogram",
+        "description": "How a number is distributed across notes.",
+        "roles": {
+          "value": {
+            "label": "Number",
+            "types": [
+              "number"
+            ],
+            "prefer": [
+              "rating",
+              "pages",
+              "duration",
+              "amount"
+            ]
+          }
+        }
+      }
+    }
+  },
+  "data": {
+    "name": "base"
+  },
+  "height": 200,
+  "mark": {
+    "type": "bar",
+    "tooltip": true,
+    "cornerRadiusEnd": 2
+  },
+  "encoding": {
+    "x": {
+      "field": "{{value}}",
+      "type": "quantitative",
+      "bin": {
+        "maxbins": 20
+      },
+      "title": "{{value.label}}"
+    },
+    "y": {
+      "aggregate": "count",
+      "title": "Notes"
+    }
+  }
+}

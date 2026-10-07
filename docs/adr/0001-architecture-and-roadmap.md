@@ -297,6 +297,28 @@ Settings (`settings.ts`, stored in `data.json`, migrated by a `settingsVersion` 
 
 The resolved config is computed once per render and passed to vega-embed as `config`; `css-change`, a settings change, or a theme-file edit invalidates it and re-embeds affected charts. Per-chart options can name a theme too (`theme: quartz` in an envelope, a `dropdown` view option in Surface A), which is how one chart in a vault can diverge from the house style.
 
+### D12. Per-row data and table cells (added 2026-10-06)
+
+Small charts per note need data per note, and Bases formulas cannot fetch anything. Two spec-level declarations under `usermeta.agate` (Vega and Vega-Lite both carry `usermeta` untouched), so the behaviour travels with the spec file:
+
+- `rowData: {name, from, format?}` (or a list of them). For each base row, Agate reads property `from` (`note.data`, `formula.csv`), loads it through the D5 loader (vault path, link, scheme, or http(s) if allowed), parses it with `vega.read` (format from `format`, else the extension, else sniffed), and emits the records into dataset `name` with the parent's `file`, `note`, `formula`, `group` and `rowIndex` copied on. A list value becomes `{index, value}` records. Rows load in parallel (6 at a time); a failed row is logged and skipped, and only when every row fails does the chart show the error. Remote text is cached in memory for 10 minutes per URL, cleared by the "Refresh remote data" command. Records keep base row order.
+- `cells: "<name>"`. One record per row and visible property (`config.getOrder()`, display names from `getDisplayName`), with `rowIndex`, `column`, `property`, `label`, `value` and `text`. Lets a spec draw the view as a table whose columns follow the Properties menu, with a chart in one column. Bases view only; the code block has no Properties menu.
+
+- `edges: "<name>"` (added the same day). Links between rows of the base from `metadataCache.resolvedLinks`, as `{source, target, count, …}` with row positions, so Vega's force `link` and arc diagrams can use them directly. Links to notes outside the base are dropped.
+- `tree: "<name>"`. The folder hierarchy of the rows: one node per folder (root id `/`, since d3's `stratify` treats an empty id as none) and per row, each with `parent`, `depth`, `ancestors`, and `size`/`count` totals, so a spec can cut the tree at a depth and still show true sizes, and zoom by filtering on `ancestors`.
+- `open: "click" | "dblclick"`. A pointer event on a mark whose datum carries `file.path` opens that note (Cmd/Ctrl: new tab). Opt-in, because a click inside a chart means different things in different specs.
+
+All of these live in `src/core/data/` and `src/core/spec.ts` as pure functions; the Bases view and the plugin wire them in. Rejected: rendering per-row SVG files into the vault for `image()` cells in the core Table (vault churn, sync noise, static) and formula-only `html()` sparklines (not Agate).
+
+### D13. Recipes and the LLM prompt (added 2026-10-06)
+
+The hard part of a first chart is not JSON syntax but binding a spec to the user's own properties. Two aids, both reached from the empty Agate view ("Pick a recipe", "Copy prompt for an LLM") and from commands:
+
+- Recipes. A recipe is a Vega or Vega-Lite spec with `usermeta.agate.recipe: {id, name, description, roles}` and placeholders: `{{role}}` (property id, for `field`), `{{role.expr}}` (a quoted accessor, `datum["note"]["my rating"]`, safe for any property name) and `{{role.label}}` (display name). Roles declare accepted types (number, date, text, list, link, boolean), whether they are optional, and preferred property names. The picker infers each property's type from the view's rows, suggests a mapping, shows one dropdown per role filtered by type, writes the filled spec into the spec folder and sets the view's `specFile`. An unset optional role removes every object holding its placeholder as a whole value (an encoding channel, a legend, a tooltip entry); its `.expr` becomes `null`. Twelve recipes ship in `src/recipes/` (simple charts plus the gallery layouts); specs with a recipe block in the Recipe folder setting join them. The produced spec records `usermeta.agate.fromRecipe` for a later "re-map" command.
+- LLM prompt. "Copy chart prompt" puts on the clipboard the view's properties with inferred types and display names, three sample rows trimmed to those properties, the row format, and Agate's rules and extras, with a slot for what the user wants. The error box gets "Copy error" for the next round. Agate makes no network call and holds no API key; a direct integration can come later through an Obsidian AI plugin's API if one exists.
+
+Rejected: a general chart wizard. The Vega GUI builders (Lyra, Voyager/Polestar) are unmaintained research projects, heavy to embed, and know nothing of Bases fields or `usermeta.agate`; role mapping covers the part a wizard would help with.
+
 ## Roadmap
 
 ### v0.1 (primary)
