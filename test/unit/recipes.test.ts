@@ -105,4 +105,14 @@ describe("chart prompt (D13)", async () => {
     expect(text).not.toContain("pages");
     expect(text).toContain('"data": {"name": "base"}');
   });
+
+  it("reports the installed versions and the remote-data setting when given", () => {
+    const env = { agate: "0.0.3", obsidian: "1.13.7", vega: "6.4.0", vegaLite: "6.4.3", vegaEmbed: "7.3.0", renderer: "svg" as const, allowRemote: false };
+    const text = buildChartPrompt({ viewName: "T", datasetName: "base", properties: [], rows: [], env });
+    expect(text).toContain("Vega 6.4.0, Vega-Lite 6.4.3 and vega-embed 7.3.0 (svg renderer)");
+    expect(text).toContain("Agate 0.0.3 on Obsidian 1.13.7");
+    expect(text).toContain("are blocked");
+    expect(text).toContain("vega-lite/v6.json");
+    expect(buildChartPrompt({ viewName: "T", datasetName: "base", properties: [], rows: [], env: { ...env, allowRemote: true } })).toContain("are allowed");
+  });
 });

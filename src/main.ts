@@ -1,7 +1,9 @@
-import { Notice, Plugin, TFile, TFolder, Vault, addIcon, normalizePath } from "obsidian";
+import { Notice, Plugin, TFile, TFolder, Vault, addIcon, apiVersion, normalizePath } from "obsidian";
 import { AGATE_ICON_ID, AGATE_ICON_SVG } from "./icon";
 import { CHART_VIEW_ICON_ID, CHART_VIEW_ICON_SVG } from "./chart-icon";
-import type { Config, Loader } from "vega";
+import { version as vegaVersion, type Config, type Loader } from "vega";
+import { version as vegaLiteVersion } from "vega-lite";
+import { version as vegaEmbedVersion } from "vega-embed";
 import { AgateSettingTab, DEFAULT_SETTINGS, type AgateSettings } from "./settings";
 import { createLogger, errorMessage, type Logger } from "./util/log";
 import { builtinThemes, composeConfig, materialize } from "./core/theme";
@@ -10,6 +12,7 @@ import { parseJsonOrYaml, resolveVaultFile } from "./core/spec";
 import { resolveChartOptions } from "./core/options";
 import { RowDataCache, expandRowData, rowDataDefs } from "./core/data/rowdata";
 import { parseRecipe, type Recipe } from "./core/recipes";
+import type { PromptEnvironment } from "./core/prompt";
 import { builtinRecipes } from "./recipes";
 import type {
   AnySpec,
@@ -237,6 +240,19 @@ export default class AgatePlugin extends Plugin {
       datasets[def.name] = records;
     }
     return datasets;
+  }
+
+  /** Versions and settings the chart prompt reports, so an assistant writes for what is installed (D13). */
+  promptEnvironment(): PromptEnvironment {
+    return {
+      agate: this.manifest.version,
+      obsidian: apiVersion,
+      vega: vegaVersion,
+      vegaLite: vegaLiteVersion,
+      vegaEmbed: vegaEmbedVersion,
+      renderer: this.settings.renderer,
+      allowRemote: this.settings.allowRemote,
+    };
   }
 
   /** Built-in recipes, then the ones in the recipe folder (D13). A broken recipe file is skipped with a warning. */

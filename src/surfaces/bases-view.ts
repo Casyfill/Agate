@@ -111,6 +111,7 @@ export class AgateBasesView extends BasesView {
       datasetName: this.plugin.resolveOptions(this.readChartOptions()).dataset,
       properties,
       rows,
+      env: this.plugin.promptEnvironment(),
     });
     await navigator.clipboard.writeText(text);
     new Notice("Agate: chart prompt copied. Paste it into your assistant, describe the chart, and save the reply as a spec file.");

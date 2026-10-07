@@ -5,6 +5,17 @@ import type { PropertyInfo } from "./recipes";
  * "Copy chart prompt" (ADR-0001 D13): everything an LLM needs to write a working Agate spec
  * for this base, to paste into any assistant. Agate makes no network call and holds no key.
  */
+/** What the chart will run on, so the assistant stays inside these versions and settings. */
+export interface PromptEnvironment {
+  agate: string;
+  obsidian: string;
+  vega: string;
+  vegaLite: string;
+  vegaEmbed: string;
+  renderer: "svg" | "canvas";
+  allowRemote: boolean;
+}
+
 export interface PromptInput {
   viewName: string;
   datasetName: string;
@@ -12,6 +23,23 @@ export interface PromptInput {
   rows: Row[];
   /** How many rows to include as samples. */
   samples?: number;
+  env?: PromptEnvironment;
+}
+
+const major = (v: string): string => v.split(".")[0] || "6";
+
+function environmentSection(env: PromptEnvironment): string {
+  return `## Environment
+
+- Agate ${env.agate} on Obsidian ${env.obsidian}, rendering with Vega ${env.vega}, Vega-Lite ${env.vegaLite} and vega-embed ${env.vegaEmbed} (${env.renderer} renderer). Use only features these versions support; when unsure whether something exists in them, pick the older, well-established form.
+- Remote data: ${
+    env.allowRemote
+      ? "URLs starting with http(s) in data.url or rowData are allowed."
+      : 'URLs starting with http(s) are blocked (the user has "Load remote data" off); load data from vault paths instead.'
+  } A relative data.url such as "data/sales.csv" is read from the vault and resolves like a link.
+- Tooltips use vega-tooltip: a tooltip field titled "image" is drawn as a picture (an image URL), one titled "title" becomes the heading.
+
+`;
 }
 
 /** Keep only the properties that are listed, so a sample row is small and on topic. */
@@ -31,7 +59,9 @@ function trimRow(row: Row, ids: Set<string>): Row {
 }
 
 export function buildChartPrompt(input: PromptInput): string {
-  const { viewName, datasetName, properties, rows } = input;
+  const { viewName, datasetName, properties, rows, env } = input;
+  const vlMajor = env ? major(env.vegaLite) : "6";
+  const vgMajor = env ? major(env.vega) : "6";
   const n = Math.min(input.samples ?? 3, rows.length);
   const ids = new Set(properties.map((p) => p.id));
   const props = properties
@@ -62,9 +92,9 @@ ${samples || "(the view has no rows)"}
 
 Dates arrive as ISO strings (use "type": "temporal" or toDate()). Links arrive as paths or "[[...]]" strings. Lists arrive as arrays.
 
-## Rules
+${env ? environmentSection(env) : ""}## Rules
 
-- Prefer Vega-Lite v6 ("$schema": "https://vega.github.io/schema/vega-lite/v6.json"); use Vega v6 only for layouts Vega-Lite lacks (force, tree, partition, custom geo).
+- Prefer Vega-Lite v${vlMajor} ("$schema": "https://vega.github.io/schema/vega-lite/v${vlMajor}.json"); use Vega v${vgMajor} ("https://vega.github.io/schema/vega/v${vgMajor}.json") only for layouts Vega-Lite lacks (force, tree, partition, custom geo).
 - Leave out "width" for a single Vega-Lite view (it fills the pane); give facets and concats explicit widths.
 - Do not set "background" or colours for axes and text; the Obsidian theme supplies them.
 - Use "sort": null on a discrete axis to keep the Bases sort order.
