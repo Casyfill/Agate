@@ -1,6 +1,10 @@
 import { defineConfig } from "vitest/config";
 import { fileURLToPath } from "node:url";
 
+// Snapshots contain time axes and local-time positions; pin the zone so a laptop in New York and a
+// UTC CI runner render the same SVG. Workers inherit this environment.
+process.env.TZ = "UTC";
+
 export default defineConfig({
   resolve: {
     alias: {
