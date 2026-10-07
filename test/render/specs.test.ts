@@ -119,7 +119,12 @@ describe("fixture specs render headlessly with D4 rows", () => {
   for (const name of fixtures) {
     it(name, async () => {
       warnings.length = 0;
-      const svg = await renderFixture(name);
+      // Round every number to one decimal: force layouts and map projections run thousands of
+      // float steps, and Node builds differ in the last bit (laptop vs CI). Sub-pixel noise is not a change.
+      const svg = (await renderFixture(name)).replace(/-?\d+\.\d+(e-?\d+)?/g, (n) => {
+        const r = Math.round(Number(n) * 10) / 10;
+        return Object.is(r, -0) ? "0" : String(r);
+      });
       const shapes = (svg.match(/<(path|rect|circle|line)\b/g) ?? []).length;
       expect(shapes).toBeGreaterThan(0);
       // Rows were injected before the first run, so no empty-extent warnings may appear.
