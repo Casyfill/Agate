@@ -13,4 +13,5 @@ played_times: 4
 ---
 # Dune: Imperium
 
-source idea sketch plan next step next question step idea plan decision sketch source follow review decision step thought draft.
+1–4 players, about 120 minutes, complexity 3. Played 4 times this year.
+

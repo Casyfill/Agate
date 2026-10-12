@@ -13,4 +13,5 @@ played_times: 7
 ---
 # Wingspan
 
-decision reference step sketch decision summary idea decision source next step note plan question step idea step summary detail source.
+1–5 players, about 70 minutes, complexity 2.5. Played 7 times this year.
+

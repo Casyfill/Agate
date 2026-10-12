@@ -83,4 +83,9 @@ describe("vault loader (D5)", () => {
     expect(results).toHaveLength(6);
     expect(requestUrlCalls).toEqual(urls);
   });
+
+  it("holds image URLs (map tiles) to the remote setting too", async () => {
+    await expect(make(false).sanitize("https://tiles.test/1/2/3.png", { context: "image" } as never)).rejects.toThrow(/Remote URL blocked/);
+    await expect(make(true).sanitize("https://tiles.test/1/2/3.png", { context: "image" } as never)).resolves.toMatchObject({ href: "https://tiles.test/1/2/3.png" });
+  });
 });

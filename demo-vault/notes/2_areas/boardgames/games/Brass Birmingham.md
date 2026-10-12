@@ -13,4 +13,5 @@ played_times: 3
 ---
 # Brass: Birmingham
 
-thought note sketch source up next summary summary thought detail draft reference follow follow reference draft up step idea reference.
+2–4 players, about 120 minutes, complexity 3.9. Played 3 times this year.
+

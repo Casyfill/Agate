@@ -13,4 +13,5 @@ played_times: 0
 ---
 # Terraforming Mars
 
-detail context decision reference plan thought follow up follow detail source plan detail review follow step idea source up thought.
+1–5 players, about 120 minutes, complexity 3.3. Not played this year.
+

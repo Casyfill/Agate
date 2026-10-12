@@ -3,12 +3,18 @@ type: book
 tags: [book]
 author: William Gibson
 genre: sci-fi
-rating: 4
 pages: 271
-published: 1984-07-01
-status: read
+rating: 3
+status: finished
+started: 2025-11-15
+finished: 2025-11-21
 isbn: "9780441569595"
 ---
 # Neuromancer
 
-note detail note question up idea sketch review question draft summary idea note idea decision question next question step up.
+*William Gibson*, 271 pages. Read in 6 days, ★★★☆☆.
+
+## Notes
+
+- Recommended by Ana.
+

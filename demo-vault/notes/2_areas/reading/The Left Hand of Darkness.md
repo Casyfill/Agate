@@ -3,12 +3,18 @@ type: book
 tags: [book]
 author: Ursula K. Le Guin
 genre: sci-fi
-rating: 5
 pages: 304
-published: 1969-03-01
-status: reading
+rating: 5
+status: finished
+started: 2025-07-31
+finished: 2025-08-11
 isbn: "9780441478125"
 ---
 # The Left Hand of Darkness
 
-next decision sketch next draft detail note context draft summary up up plan summary decision note thought question question reference.
+*Ursula K. Le Guin*, 304 pages. Read in 11 days, ★★★★★.
+
+## Notes
+
+- Kept underlining whole pages.
+

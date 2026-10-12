@@ -36,7 +36,9 @@ function yamlValue(v) {
   }
   return String(v);
 }
+const NOTES = []; // every generated note, for the facts in the area notes
 function note(path, props, body = "") {
+  NOTES.push({ path, name: path.split("/").pop().replace(/\.md$/, ""), props });
   const fm = Object.entries(props)
     .filter(([, v]) => v !== undefined && v !== null)
     .map(([k, v]) => `${k}: ${yamlValue(v)}`)
@@ -80,7 +82,7 @@ const projects = [
   ["home", "Kitchen renovation", "active", 1, "2026-05-04", "2026-11-13", []],
   ["home", "Garden beds", "done", 3, "2026-03-16", "2026-05-08", []],
   ["health", "Half marathon", "active", 2, "2026-06-15", "2026-10-25", []],
-  ["learning", "Learn Rust", "paused", 3, "2026-01-12", "2026-09-30", []],
+  ["learning", "Rust 101 course", "paused", 3, "2026-01-12", "2026-09-30", []],
   ["learning", "Vega deep dive", "done", 2, "2026-07-01", "2026-09-26", []],
   ["learning", "Japanese N4", "active", 3, "2026-01-05", "2026-12-06", []],
 ];
@@ -180,7 +182,7 @@ for (const [name, min, max, time, complexity, theme, price, kids] of games) {
       owned: name !== "Twilight Imperium" || true,
       played_times: played,
     },
-    `# ${name}\n\n${lorem(20)}`,
+    `# ${name}\n\n${min === max ? `${min}` : `${min}–${max}`} players, about ${time} minutes, complexity ${complexity}. ${played ? `Played ${played} time${played > 1 ? "s" : ""} this year.` : "Not played this year."}\n`,
   );
 }
 
@@ -198,25 +200,29 @@ const places = {
 for (const [name, [lat, lon, country, country_id]] of Object.entries(places)) {
   note(`notes/2_areas/travel/places/${name}.md`, { type: "place", tags: ["place"], lat, lon, country, country_id }, `# ${name}`);
 }
-const legs = [
-  ["2024-03-08", "New York", "Mexico City", "Mexico"], ["2024-03-15", "Mexico City", "New York", "Mexico"],
-  ["2024-06-20", "New York", "Rome", "Italy and Greece"], ["2024-06-26", "Rome", "Athens", "Italy and Greece"],
-  ["2024-07-02", "Athens", "New York", "Italy and Greece"], ["2024-10-11", "New York", "Montreal", "Long weekend"],
-  ["2024-10-14", "Montreal", "New York", "Long weekend"], ["2024-12-20", "New York", "Lima", "Peru"],
-  ["2024-12-23", "Lima", "Cusco", "Peru"], ["2024-12-30", "Cusco", "Buenos Aires", "Peru"], ["2025-01-05", "Buenos Aires", "New York", "Peru"],
-  ["2025-02-10", "New York", "Lisbon", "Winter escape"], ["2025-02-14", "Lisbon", "Porto", "Winter escape"],
-  ["2025-02-18", "Porto", "London", "Winter escape"], ["2025-02-22", "London", "New York", "Winter escape"],
-  ["2025-05-03", "New York", "San Francisco", "Work"], ["2025-05-07", "San Francisco", "New York", "Work"],
-  ["2025-07-12", "New York", "Reykjavik", "Summer"], ["2025-07-16", "Reykjavik", "Berlin", "Summer"],
-  ["2025-07-22", "Berlin", "Kyiv", "Summer"], ["2025-08-01", "Kyiv", "Paris", "Summer"], ["2025-08-05", "Paris", "Barcelona", "Summer"],
-  ["2025-08-09", "Barcelona", "New York", "Summer"], ["2025-10-09", "New York", "Atlanta", "AT Georgia"],
-  ["2025-10-13", "Atlanta", "New York", "AT Georgia"], ["2025-11-14", "New York", "Tokyo", "Japan"],
-  ["2025-11-20", "Tokyo", "Kyoto", "Japan"], ["2025-11-26", "Kyoto", "Bangkok", "Japan"], ["2025-12-02", "Bangkok", "New York", "Japan"],
-  ["2026-03-14", "New York", "Cape Town", "Spring"], ["2026-03-25", "Cape Town", "Lisbon", "Spring"], ["2026-04-01", "Lisbon", "New York", "Spring"],
+// One note per trip: purpose, dates, and the stops in order (legs are drawn between consecutive stops).
+const trips = [
+  ["2024-03-08", "2024-03-15", "Mexico City", "Personal", ["New York", "Mexico City", "New York"], []],
+  ["2024-06-20", "2024-07-02", "Italy and Greece", "Family", ["New York", "Rome", "Athens", "New York"], ["Alex", "Mia"]],
+  ["2024-10-11", "2024-10-14", "Montreal long weekend", "Personal", ["New York", "Montreal", "New York"], ["Alex"]],
+  ["2024-12-20", "2025-01-05", "Peru and Argentina", "Family", ["New York", "Lima", "Cusco", "Buenos Aires", "New York"], ["Alex", "Mia"]],
+  ["2025-02-10", "2025-02-22", "Winter escape", "Personal", ["New York", "Lisbon", "Porto", "London", "New York"], []],
+  ["2025-05-03", "2025-05-07", "San Francisco offsite", "Work", ["New York", "San Francisco", "New York"], ["Ana Ruiz", "Dana Kim"]],
+  ["2025-07-12", "2025-08-09", "Summer in Europe", "Family", ["New York", "Reykjavik", "Berlin", "Kyiv", "Paris", "Barcelona", "New York"], ["Alex", "Mia"]],
+  ["2025-10-09", "2025-10-13", "AT Georgia", "Personal", ["New York", "Atlanta", "New York"], ["Ben Okafor"]],
+  ["2025-11-14", "2025-12-02", "Japan and Thailand", "Personal", ["New York", "Tokyo", "Kyoto", "Bangkok", "New York"], ["Alex"]],
+  ["2026-01-20", "2026-01-23", "London kickoff", "Work", ["New York", "London", "New York"], ["Jon Bell"]],
+  ["2026-03-14", "2026-04-01", "Cape Town and Lisbon", "Family", ["New York", "Cape Town", "Lisbon", "New York"], ["Alex", "Mia"]],
+  ["2026-06-08", "2026-06-11", "Berlin conference", "Work", ["New York", "Berlin", "New York"], ["Chen Wei"]],
+  ["2026-09-15", "2026-09-18", "Atlanta client visit", "Work", ["New York", "Atlanta", "New York"], ["Maya Patel"]],
 ];
-for (const [date, from, to, trip] of legs) {
-  const mode = (from === "Tokyo" && to === "Kyoto") || (from === "Berlin" && to === "Kyiv") || (from === "Lisbon" && to === "Porto") ? "train" : "flight";
-  note(`notes/2_areas/travel/trips/${date} ${from} to ${to}.md`, { type: "trip", tags: ["trip"], date, from: link(from), to: link(to), mode, trip });
+const nightsOf = (a, b) => Math.round((new Date(b) - new Date(a)) / 864e5);
+for (const [start, end, title, purpose, stops, companions] of trips) {
+  note(
+    `notes/2_areas/travel/trips/${start.slice(0, 7)} ${title}.md`,
+    { type: "trip", tags: ["trip"], purpose, start, end, nights: nightsOf(start, end), legs: stops.map(link), companions },
+    `# ${title}\n\n${stops.map(link).join(" → ")}\n\n${nightsOf(start, end)} nights, a ${purpose.toLowerCase()} trip${companions.length ? `, with ${companions.join(" and ")}` : ", solo"}.\n`,
+  );
 }
 
 // --- journal -------------------------------------------------------------------------------------
@@ -224,8 +230,9 @@ day = new Date("2026-04-01T00:00:00Z");
 let mood = 3.2;
 while (day <= new Date("2026-09-30T00:00:00Z")) {
   const wd = day.getUTCDay();
-  mood = Math.max(1, Math.min(5, mood * 0.7 + 0.3 * (3.2 + (wd === 0 || wd === 6 ? 0.5 : 0) + 0.8 * gauss())));
   const sleep = Math.round(Math.max(4.5, Math.min(9.5, 7 + 0.8 * gauss() + (wd === 6 ? 0.8 : 0))) * 10) / 10;
+  // Mood drifts, lifts at weekends and after a good night.
+  mood = Math.max(1, Math.min(5, mood * 0.6 + 0.4 * (3.1 + (wd === 0 || wd === 6 ? 0.5 : 0) + 0.9 * (sleep - 7) + 0.7 * gauss())));
   const habits = [];
   if (rnd() < (wd === 1 || wd === 3 || wd === 5 ? 0.75 : 0.25)) habits.push("gym");
   if (rnd() < 0.6) habits.push("read");
@@ -244,19 +251,45 @@ while (day <= new Date("2026-09-30T00:00:00Z")) {
   day = addDays(day, 1);
 }
 
-// --- reading -------------------------------------------------------------------------------------
+// --- reading: when each book was read, how long it took, what was abandoned ---------------------
 const books = [
-  ["Dune", "Frank Herbert", "sci-fi", 5, 412, "1965-08-01", "read", "9780441172719"], ["The Hobbit", "J.R.R. Tolkien", "fantasy", 5, 310, "1937-09-21", "read", "9780547928227"],
-  ["Neuromancer", "William Gibson", "sci-fi", 4, 271, "1984-07-01", "read", "9780441569595"], ["Foundation", "Isaac Asimov", "sci-fi", 4, 244, "1951-06-01", "read", "9780553293357"],
-  ["A Wizard of Earthsea", "Ursula K. Le Guin", "fantasy", 4, 183, "1968-11-01", "read", "9780547773742"], ["The Left Hand of Darkness", "Ursula K. Le Guin", "sci-fi", 5, 304, "1969-03-01", "reading", "9780441478125"],
-  ["Gone Girl", "Gillian Flynn", "thriller", 3, 415, "2012-06-05", "read", "9780307588371"], ["Sapiens", "Yuval Noah Harari", "non-fiction", 4, 443, "2011-01-01", "read", "9780062316097"],
-  ["Educated", "Tara Westover", "non-fiction", 5, 334, "2018-02-20", "read", "9780399590504"], ["Thinking, Fast and Slow", "Daniel Kahneman", "non-fiction", 4, 499, "2011-10-25", "abandoned", "9780374533557"],
-  ["The Name of the Wind", "Patrick Rothfuss", "fantasy", 4, 662, "2007-03-27", "read", "9780756404741"], ["Piranesi", "Susanna Clarke", "fantasy", 5, 272, "2020-09-15", "read", "9781635575637"],
-  ["The Overstory", "Richard Powers", "fiction", null, 502, "2018-04-03", "to-read", null], ["A Walk in the Woods", "Bill Bryson", "non-fiction", 4, 276, "1998-05-04", "read", null],
+  ["The Overstory", "Richard Powers", "fiction", 502, 5, null], ["Project Hail Mary", "Andy Weir", "sci-fi", 476, 5, null],
+  ["Sapiens", "Yuval Noah Harari", "non-fiction", 443, 4, "9780062316097"], ["Piranesi", "Susanna Clarke", "fantasy", 272, 5, "9781635575637"],
+  ["The Power Broker", "Robert A. Caro", "history", 1246, null, null], ["Klara and the Sun", "Kazuo Ishiguro", "fiction", 303, 4, null],
+  ["Dune", "Frank Herbert", "sci-fi", 412, 5, "9780441172719"], ["Educated", "Tara Westover", "non-fiction", 334, 5, "9780399590504"],
+  ["The Name of the Wind", "Patrick Rothfuss", "fantasy", 662, 4, "9780756404741"], ["Thinking, Fast and Slow", "Daniel Kahneman", "non-fiction", 499, null, "9780374533557"],
+  ["A Walk in the Woods", "Bill Bryson", "non-fiction", 276, 4, null], ["The Left Hand of Darkness", "Ursula K. Le Guin", "sci-fi", 304, 5, "9780441478125"],
+  ["Gone Girl", "Gillian Flynn", "thriller", 415, 3, "9780307588371"], ["War and Peace", "Leo Tolstoy", "fiction", 1225, null, null],
+  ["The Guns of August", "Barbara W. Tuchman", "history", 511, 4, null], ["Neuromancer", "William Gibson", "sci-fi", 271, 3, "9780441569595"],
+  ["Tomorrow, and Tomorrow, and Tomorrow", "Gabrielle Zevin", "fiction", 416, 4, null], ["The Hobbit", "J.R.R. Tolkien", "fantasy", 310, 5, "9780547928227"],
+  ["The Body Keeps the Score", "Bessel van der Kolk", "non-fiction", 464, null, null], ["A Wizard of Earthsea", "Ursula K. Le Guin", "fantasy", 183, 4, "9780547773742"],
+  ["The Silk Roads", "Peter Frankopan", "history", 636, 4, null], ["The Girl with the Dragon Tattoo", "Stieg Larsson", "thriller", 465, 3, "9780307454546"],
+  ["Foundation", "Isaac Asimov", "sci-fi", 244, 4, "9780553293357"], ["Lincoln in the Bardo", "George Saunders", "fiction", 343, 4, null],
+  ["The Three-Body Problem", "Liu Cixin", "sci-fi", 400, null, null], ["SPQR", "Mary Beard", "history", 608, null, null],
 ];
-for (const [title, author, genre, rating, pages, published, status, isbn] of books) {
-  note(`notes/2_areas/reading/${title}.md`, { type: "book", tags: ["book"], author, genre, rating, pages, published, status, isbn }, `# ${title}\n\n${lorem(20)}`);
-}
+const pace = { fiction: 28, "sci-fi": 32, fantasy: 30, "non-fiction": 20, history: 16, thriller: 45 };
+let cursor = new Date("2024-10-01T00:00:00Z");
+const readingSummary = { finished: 0, abandoned: 0, pages: 0 };
+books.forEach(([title, author, genre, pages, rating, isbn], i) => {
+  const started = addDays(cursor, Math.floor(between(2, 14)));
+  const days = Math.max(3, Math.round((pages / pace[genre]) * between(0.7, 1.6)));
+  const last = i === books.length - 1;
+  const abandon = rating === null && !last && i !== books.length - 2;
+  const status = last || i === books.length - 2 ? "reading" : abandon ? "abandoned" : "finished";
+  const end = status === "reading" ? null : addDays(started, abandon ? Math.round(days * between(0.2, 0.5)) : days);
+  if (status === "finished") { readingSummary.finished++; readingSummary.pages += pages; }
+  if (status === "abandoned") readingSummary.abandoned++;
+  note(
+    `notes/2_areas/reading/${title}.md`,
+    {
+      type: "book", tags: ["book"], author, genre, pages, rating: status === "finished" ? rating : null, status,
+      started: iso(started), finished: status === "finished" ? iso(end) : null, abandoned: status === "abandoned" ? iso(end) : null, isbn,
+    },
+    `# ${title}\n\n*${author}*, ${pages} pages. ${status === "finished" ? `Read in ${Math.round((end - started) / 864e5)} days${rating ? `, ${"★".repeat(rating)}${"☆".repeat(5 - rating)}` : ""}.` : status === "abandoned" ? `Put down after ${Math.round((end - started) / 864e5)} days.` : "On the nightstand."}\n\n## Notes\n\n- ${pick(["Slow start, worth it after the first third.", "Read most of it on the subway.", "Recommended by Ana.", "Borrowed from the library.", "Kept underlining whole pages.", "Lighter than I expected."])}\n`,
+  );
+  // The next book starts a little before or after this one ends: overlaps are normal.
+  cursor = addDays(started, Math.round(days * between(0.5, 1.05)));
+});
 
 // --- resources and inbox (for a vault that looks lived in) ---------------------------------------
 const topics = ["dataviz", "pkm", "cooking", "urbanism", "finance", "outdoors"];
@@ -290,49 +323,68 @@ const hav = (a, b) => {
   return 2 * R * Math.asin(Math.sqrt(h));
 };
 const hikeNotes = [];
-days.forEach(([date, from, to, wps], di) => {
+const TRAIL_M = 31.7 * 1609.34; // Springer Mountain to Neel Gap along the trail
+/** One day's GPS points. `swing` (metres) sizes the switchbacks; the real track is ~1.5× the straight line. */
+function buildDay(di, wps, swing) {
+  const r = mulberry32(900 + di);
+  const g = () => Math.sqrt(-2 * Math.log(r() + 1e-12)) * Math.cos(2 * Math.PI * r());
   const rows = ["time,lat,lon,ele_m,hr"];
-  let t = new Date(`${date}T${di === 0 ? "09:40" : "08:15"}:00-04:00`).getTime();
-  const breaks = new Set();
-  let distSoFar = 0;
+  let t = new Date(`${days[di][0]}T${di === 0 ? "09:40" : "08:15"}:00-04:00`).getTime();
   const legLengths = wps.slice(1).map((w, i) => hav(wps[i], w));
-  const total = legLengths.reduce((a, b) => a + b, 0);
-  [0.33, 0.55, 0.8].forEach((f) => breaks.add(Math.round(f * total / 40)));
-  let step = 0;
-  let prevEle = wps[0][2];
-  let hr = 95;
-  const phase = rnd() * 10;
+  const chord = legLengths.reduce((x, y) => x + y, 0);
+  const breakAt = [0.33, 0.55, 0.8].map((f) => Math.round((f * chord) / 40));
+  let step = 0, along = 0, length = 0, prev = null, prevEle = wps[0][2], hr = 95;
+  const phase = r() * 10;
   for (let li = 0; li < legLengths.length; li++) {
-    const a = wps[li];
-    const b = wps[li + 1];
+    const a = wps[li], b = wps[li + 1];
     const n = Math.max(2, Math.round(legLengths[li] / 40));
+    const vn = (b[0] - a[0]) * 111320, ve = (b[1] - a[1]) * 111320 * Math.cos(rad(a[0]));
+    const L = Math.hypot(vn, ve) || 1;
     for (let k = li === 0 ? 0 : 1; k <= n; k++) {
       const f = k / n;
-      const d = distSoFar + f * legLengths[li];
-      // Switchbacks and ridge-line wiggle: smooth perpendicular offsets, zero at waypoints.
-      const wig = Math.sin(Math.PI * f) * (0.0016 * Math.sin(d / 230 + phase) + 0.0009 * Math.sin(d / 71));
-      const lat = a[0] + (b[0] - a[0]) * f - (b[1] - a[1]) * wig * 2;
-      const lon = a[1] + (b[1] - a[1]) * f + (b[0] - a[0]) * wig * 2;
+      const d = along + f * legLengths[li];
+      // Switchbacks and ridge-line wiggle, perpendicular to the chord, zero at the waypoints.
+      const o = Math.sin(Math.PI * f) * (swing * Math.sin(d / 35) + 120 * Math.sin(d / 230 + phase) + 60 * Math.sin(d / 71));
+      const lat0 = a[0] + (b[0] - a[0]) * f, lon0 = a[1] + (b[1] - a[1]) * f;
+      const lat = lat0 + (o * (-ve / L)) / 111320;
+      const lon = lon0 + (o * (vn / L)) / (111320 * Math.cos(rad(lat0)));
       const ele = a[2] + (b[2] - a[2]) * (0.5 - 0.5 * Math.cos(Math.PI * f)) + Math.sin(Math.PI * f) * (28 * Math.sin(d / 410 + phase) + 9 * Math.sin(d / 97));
-      const grade = (ele - prevEle) / 40;
+      const seg = prev ? hav(prev, [lat, lon]) : 0;
+      length += seg;
+      const grade = seg > 0 ? (ele - prevEle) / seg : 0;
       // Tobler's hiking function, slowed by a 12 kg pack and the day's fatigue.
-      const kmh = 6 * Math.exp(-3.5 * Math.abs(grade + 0.05)) * (0.78 - 0.05 * (d / total)) * (1 + 0.08 * gauss());
-      if (step > 0) t += (40 / 1000 / Math.max(0.8, kmh)) * 3600 * 1000;
-      hr = 0.8 * hr + 0.2 * Math.max(88, Math.min(172, 102 + 900 * Math.max(0, grade) + 6 * gauss()));
+      const kmh = 6 * Math.exp(-3.5 * Math.abs(grade + 0.05)) * (0.8 - 0.05 * (d / chord)) * (1 + 0.08 * g());
+      t += (seg / 1000 / Math.max(0.8, kmh)) * 3600 * 1000;
+      hr = 0.8 * hr + 0.2 * Math.max(88, Math.min(172, 102 + 900 * Math.max(0, grade) + 6 * g()));
       rows.push(`${new Date(t).toISOString()},${lat.toFixed(6)},${lon.toFixed(6)},${ele.toFixed(1)},${Math.round(hr)}`);
-      if (breaks.has(step)) {
-        const minutes = step === Math.round(0.55 * total / 40) ? 35 : 10;
+      if (breakAt.includes(step)) {
+        const minutes = step === breakAt[1] ? 35 : 10;
         for (let m = 1; m <= minutes; m += 2) {
           t += 120 * 1000;
           hr = 0.6 * hr + 0.4 * 84;
-          rows.push(`${new Date(t).toISOString()},${(lat + 0.00001 * gauss()).toFixed(6)},${(lon + 0.00001 * gauss()).toFixed(6)},${ele.toFixed(1)},${Math.round(hr)}`);
+          rows.push(`${new Date(t).toISOString()},${(lat + 0.00001 * g()).toFixed(6)},${(lon + 0.00001 * g()).toFixed(6)},${ele.toFixed(1)},${Math.round(hr)}`);
         }
       }
+      prev = [lat, lon];
       prevEle = ele;
       step++;
     }
-    distSoFar += legLengths[li];
+    along += legLengths[li];
   }
+  return { rows, length };
+}
+// Pick the switchback size that makes the three days add up to the real trail length.
+let swing = 20, bestErr = Infinity;
+for (let s = 0; s <= 200; s += 2) {
+  const total = days.reduce((sum, [, , , wps], di) => sum + buildDay(di, wps, s).length, 0);
+  if (Math.abs(total - TRAIL_M) < bestErr) { bestErr = Math.abs(total - TRAIL_M); swing = s; }
+}
+let hikeMiles = 0;
+const dayMiles = [];
+days.forEach(([date, from, to, wps], di) => {
+  const { rows, length } = buildDay(di, wps, swing);
+  hikeMiles += length / 1609.34;
+  dayMiles.push(length / 1609.34);
   const csv = `attachments/hikes/${date} ${from} to ${to}.csv`.replace(/ /g, "-").toLowerCase();
   write(csv, rows.join("\n") + "\n");
   const name = `Day ${di + 1} ${from} to ${to}`;
@@ -358,6 +410,58 @@ note(
   { type: "hike", tags: ["hike"], start: "2025-10-10", end: "2025-10-12", trail: "Appalachian Trail", section: "Springer Mountain to Neel Gap" },
   `# AT Georgia 2025\n\nThree days from Springer Mountain to Neel Gap over Blood Mountain. ${hikeNotes.map(link).join(", ")}.\n\nThe GPS tracks in attachments/hikes are generated for the demo: the waypoints follow the real trail roughly, the line between them, the times and the heart rate are invented. Not for navigation.`,
 );
+
+// --- Napoleon's Russian campaign, 1812: Minard's data and one note per battle ---------------------
+// Troop strength, positions, towns and retreat temperatures as charted by Charles Joseph Minard (1869),
+// in the form of the HistData "Minard" dataset (public domain). Battle places and dates are approximate.
+const troops = [
+  [24.0, 54.9, 340000, "A", 1], [24.5, 55.0, 340000, "A", 1], [25.5, 54.5, 340000, "A", 1], [26.0, 54.7, 320000, "A", 1],
+  [27.0, 54.8, 300000, "A", 1], [28.0, 54.9, 280000, "A", 1], [28.5, 55.0, 240000, "A", 1], [29.0, 55.1, 210000, "A", 1],
+  [30.0, 55.2, 180000, "A", 1], [30.3, 55.3, 175000, "A", 1], [32.0, 54.8, 145000, "A", 1], [33.2, 54.9, 140000, "A", 1],
+  [34.4, 55.5, 127100, "A", 1], [35.5, 55.4, 100000, "A", 1], [36.0, 55.5, 100000, "A", 1], [37.6, 55.8, 100000, "A", 1],
+  [37.7, 55.7, 100000, "R", 1], [37.5, 55.7, 98000, "R", 1], [37.0, 55.0, 97000, "R", 1], [36.8, 55.0, 96000, "R", 1],
+  [35.4, 55.3, 87000, "R", 1], [34.3, 55.2, 55000, "R", 1], [33.3, 54.8, 37000, "R", 1], [32.0, 54.6, 24000, "R", 1],
+  [30.4, 54.4, 20000, "R", 1], [29.2, 54.3, 20000, "R", 1], [28.5, 54.2, 20000, "R", 1], [28.3, 54.3, 20000, "R", 1],
+  [27.5, 54.5, 20000, "R", 1], [26.8, 54.3, 12000, "R", 1], [26.4, 54.4, 14000, "R", 1], [25.0, 54.4, 8000, "R", 1],
+  [24.4, 54.4, 4000, "R", 1], [24.2, 54.4, 4000, "R", 1], [24.1, 54.4, 4000, "R", 1],
+  [24.0, 55.1, 60000, "A", 2], [24.5, 55.2, 60000, "A", 2], [25.5, 54.7, 60000, "A", 2], [26.6, 55.7, 40000, "A", 2],
+  [27.4, 55.6, 33000, "A", 2], [28.7, 55.5, 33000, "R", 2], [29.2, 54.2, 30000, "R", 2], [28.5, 54.1, 30000, "R", 2],
+  [28.3, 54.2, 28000, "R", 2],
+  [24.0, 55.2, 22000, "A", 3], [24.5, 55.3, 22000, "A", 3], [24.6, 55.8, 6000, "A", 3], [24.6, 55.8, 6000, "R", 3],
+  [24.2, 54.4, 6000, "R", 3], [24.1, 54.4, 6000, "R", 3],
+];
+write("attachments/history/minard-troops.csv", ["lon,lat,survivors,direction,group,seq", ...troops.map((t, i) => [...t, i].join(","))].join("\n") + "\n");
+// pos: where the town's name sits (t/b/l/r); "-" hides it where a battle of the same name labels the spot.
+const towns = [
+  [24.0, 55.0, "Kowno", "t"], [25.3, 54.7, "Wilna", "t"], [26.4, 54.4, "Smorgoni", "b"], [26.8, 54.3, "Molodexno", "b"], [27.7, 55.2, "Gloubokoe", "t"],
+  [27.6, 53.9, "Minsk", "b"], [28.5, 54.3, "Studienska", "-"], [28.7, 55.5, "Polotzk", "-"], [29.2, 54.4, "Bobr", "b"], [30.2, 55.3, "Witebsk", "-"],
+  [30.4, 54.5, "Orscha", "b"], [30.4, 53.9, "Mohilow", "b"], [32.0, 54.8, "Smolensk", "-"], [33.2, 54.9, "Dorogobouge", "t"], [34.3, 55.2, "Wixma", "-"],
+  [34.4, 55.5, "Chjat", "t"], [36.0, 55.5, "Mojaisk", "-"], [37.6, 55.8, "Moscou", "t"], [36.6, 55.3, "Tarantino", "-"], [36.5, 55.0, "Malo-Jarosewli", "-"],
+];
+write("attachments/history/minard-cities.csv", ["lon,lat,city,pos", ...towns.map((t) => t.join(","))].join("\n") + "\n");
+// Temperature on the retreat in degrees Réaumur, as Minard gave it (°C = °R × 1.25).
+// lat: where the retreat path is at that longitude, so the chart can draw Minard's lines from the temperature up to the army.
+const temps = [[37.6, 55.7, 0, "Oct 18"], [36.0, 55.1, 0, "Oct 24"], [33.2, 54.8, -9, "Nov 9"], [32.0, 54.6, -21, "Nov 14"], [29.2, 54.3, -11, "Nov 24"], [28.5, 54.2, -20, "Nov 28"], [27.2, 54.4, -24, "Dec 1"], [26.7, 54.3, -30, "Dec 6"], [25.3, 54.4, -26, "Dec 7"]];
+write("attachments/history/minard-temps.csv", ["lon,lat,temp_r,date", ...temps.map((t) => t.join(","))].join("\n") + "\n");
+const battles = [
+  ["Battle of Ostrovno", "1812-07-25", "1812-07-27", 55.2, 29.9, "Inconclusive", "advance", "Rearguard fighting west of Vitebsk as the Russian armies fall back."],
+  ["First Battle of Polotsk", "1812-08-17", "1812-08-18", 55.48, 28.78, "French victory", "advance", "On the northern flank, Oudinot and Saint-Cyr hold Polotsk against Wittgenstein."],
+  ["Battle of Smolensk", "1812-08-16", "1812-08-18", 54.78, 32.05, "French victory", "advance", "The city burns; the Russian armies escape east again."],
+  ["Battle of Borodino", "1812-09-07", "1812-09-07", 55.52, 35.82, "French tactical victory", "advance", "The bloodiest single day of the campaign, west of Mozhaysk. The road to Moscow opens."],
+  ["Battle of Tarutino", "1812-10-18", "1812-10-18", 55.2, 36.95, "Russian victory", "retreat", "Kutuzov strikes Murat's camp south-west of Moscow; Napoleon decides to leave."],
+  ["Second Battle of Polotsk", "1812-10-18", "1812-10-20", 55.48, 28.78, "Russian victory", "retreat", "Wittgenstein retakes Polotsk, threatening the line of retreat."],
+  ["Battle of Maloyaroslavets", "1812-10-24", "1812-10-24", 55.01, 36.47, "Inconclusive", "retreat", "The town changes hands several times; the Grande Armée is turned back onto the devastated Smolensk road."],
+  ["Battle of Vyazma", "1812-11-03", "1812-11-03", 55.21, 34.29, "Russian victory", "retreat", "The rearguard is mauled as the cold begins."],
+  ["Battle of Krasnoi", "1812-11-15", "1812-11-18", 54.56, 31.43, "Russian victory", "retreat", "Days of running fights west of Smolensk; Ney's corps is nearly lost."],
+  ["Battle of the Berezina", "1812-11-26", "1812-11-29", 54.33, 28.36, "French escape", "retreat", "Engineers bridge the river at Studienka; the remnant crosses under fire, thousands do not."],
+];
+for (const [name, date, end, lat, lon, outcome, phase, text] of battles) {
+  note(
+    `notes/3_resources/history/Russian campaign 1812/battles/${name}.md`,
+    { type: "battle", tags: ["history/1812"], campaign: link("Russian campaign 1812"), date, end, lat, lon, outcome, phase },
+    `# ${name}\n\n${text}\n\nPart of [[Russian campaign 1812]].`,
+  );
+}
 
 // --- shared data -----------------------------------------------------------------------------------
 const world = new URL("../test-vault/geo/world-110m.json", import.meta.url).pathname;
@@ -395,7 +499,7 @@ filters:
 views:
   - type: agate
     name: Globe
-    order: [file.name, date, from, to, trip]
+    order: [file.name, purpose, start, end, legs]
     specFile: charts/travel-globe.vg.json
   - type: agate
     name: Countries
@@ -406,9 +510,9 @@ views:
     filters:
       and:
         - type == "trip"
-    order: [file.name, date, from, to, mode, trip]
+    order: [file.name, purpose, start, nights, companions]
     sort:
-      - property: date
+      - property: start
         direction: DESC
 `);
 base("Board games", `
@@ -513,18 +617,41 @@ base("Reading", `
 filters:
   and:
     - type == "book"
-formulas:
-  cover: if(isbn, "https://covers.openlibrary.org/b/isbn/" + isbn + "-M.jpg", null)
 views:
   - type: agate
-    name: Shelf
-    order: [file.name, author, genre, rating, pages, published]
-    specFile: charts/reading-shelf.vl.json
+    name: Reading year
+    order: [file.name, author, genre, started, finished, status, rating]
+    sort:
+      - property: started
+        direction: ASC
+    specFile: charts/reading-journey.vg.json
   - type: table
-    name: Table
-    order: [file.name, author, genre, rating, pages, status]
+    name: Shelf
+    order: [file.name, author, genre, pages, started, finished, status, rating]
+    sort:
+      - property: started
+        direction: DESC
+`);
+base("Campaign 1812", `
+filters:
+  and:
+    - type == "battle"
+views:
+  - type: agate
+    name: Minard map
+    order: [file.name, date, outcome, phase]
+    specFile: charts/campaign-1812.vg.json
+  - type: table
+    name: Battles
+    order: [file.name, date, end, outcome, phase]
+    sort:
+      - property: date
+        direction: ASC
 `);
 base("Vault", `
+filters:
+  and:
+    - file.inFolder("notes")
 views:
   - type: agate
     name: Sunburst
@@ -537,5 +664,272 @@ views:
       - property: file.size
         direction: DESC
 `);
+
+// --- area notes: one per area, written like notes someone keeps, with numbers from the data ----------
+// look: which of the three screenshot looks the note is shot in (docs/demo-story.md).
+const of = (type) => NOTES.filter((n) => n.props.type === type);
+const unlink = (v) => String(v).replace(/^\[\[|\]\]$/g, "");
+const fmt = (n) => n.toLocaleString("en-US");
+const plural = (n, w) => `${n} ${w}${n === 1 ? "" : "s"}`;
+const TODAY = new Date("2026-10-07T00:00:00Z");
+function areaNote(path, { title, look, tags = [], dek, stats, intro, sections }) {
+  const stat = `> [!stats]\n${stats.map(([v, l]) => `> - **${v}** ${l}`).join("\n")}`;
+  const fm = `---\ntype: hub\nlook: ${look}\ntags: [${["hub", ...tags].join(", ")}]\ncssclasses: [agate-area]\n---\n`;
+  write(path, `${fm}# ${title}\n\n*${dek}*\n\n${stat}\n\n${intro}\n\n${sections.join("\n\n")}\n`);
+}
+const bullets = (xs) => xs.map((x) => `- ${x}`).join("\n");
+const todos = (xs) => xs.map(([done, x]) => `- [${done ? "x" : " "}] ${x}`).join("\n");
+
+// Travel
+{
+  const tripNotes = of("trip");
+  const countries = new Set(trips.flatMap((t) => t[4]).map((p) => places[p][2]));
+  const nights = trips.reduce((n, t) => n + nightsOf(t[0], t[1]), 0);
+  const longest = tripNotes.reduce((a, b) => (b.props.nights > a.props.nights ? b : a));
+  const visits = new Map();
+  for (const t of trips) for (const p of new Set(t[4])) if (p !== "New York") visits.set(p, (visits.get(p) ?? 0) + 1);
+  const topPlace = [...visits.entries()].sort((a, b) => b[1] - a[1])[0];
+  const withWho = new Map();
+  for (const t of trips) for (const c of t[5]) withWho.set(c, (withWho.get(c) ?? 0) + 1);
+  const topWho = [...withWho.entries()].sort((a, b) => b[1] - a[1])[0];
+  const by = (p) => tripNotes.filter((n) => n.props.purpose === p);
+  const work = by("Work");
+  areaNote("notes/2_areas/travel/Travel.md", {
+    title: "Travel", look: "dark", tags: ["area/travel"],
+    dek: "Where the last two and a half years went, and why.",
+    stats: [[trips.length, "trips"], [countries.size, "countries"], [nights, "nights away"], [by("Family").length, "with family"]],
+    intro: `Every trip is a note with its stops in order and a purpose (family, work, personal); places are notes with coordinates. The globe draws each leg as a great circle, so New York sprouts arcs in every direction. Drag to spin it, hover a route to see the trip, click to open it.`,
+    sections: [
+      "![[Travel.base#Globe]]",
+      `## What I noticed\n\n${bullets([
+        `The longest trip was [[${longest.name}]]: ${longest.props.nights} nights.`,
+        `${topPlace[0]} keeps coming back (${plural(topPlace[1], "trip")}); after that, everywhere was a one-off.`,
+        `${work.length} work trips, all short: ${work.map((n) => `[[${n.name}]]`).join(", ")}.`,
+        `${topWho[0]} came along most often (${plural(topWho[1], "trip")}).`,
+      ])}`,
+      `## Next\n\n${todos([[false, "Japan in spring with Alex, this time Osaka and the Kumano Kodo"], [false, "Renew passport before March"], [true, "Collect receipts from [[2026-09 Atlanta client visit]]"]])}`,
+      "## Where I've been\n\n![[Travel.base#Countries]]",
+      "## Every trip\n\n![[Travel.base#Trips]]",
+      "Related: [[AT Georgia 2025]] · [[Projects]]",
+    ],
+  });
+}
+
+// Reading
+{
+  const bookNotes = of("book");
+  const done = bookNotes.filter((n) => n.props.status === "finished");
+  const span = (n) => (new Date(n.props.finished ?? n.props.abandoned) - new Date(n.props.started)) / 864e5;
+  const fastest = done.reduce((a, b) => (b.props.pages / span(b) > a.props.pages / span(a) ? b : a));
+  const slowest = done.reduce((a, b) => (span(b) > span(a) ? b : a));
+  const dropped = bookNotes.filter((n) => n.props.status === "abandoned");
+  const now = bookNotes.filter((n) => n.props.status === "reading");
+  const fives = done.filter((n) => n.props.rating === 5);
+  const genreCount = new Map();
+  for (const n of done) genreCount.set(n.props.genre, (genreCount.get(n.props.genre) ?? 0) + 1);
+  const topGenre = [...genreCount.entries()].sort((a, b) => b[1] - a[1])[0];
+  areaNote("notes/2_areas/reading/Reading.md", {
+    title: "Reading", look: "elegant", tags: ["area/reading"],
+    dek: "Two years of books, mostly on the F train.",
+    stats: [[readingSummary.finished, "finished"], [fmt(readingSummary.pages), "pages"], [readingSummary.abandoned, "abandoned"], [now.length, "on the nightstand"]],
+    intro: `One bar per book, from the day I started to the day I finished or gave up; × marks the ones I put down. Switch the view to **Flow** to follow each genre to how it ended and how long it took. Each book is a note with dates, pages and a rating, so this page keeps itself up to date.`,
+    sections: [
+      "![[Reading.base#Reading year]]",
+      `## What I noticed\n\n${bullets([
+        `${topGenre[0][0].toUpperCase() + topGenre[0].slice(1)} wins on count (${topGenre[1]} finished), but the five-star list is all over the place: ${fives.slice(0, 4).map((n) => `[[${n.name}]]`).join(", ")}.`,
+        `Fastest read: [[${fastest.name}]], about ${Math.round(fastest.props.pages / span(fastest))} pages a day. Slowest: [[${slowest.name}]], ${Math.round(span(slowest))} days.`,
+        `Doorstoppers and dense non-fiction are where I stall. I put down ${dropped.map((n) => `[[${n.name}]] (${fmt(n.props.pages)} pages)`).join(", ")}.`,
+      ])}`,
+      `## Reading now\n\n${todos(now.map((n) => [false, `[[${n.name}]], ${n.props.pages} pages, started ${n.props.started}`]))}\n- [ ] Give [[War and Peace]] another go in the winter`,
+      "## The shelf\n\n![[Reading.base#Shelf]]",
+    ],
+  });
+}
+
+// Board games
+{
+  const plays = of("play");
+  const wins = new Map(), seats = new Map();
+  for (const p of plays) for (const w of p.props.participants) {
+    seats.set(w, (seats.get(w) ?? 0) + 1);
+    if (p.props.winner === w) wins.set(w, (wins.get(w) ?? 0) + 1);
+  }
+  const rate = (w) => (wins.get(w) ?? 0) / seats.get(w);
+  const champ = [...seats.keys()].filter((w) => seats.get(w) >= 10).sort((a, b) => rate(b) - rate(a))[0];
+  const ranked = [...playCounts.entries()].sort((a, b) => b[1] - a[1]);
+  const shame = ranked.filter(([, n]) => n === 0).map(([g]) => g);
+  const hours = Math.round(plays.reduce((h, p) => h + p.props.duration, 0) / 60);
+  areaNote("notes/2_areas/boardgames/Board games.md", {
+    title: "Board games", look: "colourful", tags: ["area/games"],
+    dek: "Friday nights, Saturday nights, the same seven people.",
+    stats: [[plays.length, "plays this year"], [hours, "hours at the table"], [games.length, "games on the shelf"], [shame.length, "never played"]],
+    intro: `Every play is a note (who played, who won, how long); every game is a note with its complexity and length. Bubbles are sized by plays this year; the dashed rings are the shelf of shame.`,
+    sections: [
+      "![[Board games.base#Collection]]",
+      `## What I noticed\n\n${bullets([
+        `[[${ranked[0][0]}]] and [[${ranked[1][0]}]] are the table's favourites (${ranked[0][1]} and ${ranked[1][1]} plays).`,
+        `[[${champ}]] wins ${Math.round(rate(champ) * 100)}% of the games she sits down to. I win ${Math.round(rate("Me") * 100)}%.`,
+        `Not played once this year: ${shame.map((g) => `[[${g.replace(/:/g, "")}]]`).join(", ")}. All of them ${Math.min(...shame.map((g) => games.find((x) => x[0] === g)[4]))} or heavier on complexity.`,
+      ])}`,
+      `## Next\n\n${todos([[false, "Book a Saturday for [[Twilight Imperium]] (needs 6 and a whole day)"], [false, "Teach [[Spirit Island]] to Ben"], [true, "Sleeve [[Cascadia]]"]])}`,
+      "## Game nights\n\n![[Board games.base#Game nights]]",
+      "## The shelf\n\n![[Board games.base#Games]]",
+    ],
+  });
+}
+
+// Projects
+{
+  const ps = of("project");
+  const st = (s) => ps.filter((p) => p.props.status === s);
+  const late = ps.filter((p) => p.props.status !== "done" && new Date(p.props.due) < TODAY);
+  const soon = st("active").filter((p) => (new Date(p.props.due) - TODAY) / 864e5 < 60).sort((a, b) => String(a.props.due).localeCompare(String(b.props.due)));
+  areaNote("notes/1_projects/Projects.md", {
+    title: "Projects", look: "elegant", tags: ["projects"],
+    dek: "Work, home, health and learning on one timeline.",
+    stats: [[st("active").length, "active"], [st("paused").length, "paused"], [st("idea").length, st("idea").length === 1 ? "idea" : "ideas"], [st("done").length, "done"]],
+    intro: `Each project is a note with a start, a due date and a status; the dashed line is today. Anything that crosses it in ochre is paused and needs a decision.`,
+    sections: [
+      "![[Projects.base#Timeline]]",
+      `## This quarter\n\n${bullets([
+        ...soon.map((p) => `[[${p.name}]] is due ${p.props.due}.`),
+        late.length ? `Overdue: ${late.map((p) => `[[${p.name}]]`).join(", ")}.` : "Nothing overdue.",
+        `Paused: ${st("paused").map((p) => `[[${p.name}]]`).join(", ")}. Decide by the end of October: restart or drop.`,
+      ])}`,
+      `## To do\n\n${todos([[false, "Write the one-pager for [[Experiment platform]]"], [false, "Quotes from two contractors for [[Kitchen renovation]]"], [true, "Retro for [[Data catalog]]"]])}`,
+      "## Who works on what\n\n![[Meetings.base#People and projects]]",
+      "Related: [[Work]] · [[Journal]]",
+    ],
+  });
+}
+
+// Work
+{
+  const ms = of("meeting");
+  const per = new Map(), mins = new Map();
+  for (const m of ms) for (const a of m.props.attendees) {
+    const w = unlink(a);
+    per.set(w, (per.get(w) ?? 0) + 1);
+    mins.set(w, (mins.get(w) ?? 0) + m.props.duration);
+  }
+  const top = [...per.entries()].sort((a, b) => b[1] - a[1]);
+  const hours = Math.round(ms.reduce((h, m) => h + m.props.duration, 0) / 60);
+  const weeks = 26;
+  const kinds2 = new Map();
+  for (const m of ms) kinds2.set(m.props.kind, (kinds2.get(m.props.kind) ?? 0) + 1);
+  areaNote("notes/2_areas/work/Work.md", {
+    title: "Work", look: "colourful", tags: ["area/work"],
+    dek: "Who I spend my weeks with, and on what.",
+    stats: [[ms.length, "meetings since April"], [hours, "hours"], [(hours / weeks).toFixed(1), "hours a week"], [per.size, "people"]],
+    intro: `Every meeting is a note with its attendees and project. One row per person, one square per week; brighter means more meetings that week. The bars on the right are total hours.`,
+    sections: [
+      "![[Meetings.base#Who I meet]]",
+      `## What I noticed\n\n${bullets([
+        `[[${top[0][0]}]] and [[${top[1][0]}]] take the most time (${Math.round(mins.get(top[0][0]) / 60)} and ${Math.round(mins.get(top[1][0]) / 60)} hours).`,
+        `[[${top[top.length - 1][0]}]] is down to ${plural(top[top.length - 1][1], "meeting")}: worth a coffee.`,
+        `${kinds2.get("standup") ?? 0} standups, ${kinds2.get("1:1") ?? 0} one-on-ones, ${kinds2.get("review") ?? 0} reviews.`,
+      ])}`,
+      `## This week\n\n${todos([[false, "Prep the [[Pricing model v2]] review with [[Hana Sato]]"], [false, "Move standups to async on Fridays"], [true, "Send [[Partner API]] notes to [[Maya Patel]]"]])}`,
+      "## People and projects\n\n![[Meetings.base#People and projects]]",
+      "Related: [[Projects]]",
+    ],
+  });
+}
+
+// Journal
+{
+  const js = of("journal");
+  const rateOf = (h) => js.filter((j) => j.props.habits.includes(h)).length / js.length;
+  const avg = (xs) => xs.reduce((a, b) => a + b, 0) / xs.length;
+  const rested = js.filter((j) => j.props.sleep >= 7.5), tired = js.filter((j) => j.props.sleep < 6.5);
+  const rMood = avg(rested.map((j) => j.props.mood)), tMood = avg(tired.map((j) => j.props.mood));
+  const isWkend = (j) => [0, 6].includes(new Date(j.props.date).getUTCDay());
+  const wkend = avg(js.filter(isWkend).map((j) => j.props.mood)), wkday = avg(js.filter((j) => !isWkend(j)).map((j) => j.props.mood));
+  const habitRates = ["gym", "walk", "read", "meditate"].map((h) => [h, rateOf(h)]).sort((a, b) => a[1] - b[1]);
+  const weakest = habitRates[0], strongest = habitRates[habitRates.length - 1];
+  let best = 0, run = 0;
+  for (const j of js) { run = j.props.habits.includes("walk") ? run + 1 : 0; best = Math.max(best, run); }
+  areaNote("notes/journal/Journal.md", {
+    title: "Journal", look: "dark", tags: ["journal"],
+    dek: "Six months of mornings: habits, mood, sleep.",
+    stats: [[js.length, "daily notes"], [`${Math.round(rateOf("walk") * 100)}%`, "days with a walk"], [`${Math.round(rateOf("gym") * 100)}%`, "with the gym"], [best, "day walking streak"]],
+    intro: `Each daily note has a \`habits\` list and a mood, energy and sleep check-in. One row per habit, one square per week; brighter means more days that week. Below, one dot per day: height is mood, colour is energy, size is sleep.`,
+    sections: [
+      "![[Journal.base#Habits]]",
+      `## What I noticed\n\n${bullets([
+        rMood > tMood + 0.15
+          ? `Sleep shows up in the mood: ${rMood.toFixed(1)} on average after 7.5 hours or more, ${tMood.toFixed(1)} after less than 6.5.`
+          : `Sleep barely moves the mood (${rMood.toFixed(1)} after 7.5 hours or more, ${tMood.toFixed(1)} after less than 6.5). Weekends do: ${wkend.toFixed(1)} against ${wkday.toFixed(1)} on weekdays.`,
+        `${{ gym: "The gym", walk: "Walking", read: "Reading", meditate: "Meditation" }[weakest[0]]} is the habit that slips (${Math.round(weakest[1] * 100)}% of days); ${{ gym: "the gym", walk: "walking", read: "reading", meditate: "meditation" }[strongest[0]]} sticks (${Math.round(strongest[1] * 100)}%).`,
+      ])}`,
+      "## Mood, day by day\n\n![[Journal.base#Mood]]",
+      `## Experiments\n\n${todos([[false, "No screens after 10pm for two weeks, then compare"], [true, "Gym on Monday, Wednesday, Friday"]])}`,
+    ],
+  });
+}
+
+// Hiking
+{
+  const dayNotes = of("hike-day");
+  areaNote("notes/2_areas/hiking/AT Georgia 2025/AT Georgia 2025.md", {
+    title: "AT Georgia 2025", look: "dark", tags: ["area/hiking", "trip"],
+    dek: "Springer Mountain to Neel Gap, three days in October 2025.",
+    stats: [[hikeMiles.toFixed(1), "miles"], [3, "days"], ["4,458 ft", "Blood Mountain"], [2, "nights in shelters"]],
+    intro: `The first 31 miles of the Appalachian Trail, from the southern terminus to the outfitter at Neel Gap. Each day is a note with its GPS track. Hover the route to read elevation, speed and heart rate at that point; drag across the profile to zoom into a stretch. At night the map switches to satellite.`,
+    sections: [
+      "![[Hiking.base#Dashboard]]",
+      `## Day by day\n\n${bullets(dayNotes.map((d, i) => `[[${d.name}]]: ${dayMiles[i].toFixed(1)} mi, ${d.props.weather}.`))}`,
+      `## Notes for next time\n\n${todos([[true, "Water at Gooch Gap was flowing"], [false, "Lighter quilt; the second night was warm"], [false, "Start day 3 earlier: Blood Mountain takes longer than it looks"]])}`,
+      "## Days\n\n![[Hiking.base#Days]]",
+      "Tracks are generated for the demo; the route is approximate and not for navigation. Related: [[Travel]]",
+    ],
+  });
+}
+
+// Russian campaign
+{
+  const bs = of("battle").sort((a, b) => String(a.props.date).localeCompare(String(b.props.date)));
+  areaNote("notes/3_resources/history/Russian campaign 1812/Russian campaign 1812.md", {
+    title: "Napoleon's Russian campaign, 1812", look: "elegant", tags: ["history"],
+    dek: "Minard's map, rebuilt from his numbers, with the battles as notes.",
+    stats: [["422,000", "crossed the Niemen"], ["100,000", "reached Moscow"], ["10,000", "came back"], ["−38 °C", "on December 6"]],
+    intro: `Charles Joseph Minard drew this in 1869: the band is the army, its width the number of men, gold going east and black coming back, with the temperature on the retreat underneath. Edward Tufte called it about the best statistical graphic ever drawn. Here the army and the temperatures come from Minard's own figures (the HistData tables); the battles are notes in this folder, so adding one puts it on the map.`,
+    sections: [
+      "![[Campaign 1812.base#Minard map]]",
+      `## Reading the map\n\n${bullets([
+        "Barely one soldier in forty came back. Most were lost to hunger, disease and desertion before the first snow, not in battle.",
+        "Most of the loss happens in summer: the main column is down from 340,000 to 145,000 by Smolensk, months before the first frost.",
+        `The cold arrives with the retreat. The worst readings, at the Berezina and after, line up with the band thinning to a thread: see [[Battle of the Berezina]].`,
+      ])}`,
+      `## The battles\n\n![[Campaign 1812.base#Battles]]\n\n${bullets(bs.map((b) => `${b.props.date}: [[${b.name}]], ${String(b.props.outcome).toLowerCase()}`))}`,
+      `## To read\n\n${todos([[false, "Adam Zamoyski, *1812: Napoleon's Fatal March on Moscow*"], [false, "Tolstoy's Borodino chapters in [[War and Peace]]"], [true, "Tufte, *The Visual Display of Quantitative Information*"]])}`,
+      "Data: Minard (1869) via HistData; battle places and dates approximate.",
+    ],
+  });
+}
+
+// Vault review
+{
+  const top = new Map();
+  for (const n of NOTES) if (n.path.startsWith("notes/")) { const f = n.path.split("/")[1]; if (!f.endsWith(".md")) top.set(f, (top.get(f) ?? 0) + 1); }
+  const all = NOTES.filter((n) => n.path.startsWith("notes/")).length;
+  const rank = [...top.entries()].sort((a, b) => b[1] - a[1]);
+  areaNote("notes/Vault review.md", {
+    title: "Vault review", look: "colourful", tags: ["meta"],
+    dek: "What this vault is made of, by folder and by size.",
+    stats: [[fmt(all), "notes"], [top.size, "top-level folders"], [top.get("0_inbox") ?? 0, "in the inbox"], [of("resource").length, "resources"]],
+    intro: `Rings are folders, arc length is bytes, hue follows the angle so a folder's contents share its colour. Click a ring to zoom into a folder, the centre to go back up, a note to open it.`,
+    sections: [
+      "![[Vault.base#Sunburst]]",
+      `## What I noticed\n\n${bullets([
+        `\`${rank[0][0]}\` holds ${fmt(rank[0][1])} notes (meetings, plays, people, books); \`${rank[1][0]}\` comes next with ${fmt(rank[1][1])}.`,
+        "Meetings are the biggest single folder under areas: small notes, but many of them.",
+        `The inbox has ${top.get("0_inbox") ?? 0} notes waiting. Triage on Friday.`,
+      ])}`,
+      `## Housekeeping\n\n${todos([[false, "Empty the inbox"], [false, "Merge the cooking resources into one note per cuisine"], [true, "Move trip legs into one note per trip"]])}`,
+      "## Largest notes\n\n![[Vault.base#Largest files]]",
+    ],
+  });
+}
 
 console.log(`demo-vault: ${meetings} meetings, ${[...playCounts.values()].reduce((a, b) => a + b, 0)} plays, ${days.length} hike days`);

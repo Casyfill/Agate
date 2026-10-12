@@ -13,4 +13,5 @@ played_times: 5
 ---
 # Kingdomino
 
-detail draft context review next decision sketch source review follow follow summary decision draft source draft follow question context next.
+2–4 players, about 15 minutes, complexity 1.2. Played 5 times this year.
+

@@ -3,12 +3,18 @@ type: book
 tags: [book]
 author: J.R.R. Tolkien
 genre: fantasy
-rating: 5
 pages: 310
-published: 1937-09-21
-status: read
+rating: 5
+status: finished
+started: 2025-12-22
+finished: 2026-01-02
 isbn: "9780547928227"
 ---
 # The Hobbit
 
-review source follow source next source idea up thought decision follow draft summary up detail source question idea draft follow.
+*J.R.R. Tolkien*, 310 pages. Read in 11 days, ★★★★★.
+
+## Notes
+
+- Slow start, worth it after the first third.
+

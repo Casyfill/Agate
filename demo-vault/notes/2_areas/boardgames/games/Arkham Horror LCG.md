@@ -13,4 +13,5 @@ played_times: 2
 ---
 # Arkham Horror LCG
 
-idea sketch idea up detail source idea context step summary context step draft plan thought step decision note idea context.
+1–2 players, about 120 minutes, complexity 3.4. Played 2 times this year.
+

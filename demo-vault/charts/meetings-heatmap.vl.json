@@ -45,8 +45,14 @@
       },
       "mark": {
         "type": "rect",
-        "cornerRadius": 2,
-        "tooltip": true
+        "cornerRadius": 3,
+        "tooltip": true,
+        "width": {
+          "band": 0.86
+        },
+        "height": {
+          "band": 0.82
+        }
       },
       "encoding": {
         "x": {
@@ -55,8 +61,9 @@
           "type": "ordinal",
           "title": null,
           "axis": {
-            "format": "%b %d",
-            "labelOverlap": true,
+            "labelExpr": "date(datum.value) <= 7 ? timeFormat(datum.value, '%b') : ''",
+            "ticks": false,
+            "domain": false,
             "labelAngle": 0
           }
         },
@@ -67,17 +74,40 @@
             "field": "minutes",
             "order": "descending"
           },
-          "title": null
+          "title": null,
+          "axis": {
+            "domain": false,
+            "ticks": false,
+            "labelPadding": 6
+          }
         },
         "color": {
           "aggregate": "count",
           "type": "quantitative",
           "title": "Meetings",
           "scale": {
-            "scheme": "blues"
+            "range": [
+              {
+                "expr": "agateDark ? '#45475a' : '#bcc0cc'"
+              },
+              {
+                "expr": "agateDark ? '#94e2d5' : '#179299'"
+              },
+              {
+                "expr": "agateDark ? '#74c7ec' : '#209fb5'"
+              },
+              {
+                "expr": "agateDark ? '#cba6f7' : '#8839ef'"
+              }
+            ],
+            "domainMin": 1
           },
           "legend": {
-            "format": "d"
+            "format": "d",
+            "orient": "top",
+            "direction": "horizontal",
+            "gradientLength": 100,
+            "title": "Meetings a week"
           }
         }
       }
@@ -89,9 +119,14 @@
       },
       "mark": {
         "type": "bar",
-        "cornerRadiusEnd": 3,
+        "cornerRadiusEnd": 4,
         "tooltip": true,
-        "color": "#027aff"
+        "color": {
+          "expr": "agateDark ? '#f5c2e7' : '#ea76cb'"
+        },
+        "height": {
+          "band": 0.7
+        }
       },
       "encoding": {
         "y": {
@@ -111,10 +146,23 @@
           "title": "Hours",
           "axis": {
             "labelExpr": "format(datum.value / 60, '.0f')",
-            "tickCount": 3
+            "tickCount": 3,
+            "domain": false,
+            "grid": false
           }
         }
       }
     }
-  ]
+  ],
+  "params": [
+    {
+      "name": "agateDark",
+      "value": false
+    }
+  ],
+  "config": {
+    "view": {
+      "stroke": null
+    }
+  }
 }

@@ -13,4 +13,5 @@ played_times: 5
 ---
 # Splendor
 
-reference decision detail plan next summary note thought context plan source source up follow decision plan decision decision draft context.
+2–4 players, about 30 minutes, complexity 1.8. Played 5 times this year.
+

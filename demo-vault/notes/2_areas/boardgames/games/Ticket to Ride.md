@@ -13,4 +13,5 @@ played_times: 8
 ---
 # Ticket to Ride
 
-sketch context detail note source decision thought sketch decision plan review summary source thought reference next question idea follow source.
+2–5 players, about 60 minutes, complexity 1.8. Played 8 times this year.
+

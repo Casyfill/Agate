@@ -12,6 +12,7 @@ import {
   withSignalValues,
 } from "./spec";
 import { errorMessage, type Logger } from "../util/log";
+import { quietAriaLabels } from "./aria";
 
 export interface RenderInput {
   resolved: ResolvedSpec;
@@ -69,6 +70,7 @@ export class AgateRenderer {
   private embedKey = "";
   private chartEl: HTMLElement | null = null;
   private resizeObserver: ResizeObserver | null = null;
+  private ariaObserver: MutationObserver | null = null;
   private lastWidth = 0;
   private resizeTimer: number | null = null;
   private generation = 0;
@@ -135,6 +137,8 @@ export class AgateRenderer {
 
       const result = await vegaEmbed(this.chartEl, spec, embedOptions);
       this.isolateHover(this.chartEl);
+      this.ariaObserver?.disconnect();
+      this.ariaObserver = quietAriaLabels(this.chartEl);
       const openOn = openOnEvent(resolved.spec);
       const openNote = input.openNote;
       if (openOn && openNote && options.interactive) {
@@ -250,6 +254,8 @@ export class AgateRenderer {
     }
     this.resizeObserver?.disconnect();
     this.resizeObserver = null;
+    this.ariaObserver?.disconnect();
+    this.ariaObserver = null;
     if (this.result) {
       try {
         this.result.finalize();

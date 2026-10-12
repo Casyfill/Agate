@@ -13,4 +13,5 @@ played_times: 4
 ---
 # Azul
 
-step step up reference sketch sketch plan sketch source idea source next thought idea step summary draft context question step.
+2–4 players, about 40 minutes, complexity 1.8. Played 4 times this year.
+

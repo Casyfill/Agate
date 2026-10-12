@@ -13,4 +13,5 @@ played_times: 4
 ---
 # Dixit
 
-follow step thought idea review detail follow reference reference up note note next thought sketch decision context reference thought next.
+3–8 players, about 30 minutes, complexity 1.2. Played 4 times this year.
+

@@ -13,4 +13,5 @@ played_times: 7
 ---
 # Cascadia
 
-context follow decision question step source sketch review idea plan idea decision up source context follow draft detail next idea.
+1–4 players, about 45 minutes, complexity 1.8. Played 7 times this year.
+

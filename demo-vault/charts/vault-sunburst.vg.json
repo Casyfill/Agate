@@ -1,81 +1,259 @@
 {
   "$schema": "https://vega.github.io/schema/vega/v6.json",
   "description": "DaisyDisk-style sunburst of the vault: rings are folder levels, arc length is bytes, hue follows the angle so a folder's contents share its colour and deeper rings get lighter. Click a folder to zoom in, click the centre to go up. Folder hierarchy from Agate's tree dataset (usermeta.agate.tree).",
-  "usermeta": { "agate": { "tree": "tree", "open": "click" } },
-  "autosize": { "type": "fit-x", "contains": "padding" },
+  "usermeta": {
+    "agate": {
+      "tree": "tree",
+      "open": "click"
+    }
+  },
+  "autosize": {
+    "type": "fit-x",
+    "contains": "padding"
+  },
   "padding": 8,
-
   "signals": [
     {
       "name": "width",
       "init": "isFinite(containerSize()[0]) && containerSize()[0] > 0 ? containerSize()[0] : 720",
-      "on": [{ "events": "window:resize", "update": "isFinite(containerSize()[0]) && containerSize()[0] > 0 ? containerSize()[0] : 720" }]
+      "on": [
+        {
+          "events": "window:resize",
+          "update": "isFinite(containerSize()[0]) && containerSize()[0] > 0 ? containerSize()[0] : 720"
+        }
+      ]
     },
-    { "name": "agateDark", "value": false, "description": "Set by Agate in dark mode." },
-    { "name": "maxDepth", "value": 4, "description": "Rings shown below the centre.", "bind": { "input": "range", "min": 1, "max": 8, "step": 1, "name": "Rings " } },
+    {
+      "name": "agateDark",
+      "value": false,
+      "description": "Set by Agate in dark mode."
+    },
+    {
+      "name": "maxDepth",
+      "value": 4,
+      "description": "Rings shown below the centre.",
+      "bind": {
+        "input": "range",
+        "min": 1,
+        "max": 8,
+        "step": 1,
+        "name": "Rings "
+      }
+    },
     {
       "name": "hueStart",
       "value": 250,
       "description": "OKLCH hue (degrees) at 12 o'clock; the spectrum runs clockwise over 300 degrees, at even perceived lightness."
     },
-    { "name": "listW", "update": "width >= 640 ? 240 : 0" },
-    { "name": "size", "update": "clamp(min(width - listW - 16, 620), 220, 620)" },
-    { "name": "height", "update": "size + 28" },
-    { "name": "cx", "update": "size / 2" },
-    { "name": "cy", "update": "size / 2 + 28" },
-    { "name": "rootId", "value": "/", "on": [
-      { "events": "@arc:click", "update": "datum.kind === 'folder' ? datum.id : rootId" },
-      { "events": "@center:click, @crumb:click", "update": "rootId === '/' || indexof(rootId, '/') < 0 ? '/' : substring(rootId, 0, lastindexof(rootId, '/'))" },
-      { "events": "@list:click", "update": "datum.kind === 'folder' ? datum.id : rootId" }
-    ] },
-    { "name": "rootDepth", "update": "rootId === '/' ? 0 : length(split(rootId, '/'))" },
-    { "name": "hover", "value": null, "on": [
-      { "events": "@arc:mouseover, @list:mouseover", "update": "datum.id" },
-      { "events": "@arc:mouseout, @list:mouseout", "update": "null" }
-    ] }
+    {
+      "name": "listW",
+      "update": "width >= 640 ? 240 : 0"
+    },
+    {
+      "name": "size",
+      "update": "clamp(min(width - listW - 16, 620), 220, 620)"
+    },
+    {
+      "name": "height",
+      "update": "size + 28"
+    },
+    {
+      "name": "cx",
+      "update": "size / 2"
+    },
+    {
+      "name": "cy",
+      "update": "size / 2 + 28"
+    },
+    {
+      "name": "top",
+      "update": "data('tops').length === 1 ? data('tops')[0].id : '/'",
+      "description": "Start at the one top-level folder when the base holds a single folder (notes/), else at the vault root."
+    },
+    {
+      "name": "rootId",
+      "update": "top",
+      "on": [
+        {
+          "events": "@arc:click",
+          "update": "datum.kind === 'folder' ? datum.id : rootId"
+        },
+        {
+          "events": "@center:click, @crumb:click",
+          "update": "rootId === top ? top : indexof(rootId, '/') < 0 ? '/' : substring(rootId, 0, lastindexof(rootId, '/'))"
+        },
+        {
+          "events": "@list:click",
+          "update": "datum.kind === 'folder' ? datum.id : rootId"
+        }
+      ]
+    },
+    {
+      "name": "rootDepth",
+      "update": "rootId === '/' ? 0 : length(split(rootId, '/'))"
+    },
+    {
+      "name": "hover",
+      "value": null,
+      "on": [
+        {
+          "events": "@arc:mouseover, @list:mouseover",
+          "update": "datum.id"
+        },
+        {
+          "events": "@arc:mouseout, @list:mouseout",
+          "update": "null"
+        }
+      ]
+    }
   ],
-
   "data": [
-    { "name": "tree" },
+    {
+      "name": "tree"
+    },
+    {
+      "name": "tops",
+      "source": "tree",
+      "transform": [
+        {
+          "type": "filter",
+          "expr": "datum.depth === 1 && datum.kind === 'folder'"
+        }
+      ]
+    },
     {
       "name": "nodes",
       "source": "tree",
       "transform": [
-        { "type": "filter", "expr": "datum.id === rootId || (indexof(datum.ancestors, rootId) >= 0 && datum.depth - rootDepth <= maxDepth)" },
-        { "type": "formula", "as": "up", "expr": "datum.id === rootId ? null : datum.parent" },
-        { "type": "formula", "as": "rel", "expr": "datum.depth - rootDepth" },
-        { "type": "formula", "as": "leafSize", "expr": "datum.kind === 'file' || datum.rel >= maxDepth ? datum.size : 0" },
-        { "type": "formula", "as": "branch", "expr": "datum.rel === 0 ? '/' : datum.rel === 1 ? datum.id : datum.ancestors[rootDepth + 1]" },
-        { "type": "stratify", "key": "id", "parentKey": "up" },
+        {
+          "type": "filter",
+          "expr": "datum.id === rootId || (indexof(datum.ancestors, rootId) >= 0 && datum.depth - rootDepth <= maxDepth)"
+        },
+        {
+          "type": "formula",
+          "as": "up",
+          "expr": "datum.id === rootId ? null : datum.parent"
+        },
+        {
+          "type": "formula",
+          "as": "rel",
+          "expr": "datum.depth - rootDepth"
+        },
+        {
+          "type": "formula",
+          "as": "leafSize",
+          "expr": "datum.kind === 'file' || datum.rel >= maxDepth ? datum.size : 0"
+        },
+        {
+          "type": "formula",
+          "as": "branch",
+          "expr": "datum.rel === 0 ? '/' : datum.rel === 1 ? datum.id : datum.ancestors[rootDepth + 1]"
+        },
+        {
+          "type": "stratify",
+          "key": "id",
+          "parentKey": "up"
+        },
         {
           "type": "partition",
           "field": "leafSize",
-          "sort": { "field": "size", "order": "descending" },
-          "size": [{ "signal": "2 * PI" }, { "signal": "size / 2" }],
-          "as": ["a0", "r0", "a1", "r1", "pdepth", "children"]
+          "sort": {
+            "field": "size",
+            "order": "descending"
+          },
+          "size": [
+            {
+              "signal": "2 * PI"
+            },
+            {
+              "signal": "size / 2"
+            }
+          ],
+          "as": [
+            "a0",
+            "r0",
+            "a1",
+            "r1",
+            "pdepth",
+            "children"
+          ]
         }
       ]
     },
     {
       "name": "rings",
       "source": "nodes",
-      "transform": [{ "type": "filter", "expr": "datum.rel > 0 && datum.a1 - datum.a0 > 0.003" }]
+      "transform": [
+        {
+          "type": "filter",
+          "expr": "datum.rel > 0 && datum.a1 - datum.a0 > 0.003"
+        }
+      ]
     },
-    { "name": "rootNode", "source": "nodes", "transform": [{ "type": "filter", "expr": "datum.rel === 0" }] },
+    {
+      "name": "rootNode",
+      "source": "nodes",
+      "transform": [
+        {
+          "type": "filter",
+          "expr": "datum.rel === 0"
+        }
+      ]
+    },
     {
       "name": "children",
       "source": "tree",
       "transform": [
-        { "type": "filter", "expr": "datum.parent === rootId && datum.id !== rootId" },
-        { "type": "collect", "sort": { "field": "size", "order": "descending" } },
-        { "type": "window", "ops": ["row_number"], "as": ["rank"] },
-        { "type": "filter", "expr": "datum.rank <= floor((size - 20) / 22)" },
-        { "type": "lookup", "from": "rings", "key": "id", "fields": ["id"], "values": ["a0", "a1"], "default": 0 }
+        {
+          "type": "filter",
+          "expr": "datum.parent === rootId && datum.id !== rootId"
+        },
+        {
+          "type": "collect",
+          "sort": {
+            "field": "size",
+            "order": "descending"
+          }
+        },
+        {
+          "type": "window",
+          "ops": [
+            "row_number"
+          ],
+          "as": [
+            "rank"
+          ]
+        },
+        {
+          "type": "filter",
+          "expr": "datum.rank <= floor((size - 20) / 22)"
+        },
+        {
+          "type": "lookup",
+          "from": "rings",
+          "key": "id",
+          "fields": [
+            "id"
+          ],
+          "values": [
+            "a0",
+            "a1"
+          ],
+          "default": 0
+        }
       ]
     },
-    { "name": "hovered", "source": "tree", "transform": [{ "type": "filter", "expr": "hover !== null && datum.id === hover" }] }
+    {
+      "name": "hovered",
+      "source": "tree",
+      "transform": [
+        {
+          "type": "filter",
+          "expr": "hover !== null && datum.id === hover"
+        }
+      ]
+    }
   ],
-
   "marks": [
     {
       "type": "text",
@@ -83,149 +261,311 @@
       "style": "guide-label",
       "encode": {
         "update": {
-          "x": { "value": 0 },
-          "y": { "value": 12 },
-          "fontSize": { "value": 12 },
-          "fontWeight": { "value": "bold" },
-          "cursor": { "signal": "rootId === '/' ? 'default' : 'pointer'" },
-          "text": { "signal": "rootId === '/' ? 'Vault' : '‹ Vault / ' + join(split(rootId, '/'), ' / ')" }
+          "x": {
+            "value": 0
+          },
+          "y": {
+            "value": 12
+          },
+          "fontSize": {
+            "value": 12
+          },
+          "fontWeight": {
+            "value": "bold"
+          },
+          "cursor": {
+            "signal": "rootId === top ? 'default' : 'pointer'"
+          },
+          "text": {
+            "signal": "rootId === top ? (top === '/' ? 'Vault' : top + '/') : '‹ ' + join(split(rootId, '/'), ' / ')"
+          }
         }
       }
     },
     {
       "type": "arc",
       "name": "arc",
-      "from": { "data": "rings" },
+      "from": {
+        "data": "rings"
+      },
       "encode": {
-        "enter": { "cornerRadius": { "value": 2 }, "padAngle": { "value": 0.004 } },
+        "enter": {
+          "cornerRadius": {
+            "value": 2
+          },
+          "padAngle": {
+            "value": 0.004
+          }
+        },
         "update": {
-          "x": { "signal": "cx" },
-          "y": { "signal": "cy" },
-          "startAngle": { "field": "a0" },
-          "endAngle": { "field": "a1" },
-          "innerRadius": { "signal": "datum.r0 + 1" },
-          "outerRadius": { "signal": "datum.r1 - 1" },
-          "fill": { "signal": "'oklch(' + min(0.9, (agateDark ? 0.6 : 0.68) + 0.06 * (datum.rel - 1)) + ' ' + max(0.03, (datum.kind === 'file' ? 0.07 : 0.12) - 0.018 * (datum.rel - 1)) + ' ' + ((hueStart + (datum.a0 + datum.a1) / 2 / (2 * PI) * 300) % 360) + ')'" },
-          "fillOpacity": { "signal": "hover === null || hover === datum.id || indexof(datum.ancestors, hover) >= 0 ? 1 : 0.35" },
-          "cursor": { "signal": "datum.kind === 'folder' ? 'pointer' : 'default'" },
-          "tooltip": { "signal": "{title: datum.kind === 'folder' ? datum.id + '/' : datum.id, 'Size': format(datum.size, '.3~s') + 'B', 'Files': datum.count}" }
+          "x": {
+            "signal": "cx"
+          },
+          "y": {
+            "signal": "cy"
+          },
+          "startAngle": {
+            "field": "a0"
+          },
+          "endAngle": {
+            "field": "a1"
+          },
+          "innerRadius": {
+            "signal": "datum.r0 + 1"
+          },
+          "outerRadius": {
+            "signal": "datum.r1 - 1"
+          },
+          "fill": {
+            "signal": "'oklch(' + min(0.92, (agateDark ? 0.74 : 0.62) + 0.045 * (datum.rel - 1)) + ' ' + max(0.04, (datum.kind === 'file' ? 0.09 : (agateDark ? 0.12 : 0.15)) - 0.015 * (datum.rel - 1)) + ' ' + ((hueStart + (datum.a0 + datum.a1) / 2 / (2 * PI) * 300) % 360) + ')'"
+          },
+          "fillOpacity": {
+            "signal": "hover === null || hover === datum.id || indexof(datum.ancestors, hover) >= 0 ? 1 : 0.35"
+          },
+          "cursor": {
+            "signal": "datum.kind === 'folder' ? 'pointer' : 'default'"
+          },
+          "tooltip": {
+            "signal": "{title: datum.kind === 'folder' ? datum.id + '/' : datum.id, 'Size': format(datum.size, '.3~s') + 'B', 'Files': datum.count}"
+          }
         }
       }
     },
     {
       "type": "arc",
       "name": "center",
-      "from": { "data": "rootNode" },
+      "from": {
+        "data": "rootNode"
+      },
       "encode": {
         "update": {
-          "x": { "signal": "cx" },
-          "y": { "signal": "cy" },
-          "startAngle": { "value": 0 },
-          "endAngle": { "signal": "2 * PI" },
-          "outerRadius": { "signal": "datum.r1 - 2" },
-          "fill": { "signal": "agateDark ? '#2a2a2a' : '#f1f1f1'" },
-          "cursor": { "signal": "rootId === '/' ? 'default' : 'pointer'" }
+          "x": {
+            "signal": "cx"
+          },
+          "y": {
+            "signal": "cy"
+          },
+          "startAngle": {
+            "value": 0
+          },
+          "endAngle": {
+            "signal": "2 * PI"
+          },
+          "outerRadius": {
+            "signal": "datum.r1 - 2"
+          },
+          "fill": {
+            "signal": "agateDark ? '#313244' : '#e6e9ef'"
+          },
+          "cursor": {
+            "signal": "rootId === top ? 'default' : 'pointer'"
+          }
         }
       }
     },
     {
       "type": "text",
       "style": "text",
-      "from": { "data": "rootNode" },
+      "from": {
+        "data": "rootNode"
+      },
       "interactive": false,
       "encode": {
         "update": {
-          "x": { "signal": "cx" },
-          "y": { "signal": "cy - 7" },
-          "align": { "value": "center" },
-          "baseline": { "value": "middle" },
-          "fontWeight": { "value": "bold" },
-          "fontSize": { "value": 13 },
-          "limit": { "signal": "2 * datum.r1 - 16" },
-          "text": { "signal": "hover !== null && length(data('hovered')) ? data('hovered')[0].name : datum.name" }
+          "x": {
+            "signal": "cx"
+          },
+          "y": {
+            "signal": "cy - 7"
+          },
+          "align": {
+            "value": "center"
+          },
+          "baseline": {
+            "value": "middle"
+          },
+          "fontWeight": {
+            "value": "bold"
+          },
+          "fontSize": {
+            "value": 13
+          },
+          "limit": {
+            "signal": "2 * datum.r1 - 16"
+          },
+          "text": {
+            "signal": "hover !== null && length(data('hovered')) ? data('hovered')[0].name : datum.name"
+          }
         }
       }
     },
     {
       "type": "text",
       "style": "guide-label",
-      "from": { "data": "rootNode" },
+      "from": {
+        "data": "rootNode"
+      },
       "interactive": false,
       "encode": {
         "update": {
-          "x": { "signal": "cx" },
-          "y": { "signal": "cy + 10" },
-          "align": { "value": "center" },
-          "baseline": { "value": "middle" },
-          "fontSize": { "value": 12 },
-          "text": { "signal": "format(hover !== null && length(data('hovered')) ? data('hovered')[0].size : datum.size, '.3~s') + 'B'" }
+          "x": {
+            "signal": "cx"
+          },
+          "y": {
+            "signal": "cy + 10"
+          },
+          "align": {
+            "value": "center"
+          },
+          "baseline": {
+            "value": "middle"
+          },
+          "fontSize": {
+            "value": 12
+          },
+          "text": {
+            "signal": "format(hover !== null && length(data('hovered')) ? data('hovered')[0].size : datum.size, '.3~s') + 'B'"
+          }
         }
       }
     },
     {
       "type": "group",
-      "encode": { "update": { "x": { "signal": "size + 16" }, "y": { "value": 28 }, "width": { "signal": "listW" }, "height": { "signal": "size" } } },
+      "encode": {
+        "update": {
+          "x": {
+            "signal": "size + 16"
+          },
+          "y": {
+            "value": 28
+          },
+          "width": {
+            "signal": "listW"
+          },
+          "height": {
+            "signal": "size"
+          }
+        }
+      },
       "marks": [
         {
           "type": "rect",
           "name": "list",
-          "from": { "data": "children" },
+          "from": {
+            "data": "children"
+          },
           "encode": {
             "update": {
-              "x": { "value": 0 },
-              "width": { "signal": "listW" },
-              "y": { "signal": "(datum.rank - 1) * 22" },
-              "height": { "value": 20 },
-              "fill": { "signal": "agateDark ? '#ffffff' : '#000000'" },
-              "fillOpacity": { "signal": "hover === datum.id ? 0.08 : 0" },
-              "cornerRadius": { "value": 4 },
-              "cursor": { "signal": "datum.kind === 'folder' ? 'pointer' : 'default'" }
+              "x": {
+                "value": 0
+              },
+              "width": {
+                "signal": "listW"
+              },
+              "y": {
+                "signal": "(datum.rank - 1) * 22"
+              },
+              "height": {
+                "value": 20
+              },
+              "fill": {
+                "signal": "agateDark ? '#cdd6f4' : '#4c4f69'"
+              },
+              "fillOpacity": {
+                "signal": "hover === datum.id ? 0.08 : 0"
+              },
+              "cornerRadius": {
+                "value": 4
+              },
+              "cursor": {
+                "signal": "datum.kind === 'folder' ? 'pointer' : 'default'"
+              }
             }
           }
         },
         {
           "type": "symbol",
-          "from": { "data": "children" },
+          "from": {
+            "data": "children"
+          },
           "interactive": false,
           "encode": {
             "update": {
-              "x": { "value": 10 },
-              "y": { "signal": "(datum.rank - 1) * 22 + 10" },
-              "shape": { "value": "circle" },
-              "size": { "value": 70 },
-              "fill": { "signal": "'oklch(' + (agateDark ? 0.6 : 0.68) + ' ' + (datum.kind === 'file' ? 0.07 : 0.12) + ' ' + ((hueStart + (datum.a0 + datum.a1) / 2 / (2 * PI) * 300) % 360) + ')'" }
+              "x": {
+                "value": 10
+              },
+              "y": {
+                "signal": "(datum.rank - 1) * 22 + 10"
+              },
+              "shape": {
+                "value": "circle"
+              },
+              "size": {
+                "value": 70
+              },
+              "fill": {
+                "signal": "'oklch(' + (agateDark ? 0.74 : 0.62) + ' ' + (datum.kind === 'file' ? 0.09 : (agateDark ? 0.12 : 0.15)) + ' ' + ((hueStart + (datum.a0 + datum.a1) / 2 / (2 * PI) * 300) % 360) + ')'"
+              }
             }
           }
         },
         {
           "type": "text",
           "style": "text",
-          "from": { "data": "children" },
+          "from": {
+            "data": "children"
+          },
           "interactive": false,
           "encode": {
             "update": {
-              "x": { "value": 22 },
-              "y": { "signal": "(datum.rank - 1) * 22 + 10" },
-              "baseline": { "value": "middle" },
-              "fontSize": { "value": 12 },
-              "limit": { "signal": "listW - 90" },
-              "text": { "signal": "datum.kind === 'folder' ? datum.name + '/' : datum.name" }
+              "x": {
+                "value": 22
+              },
+              "y": {
+                "signal": "(datum.rank - 1) * 22 + 10"
+              },
+              "baseline": {
+                "value": "middle"
+              },
+              "fontSize": {
+                "value": 12
+              },
+              "limit": {
+                "signal": "listW - 90"
+              },
+              "text": {
+                "signal": "datum.kind === 'folder' ? datum.name + '/' : datum.name"
+              }
             }
           }
         },
         {
           "type": "text",
           "style": "guide-label",
-          "from": { "data": "children" },
+          "from": {
+            "data": "children"
+          },
           "interactive": false,
           "encode": {
             "update": {
-              "x": { "signal": "listW - 6" },
-              "y": { "signal": "(datum.rank - 1) * 22 + 10" },
-              "align": { "value": "right" },
-              "baseline": { "value": "middle" },
-              "fontSize": { "value": 12 },
-              "text": { "signal": "format(datum.size, '.3~s') + 'B'" }
+              "x": {
+                "signal": "listW - 6"
+              },
+              "y": {
+                "signal": "(datum.rank - 1) * 22 + 10"
+              },
+              "align": {
+                "value": "right"
+              },
+              "baseline": {
+                "value": "middle"
+              },
+              "fontSize": {
+                "value": 12
+              },
+              "text": {
+                "signal": "format(datum.size, '.3~s') + 'B'"
+              }
             }
           }
         }

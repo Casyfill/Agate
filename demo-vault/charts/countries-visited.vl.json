@@ -17,9 +17,13 @@
       },
       "mark": {
         "type": "geoshape",
-        "fill": "#8884",
-        "stroke": "#8886",
-        "strokeWidth": 0.4
+        "fill": {
+          "expr": "agateDark ? '#18293a' : '#e3e8ec'"
+        },
+        "stroke": {
+          "expr": "agateDark ? '#0b1724' : '#ffffff'"
+        },
+        "strokeWidth": 0.5
       }
     },
     {
@@ -67,7 +71,9 @@
       ],
       "mark": {
         "type": "geoshape",
-        "stroke": "#fff8",
+        "stroke": {
+          "expr": "agateDark ? '#0b1724' : '#ffffff'"
+        },
         "strokeWidth": 0.5
       },
       "encoding": {
@@ -80,9 +86,17 @@
           "type": "quantitative",
           "title": "Places",
           "scale": {
-            "scheme": "teals",
+            "scheme": {
+              "expr": "agateDark ? 'goldorange' : 'teals'"
+            },
             "domainMin": 0,
             "domainMax": 4
+          },
+          "legend": {
+            "orient": "bottom-left",
+            "direction": "horizontal",
+            "gradientLength": 120,
+            "titleOrient": "left"
           }
         },
         "tooltip": [
@@ -97,5 +111,14 @@
         ]
       }
     }
-  ]
+  ],
+  "params": [
+    {
+      "name": "agateDark",
+      "value": false
+    }
+  ],
+  "view": {
+    "stroke": null
+  }
 }

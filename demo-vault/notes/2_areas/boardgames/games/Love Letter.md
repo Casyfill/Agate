@@ -13,4 +13,5 @@ played_times: 6
 ---
 # Love Letter
 
-source sketch decision draft idea plan follow thought context next detail reference decision follow reference note next step reference sketch.
+2–6 players, about 20 minutes, complexity 1.2. Played 6 times this year.
+

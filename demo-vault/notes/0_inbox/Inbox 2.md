@@ -2,4 +2,4 @@
 type: inbox
 created: 2026-09-21
 ---
-up decision source source step question thought detail.
+follow thought source follow next decision source note.

@@ -3,11 +3,17 @@ type: book
 tags: [book]
 author: Bill Bryson
 genre: non-fiction
-rating: 4
 pages: 276
-published: 1998-05-04
-status: read
+rating: 4
+status: finished
+started: 2025-07-13
+finished: 2025-07-24
 ---
 # A Walk in the Woods
 
-question question up thought summary sketch review next next reference detail up detail review decision decision question source thought decision.
+*Bill Bryson*, 276 pages. Read in 11 days, ★★★★☆.
+
+## Notes
+
+- Borrowed from the library.
+

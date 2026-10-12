@@ -3,12 +3,18 @@ type: book
 tags: [book]
 author: Patrick Rothfuss
 genre: fantasy
-rating: 4
 pages: 662
-published: 2007-03-27
-status: read
+rating: 4
+status: finished
+started: 2025-05-28
+finished: 2025-06-30
 isbn: "9780756404741"
 ---
 # The Name of the Wind
 
-context note review reference detail sketch sketch summary summary summary up review thought plan decision plan plan reference decision source.
+*Patrick Rothfuss*, 662 pages. Read in 33 days, ★★★★☆.
+
+## Notes
+
+- Read most of it on the subway.
+

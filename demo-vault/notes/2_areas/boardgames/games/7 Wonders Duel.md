@@ -13,4 +13,5 @@ played_times: 2
 ---
 # 7 Wonders Duel
 
-review idea step up sketch plan source decision reference note review summary step draft reference decision plan up decision step.
+2 players, about 30 minutes, complexity 2.2. Played 2 times this year.
+

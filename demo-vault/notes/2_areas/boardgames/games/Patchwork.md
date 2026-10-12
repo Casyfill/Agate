@@ -13,4 +13,5 @@ played_times: 6
 ---
 # Patchwork
 
-decision plan draft reference reference source decision decision thought detail question next note up plan detail question thought thought follow.
+2 players, about 30 minutes, complexity 1.6. Played 6 times this year.
+

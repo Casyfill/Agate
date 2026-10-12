@@ -35,8 +35,9 @@ const ROWS: Record<string, () => Row[]> = {
   "people-graph.vg.json": ofType("meeting", "person", "project"),
   "habit-grid.vl.json": ofType("journal"),
   "mood-beeswarm.vg.json": ofType("journal"),
-  "reading-shelf.vl.json": ofType("book"),
-  "vault-sunburst.vg.json": () => vaultRows(() => true, undefined, demoVaultDir),
+  "reading-journey.vg.json": ofType("book"),
+  "campaign-1812.vg.json": ofType("battle"),
+  "vault-sunburst.vg.json": () => vaultRows((p) => p.startsWith("notes/"), undefined, demoVaultDir),
 };
 
 const previewDark = {

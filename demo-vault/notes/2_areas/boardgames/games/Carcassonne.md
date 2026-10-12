@@ -13,4 +13,5 @@ played_times: 6
 ---
 # Carcassonne
 
-follow up draft note reference note plan review next decision step up reference review detail summary thought idea follow thought.
+2–5 players, about 45 minutes, complexity 1.9. Played 6 times this year.
+

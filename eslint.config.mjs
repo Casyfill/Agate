@@ -7,6 +7,7 @@ export default defineConfig([
     "main.js",
     "node_modules/",
     "test-vault/",
+    "demo-vault/",
     "docs/",
     "**/__snapshots__/",
     "*.mjs",

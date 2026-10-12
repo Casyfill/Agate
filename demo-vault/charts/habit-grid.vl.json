@@ -1,6 +1,6 @@
 {
   "$schema": "https://vega.github.io/schema/vega-lite/v6.json",
-  "description": "Habits from daily notes (the habits list): one row per habit, one square per week, darker = more days that week. The line under it is the weekly mood average.",
+  "description": "Habits from daily notes (the habits list): one row per habit in its own colour, one square per week, brighter = more days that week. Below, the weekly mood average.",
   "data": {
     "name": "base"
   },
@@ -14,7 +14,7 @@
     {
       "width": 620,
       "height": {
-        "step": 22
+        "step": 24
       },
       "transform": [
         {
@@ -31,8 +31,14 @@
       ],
       "mark": {
         "type": "rect",
-        "cornerRadius": 3,
-        "tooltip": true
+        "cornerRadius": 4,
+        "tooltip": true,
+        "width": {
+          "band": 0.86
+        },
+        "height": {
+          "band": 0.8
+        }
       },
       "encoding": {
         "x": {
@@ -41,10 +47,10 @@
           "type": "ordinal",
           "title": null,
           "axis": {
-            "format": "%b",
-            "labelOverlap": true,
+            "labelExpr": "date(datum.value) <= 7 ? timeFormat(datum.value, '%b') : ''",
             "ticks": false,
-            "domain": false
+            "domain": false,
+            "labelAngle": 0
           }
         },
         "y": {
@@ -56,30 +62,54 @@
             "walk",
             "read",
             "meditate"
-          ]
+          ],
+          "axis": {
+            "domain": false,
+            "ticks": false,
+            "labelFontSize": 12,
+            "labelPadding": 8
+          }
         },
         "color": {
+          "field": "habit",
+          "type": "nominal",
+          "legend": null,
+          "scale": {
+            "domain": [
+              "gym",
+              "walk",
+              "read",
+              "meditate"
+            ],
+            "range": [
+              "#ff7ac6",
+              "#5ce1e6",
+              "#ffb454",
+              "#a78bfa"
+            ]
+          }
+        },
+        "opacity": {
           "aggregate": "count",
           "type": "quantitative",
-          "title": "Days",
+          "title": "Days a week",
           "scale": {
-            "scheme": "greens",
             "domain": [
               0,
               7
+            ],
+            "range": [
+              0.12,
+              1
             ]
-          }
+          },
+          "legend": null
         }
       }
     },
     {
       "width": 620,
-      "height": 70,
-      "mark": {
-        "type": "line",
-        "interpolate": "monotone",
-        "point": true
-      },
+      "height": 80,
       "encoding": {
         "x": {
           "field": "d",
@@ -98,9 +128,70 @@
               1,
               5
             ]
+          },
+          "axis": {
+            "domain": false,
+            "ticks": false,
+            "grid": true,
+            "gridOpacity": 0.15,
+            "tickCount": 3
           }
         }
-      }
+      },
+      "layer": [
+        {
+          "mark": {
+            "type": "area",
+            "interpolate": "monotone",
+            "color": {
+              "x1": 1,
+              "y1": 1,
+              "x2": 1,
+              "y2": 0,
+              "gradient": "linear",
+              "stops": [
+                {
+                  "offset": 0,
+                  "color": "rgba(167,139,250,0)"
+                },
+                {
+                  "offset": 1,
+                  "color": "rgba(167,139,250,0.55)"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "mark": {
+            "type": "line",
+            "interpolate": "monotone",
+            "color": "#a78bfa",
+            "strokeWidth": 2.2
+          }
+        },
+        {
+          "mark": {
+            "type": "point",
+            "filled": true,
+            "color": "#a78bfa",
+            "size": 22,
+            "tooltip": true
+          }
+        }
+      ]
     }
-  ]
+  ],
+  "params": [
+    {
+      "name": "agateDark",
+      "value": false
+    }
+  ],
+  "spacing": 10,
+  "config": {
+    "view": {
+      "stroke": null
+    }
+  }
 }

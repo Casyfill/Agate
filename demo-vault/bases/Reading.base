@@ -1,13 +1,17 @@
 filters:
   and:
     - type == "book"
-formulas:
-  cover: if(isbn, "https://covers.openlibrary.org/b/isbn/" + isbn + "-M.jpg", null)
 views:
   - type: agate
-    name: Shelf
-    order: [file.name, author, genre, rating, pages, published]
-    specFile: charts/reading-shelf.vl.json
+    name: Reading year
+    order: [file.name, author, genre, started, finished, status, rating]
+    sort:
+      - property: started
+        direction: ASC
+    specFile: charts/reading-journey.vg.json
   - type: table
-    name: Table
-    order: [file.name, author, genre, rating, pages, status]
+    name: Shelf
+    order: [file.name, author, genre, pages, started, finished, status, rating]
+    sort:
+      - property: started
+        direction: DESC

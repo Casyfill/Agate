@@ -3,12 +3,18 @@ type: book
 tags: [book]
 author: Isaac Asimov
 genre: sci-fi
-rating: 4
 pages: 244
-published: 1951-06-01
-status: read
+rating: 4
+status: finished
+started: 2026-04-14
+finished: 2026-04-26
 isbn: "9780553293357"
 ---
 # Foundation
 
-question follow idea decision summary summary context summary plan idea detail note question idea follow thought reference note context up.
+*Isaac Asimov*, 244 pages. Read in 12 days, ★★★★☆.
+
+## Notes
+
+- Slow start, worth it after the first third.
+

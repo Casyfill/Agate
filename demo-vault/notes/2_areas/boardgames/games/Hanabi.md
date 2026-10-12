@@ -13,4 +13,5 @@ played_times: 4
 ---
 # Hanabi
 
-detail reference reference idea step follow follow up detail step next step source follow next idea decision detail note thought.
+2–5 players, about 25 minutes, complexity 1.7. Played 4 times this year.
+

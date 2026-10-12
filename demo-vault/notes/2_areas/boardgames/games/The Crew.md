@@ -13,4 +13,5 @@ played_times: 5
 ---
 # The Crew
 
-idea draft note next thought follow review plan reference decision question review step decision detail context step step review reference.
+2–5 players, about 20 minutes, complexity 2. Played 5 times this year.
+

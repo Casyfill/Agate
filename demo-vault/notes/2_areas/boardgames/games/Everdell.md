@@ -13,4 +13,5 @@ played_times: 2
 ---
 # Everdell
 
-step draft draft context next step sketch note reference source step review next summary up next draft sketch idea plan.
+1–4 players, about 80 minutes, complexity 2.8. Played 2 times this year.
+

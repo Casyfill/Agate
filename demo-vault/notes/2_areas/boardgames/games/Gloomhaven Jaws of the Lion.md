@@ -13,4 +13,5 @@ played_times: 0
 ---
 # Gloomhaven: Jaws of the Lion
 
-detail context thought detail sketch sketch draft reference review plan up source context summary summary context summary context reference source.
+1–4 players, about 120 minutes, complexity 3.6. Not played this year.
+

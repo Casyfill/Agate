@@ -53,6 +53,10 @@
         "step": 1,
         "name": "Hide links with fewer meetings than "
       }
+    },
+    {
+      "name": "agateDark",
+      "value": false
     }
   ],
   "data": [
@@ -267,6 +271,11 @@
               "strength": 0.08
             }
           ]
+        },
+        {
+          "type": "formula",
+          "as": "projKey",
+          "expr": "datum.kind === 'project' ? datum.name : null"
         }
       ]
     },
@@ -323,16 +332,21 @@
         "project"
       ],
       "range": "category"
-    }
-  ],
-  "legends": [
+    },
     {
-      "fill": "kindColour",
-      "orient": "top-left",
-      "title": null,
-      "symbolType": "circle"
+      "name": "projColour",
+      "type": "ordinal",
+      "domain": {
+        "data": "nodes",
+        "field": "projKey",
+        "sort": true
+      },
+      "range": {
+        "signal": "agateDark ? ['#cba6f7', '#fab387', '#a6e3a1', '#74c7ec', '#f5c2e7', '#f9e2af', '#94e2d5', '#f38ba8', '#b4befe', '#89dceb', '#eba0ac', '#89b4fa'] : ['#8839ef', '#fe640b', '#40a02b', '#209fb5', '#ea76cb', '#df8e1d', '#179299', '#d20f39', '#7287fd', '#04a5e5', '#e64553', '#1e66f5']"
+      }
     }
   ],
+  "legends": [],
   "marks": [
     {
       "type": "path",
@@ -346,13 +360,14 @@
             "field": "path"
           },
           "stroke": {
-            "value": "gray"
+            "scale": "projColour",
+            "field": "proj"
           },
           "strokeWidth": {
             "signal": "1 + sqrt(datum.n) * 0.8"
           },
           "strokeOpacity": {
-            "signal": "hover === null ? 0.3 : (datum.person === hover || datum.proj === hover ? 0.85 : 0.06)"
+            "signal": "hover === null ? 0.45 : (datum.person === hover || datum.proj === hover ? 0.95 : 0.06)"
           }
         }
       }
@@ -381,17 +396,22 @@
             "field": "w"
           },
           "shape": {
-            "signal": "datum.kind === 'project' ? 'square' : 'circle'"
+            "signal": "datum.kind === 'project' ? 'diamond' : 'circle'"
           },
           "fill": {
-            "scale": "kindColour",
-            "field": "kind"
+            "signal": "datum.kind === 'project' ? scale('projColour', datum.name) : (agateDark ? '#cdd6f4' : '#5c5f77')"
           },
           "fillOpacity": {
             "signal": "hover === null || hover === datum.name || indexof(pluck(data('neighbours'), 'other'), datum.name) >= 0 ? 1 : 0.2"
           },
           "tooltip": {
             "signal": "{title: datum.name, 'Kind': datum.kind, 'Meetings': datum.w}"
+          },
+          "stroke": {
+            "signal": "agateDark ? '#1e1e2e' : '#eff1f5'"
+          },
+          "strokeWidth": {
+            "value": 1.5
           }
         }
       }
@@ -418,7 +438,7 @@
             "value": "top"
           },
           "fontSize": {
-            "value": 10
+            "signal": "datum.kind === 'project' ? 11.5 : 10"
           },
           "fontWeight": {
             "signal": "datum.kind === 'project' ? 'bold' : 'normal'"
@@ -428,6 +448,9 @@
           },
           "opacity": {
             "signal": "hover === null || hover === datum.name || indexof(pluck(data('neighbours'), 'other'), datum.name) >= 0 ? 0.9 : 0.15"
+          },
+          "fill": {
+            "signal": "datum.kind === 'project' ? scale('projColour', datum.name) : (agateDark ? '#bac2de' : '#4c4f69')"
           }
         }
       }

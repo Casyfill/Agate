@@ -13,4 +13,5 @@ played_times: 8
 ---
 # Codenames
 
-context follow follow plan thought thought plan note draft idea summary question decision summary question follow idea reference reference review.
+2–8 players, about 15 minutes, complexity 1.3. Played 8 times this year.
+

@@ -13,4 +13,5 @@ played_times: 0
 ---
 # Spirit Island
 
-follow detail note draft summary next step context question draft review decision review reference decision draft reference thought up detail.
+1–4 players, about 120 minutes, complexity 4. Not played this year.
+

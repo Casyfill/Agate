@@ -1,80 +1,327 @@
 {
   "$schema": "https://vega.github.io/schema/vega/v6.json",
-  "description": "Trips as great-circle routes on a globe. Place notes carry lat/lon; trip notes link from: and to: places. Drag to spin, switch to a flat map below; hover for details, click a route or a city to open its note.",
-  "usermeta": { "agate": { "open": "click" } },
-  "autosize": { "type": "fit-x", "contains": "padding" },
+  "description": "Trips as great-circle routes on a globe, coloured by purpose. Place notes carry lat/lon; each trip note lists its stops in order (legs: [[New York]], [[Lisbon]], …) and a purpose (Family, Work, Personal). Drag to spin, switch to a flat map below; hover for details, click a route or a city to open its note.",
+  "usermeta": {
+    "agate": {
+      "open": "click"
+    }
+  },
+  "autosize": {
+    "type": "fit-x",
+    "contains": "padding"
+  },
   "padding": 8,
-
   "signals": [
     {
       "name": "width",
       "init": "isFinite(containerSize()[0]) && containerSize()[0] > 0 ? containerSize()[0] : 720",
-      "on": [{ "events": "window:resize", "update": "isFinite(containerSize()[0]) && containerSize()[0] > 0 ? containerSize()[0] : 720" }]
+      "on": [
+        {
+          "events": "window:resize",
+          "update": "isFinite(containerSize()[0]) && containerSize()[0] > 0 ? containerSize()[0] : 720"
+        }
+      ]
     },
-    { "name": "agateDark", "value": false, "description": "Set by Agate in dark mode." },
-    { "name": "projection", "value": "orthographic", "bind": { "input": "select", "options": ["orthographic", "equalEarth", "naturalEarth1", "mercator"], "name": "Projection " } },
-    { "name": "globe", "update": "projection === 'orthographic'" },
-    { "name": "height", "update": "globe ? min(width, 520) : min(width * 0.55, 520)" },
-    { "name": "down", "value": null, "on": [{ "events": "mousedown", "update": "xy()" }, { "events": "window:mouseup", "update": "null" }] },
-    { "name": "rot0", "value": [30, -25], "on": [{ "events": "mousedown", "update": "[rotX, rotY]" }] },
-    { "name": "rotX", "value": 30, "on": [{ "events": "[mousedown, window:mouseup] > window:mousemove", "update": "rot0[0] + (x() - down[0]) * 0.35" }] },
-    { "name": "rotY", "value": -25, "on": [{ "events": "[mousedown, window:mouseup] > window:mousemove", "update": "globe ? clamp(rot0[1] - (y() - down[1]) * 0.35, -80, 80) : 0" }] },
-    { "name": "hoverTrip", "value": null, "on": [
-      { "events": "@route:mouseover", "update": "datum.trip" },
-      { "events": "@route:mouseout", "update": "null" }
-    ] }
+    {
+      "name": "agateDark",
+      "value": false,
+      "description": "Set by Agate in dark mode."
+    },
+    {
+      "name": "projection",
+      "value": "orthographic",
+      "bind": {
+        "input": "select",
+        "options": [
+          "orthographic",
+          "equalEarth",
+          "naturalEarth1",
+          "mercator"
+        ],
+        "name": "Projection "
+      }
+    },
+    {
+      "name": "globe",
+      "update": "projection === 'orthographic'"
+    },
+    {
+      "name": "height",
+      "update": "globe ? min(width, 520) : min(width * 0.55, 520)"
+    },
+    {
+      "name": "down",
+      "value": null,
+      "on": [
+        {
+          "events": "mousedown",
+          "update": "xy()"
+        },
+        {
+          "events": "window:mouseup",
+          "update": "null"
+        }
+      ]
+    },
+    {
+      "name": "rot0",
+      "value": [
+        30,
+        -25
+      ],
+      "on": [
+        {
+          "events": "mousedown",
+          "update": "[rotX, rotY]"
+        }
+      ]
+    },
+    {
+      "name": "rotX",
+      "value": 30,
+      "on": [
+        {
+          "events": "[mousedown, window:mouseup] > window:mousemove",
+          "update": "rot0[0] + (x() - down[0]) * 0.35"
+        }
+      ]
+    },
+    {
+      "name": "rotY",
+      "value": -25,
+      "on": [
+        {
+          "events": "[mousedown, window:mouseup] > window:mousemove",
+          "update": "globe ? clamp(rot0[1] - (y() - down[1]) * 0.35, -80, 80) : 0"
+        }
+      ]
+    },
+    {
+      "name": "hoverTrip",
+      "value": null,
+      "on": [
+        {
+          "events": "@route:mouseover",
+          "update": "datum.trip"
+        },
+        {
+          "events": "@route:mouseout",
+          "update": "null"
+        }
+      ]
+    }
   ],
-
   "projections": [
     {
       "name": "proj",
-      "type": { "signal": "projection" },
-      "rotate": [{ "signal": "rotX" }, { "signal": "globe ? rotY : 0" }, 0],
-      "fit": { "signal": "globe ? {type: 'Sphere'} : data('countries')" },
-      "size": { "signal": "[width, height]" }
+      "type": {
+        "signal": "projection"
+      },
+      "rotate": [
+        {
+          "signal": "rotX"
+        },
+        {
+          "signal": "globe ? rotY : 0"
+        },
+        0
+      ],
+      "fit": {
+        "signal": "globe ? {type: 'Sphere'} : data('countries')"
+      },
+      "size": {
+        "signal": "[width, height]"
+      }
     }
   ],
-
   "data": [
-    { "name": "base" },
-    { "name": "countries", "url": "attachments/geo/world-110m.json", "format": { "type": "topojson", "feature": "countries" } },
-    { "name": "sphere", "values": [{ "type": "Sphere" }] },
-    { "name": "graticule", "transform": [{ "type": "graticule", "step": [20, 20] }] },
+    {
+      "name": "base"
+    },
+    {
+      "name": "countries",
+      "url": "attachments/geo/world-110m.json",
+      "format": {
+        "type": "topojson",
+        "feature": "countries"
+      }
+    },
+    {
+      "name": "sphere",
+      "values": [
+        {
+          "type": "Sphere"
+        }
+      ]
+    },
+    {
+      "name": "graticule",
+      "transform": [
+        {
+          "type": "graticule",
+          "step": [
+            20,
+            20
+          ]
+        }
+      ]
+    },
     {
       "name": "places",
       "source": "base",
       "transform": [
-        { "type": "filter", "expr": "isValid(datum.note.lat) && isValid(datum.note.lon)" },
-        { "type": "formula", "as": "name", "expr": "datum.file.name" },
-        { "type": "formula", "as": "lon", "expr": "toNumber(datum.note.lon)" },
-        { "type": "formula", "as": "lat", "expr": "toNumber(datum.note.lat)" }
+        {
+          "type": "filter",
+          "expr": "isValid(datum.note.lat) && isValid(datum.note.lon)"
+        },
+        {
+          "type": "formula",
+          "as": "name",
+          "expr": "datum.file.name"
+        },
+        {
+          "type": "formula",
+          "as": "lon",
+          "expr": "toNumber(datum.note.lon)"
+        },
+        {
+          "type": "formula",
+          "as": "lat",
+          "expr": "toNumber(datum.note.lat)"
+        }
       ]
     },
     {
       "name": "trips",
       "source": "base",
       "transform": [
-        { "type": "filter", "expr": "isValid(datum.note.from) && isValid(datum.note.to)" },
-        { "type": "formula", "as": "fromName", "expr": "replace(replace(replace(datum.note.from, regexp('^\\\\[\\\\[|\\\\]\\\\]$|\\\\|.*$', 'g'), ''), regexp('^.*/'), ''), regexp('\\\\.md$'), '')" },
-        { "type": "formula", "as": "toName", "expr": "replace(replace(replace(datum.note.to, regexp('^\\\\[\\\\[|\\\\]\\\\]$|\\\\|.*$', 'g'), ''), regexp('^.*/'), ''), regexp('\\\\.md$'), '')" },
-        { "type": "lookup", "from": "places", "key": "name", "fields": ["fromName", "toName"], "as": ["a", "b"] },
-        { "type": "filter", "expr": "isValid(datum.a) && isValid(datum.b)" },
-        { "type": "formula", "as": "trip", "expr": "datum.note.trip || datum.file.name" },
-        { "type": "formula", "as": "when", "expr": "toDate(datum.note.date)" },
-        { "type": "formula", "as": "geo", "expr": "{type: 'LineString', coordinates: [[datum.a.lon, datum.a.lat], [datum.b.lon, datum.b.lat]]}" }
+        {
+          "type": "filter",
+          "expr": "isArray(datum.note.legs) && length(datum.note.legs) > 1"
+        },
+        {
+          "type": "formula",
+          "as": "trip",
+          "expr": "datum.file.name"
+        },
+        {
+          "type": "formula",
+          "as": "purpose",
+          "expr": "datum.note.purpose || 'Personal'"
+        },
+        {
+          "type": "flatten",
+          "fields": [
+            "note.legs"
+          ],
+          "as": [
+            "stop"
+          ],
+          "index": "leg"
+        },
+        {
+          "type": "formula",
+          "as": "fromName",
+          "expr": "replace(replace(replace(datum.stop, regexp('^\\\\[\\\\[|\\\\]\\\\]$|\\\\|.*$', 'g'), ''), regexp('^.*/'), ''), regexp('\\\\.md$'), '')"
+        },
+        {
+          "type": "window",
+          "groupby": [
+            "trip"
+          ],
+          "sort": {
+            "field": "leg"
+          },
+          "ops": [
+            "lead"
+          ],
+          "fields": [
+            "fromName"
+          ],
+          "as": [
+            "toName"
+          ]
+        },
+        {
+          "type": "filter",
+          "expr": "isValid(datum.toName)"
+        },
+        {
+          "type": "lookup",
+          "from": "places",
+          "key": "name",
+          "fields": [
+            "fromName",
+            "toName"
+          ],
+          "as": [
+            "a",
+            "b"
+          ]
+        },
+        {
+          "type": "filter",
+          "expr": "isValid(datum.a) && isValid(datum.b)"
+        },
+        {
+          "type": "formula",
+          "as": "start",
+          "expr": "toDate(datum.note.start)"
+        },
+        {
+          "type": "formula",
+          "as": "end",
+          "expr": "toDate(datum.note.end)"
+        },
+        {
+          "type": "formula",
+          "as": "geo",
+          "expr": "{type: 'LineString', coordinates: [[datum.a.lon, datum.a.lat], [datum.b.lon, datum.b.lat]]}"
+        }
       ]
     },
     {
       "name": "visits",
       "source": "trips",
-      "transform": [{ "type": "aggregate", "groupby": ["toName"], "ops": ["count"], "as": ["n"] }]
+      "transform": [
+        {
+          "type": "aggregate",
+          "groupby": [
+            "toName"
+          ],
+          "ops": [
+            "count"
+          ],
+          "as": [
+            "n"
+          ]
+        }
+      ]
     },
     {
       "name": "cities",
       "source": "places",
       "transform": [
-        { "type": "lookup", "from": "visits", "key": "toName", "fields": ["name"], "values": ["n"], "default": 0 },
-        { "type": "geopoint", "projection": "proj", "fields": ["lon", "lat"] },
+        {
+          "type": "lookup",
+          "from": "visits",
+          "key": "toName",
+          "fields": [
+            "name"
+          ],
+          "values": [
+            "n"
+          ],
+          "default": 0
+        },
+        {
+          "type": "geopoint",
+          "projection": "proj",
+          "fields": [
+            "lon",
+            "lat"
+          ]
+        },
         {
           "type": "formula",
           "as": "visible",
@@ -83,90 +330,281 @@
       ]
     }
   ],
-
   "scales": [
-    { "name": "tripColour", "type": "ordinal", "domain": { "data": "trips", "field": "trip", "sort": true }, "range": "category" },
-    { "name": "visitSize", "type": "sqrt", "domain": [0, 6], "range": [16, 220], "clamp": true }
+    {
+      "name": "purposeColour",
+      "type": "ordinal",
+      "domain": [
+        "Family",
+        "Work",
+        "Personal"
+      ],
+      "range": {
+        "signal": "agateDark ? ['#ffb454', '#5ce1e6', '#ff7ac6'] : ['#e8590c', '#1c7ed6', '#c2255c']"
+      }
+    },
+    {
+      "name": "visitSize",
+      "type": "sqrt",
+      "domain": [
+        0,
+        6
+      ],
+      "range": [
+        14,
+        160
+      ],
+      "clamp": true
+    }
   ],
-
-  "legends": [{ "stroke": "tripColour", "orient": "bottom-left", "title": "Trip", "symbolType": "stroke", "direction": "vertical" }],
-
+  "legends": [
+    {
+      "stroke": "purposeColour",
+      "orient": "top-left",
+      "title": null,
+      "symbolType": "stroke",
+      "symbolStrokeWidth": 4,
+      "direction": "vertical",
+      "labelFontSize": 12.5,
+      "labelColor": {
+        "signal": "agateDark ? '#e9ecef' : '#343a40'"
+      }
+    }
+  ],
   "marks": [
     {
       "type": "shape",
-      "from": { "data": "sphere" },
-      "interactive": false,
-      "encode": { "update": { "fill": { "signal": "agateDark ? '#16222e' : '#e8f1f8'" }, "stroke": { "signal": "agateDark ? '#2f4152' : '#c9d9e6'" } } },
-      "transform": [{ "type": "geoshape", "projection": "proj" }]
-    },
-    {
-      "type": "shape",
-      "from": { "data": "graticule" },
-      "interactive": false,
-      "encode": { "update": { "stroke": { "signal": "agateDark ? '#ffffff' : '#000000'" }, "strokeOpacity": { "value": 0.06 }, "strokeWidth": { "value": 0.5 }, "fill": { "value": null } } },
-      "transform": [{ "type": "geoshape", "projection": "proj" }]
-    },
-    {
-      "type": "shape",
-      "from": { "data": "countries" },
+      "from": {
+        "data": "sphere"
+      },
       "interactive": false,
       "encode": {
         "update": {
-          "fill": { "signal": "agateDark ? '#33404c' : '#d6dde3'" },
-          "stroke": { "signal": "agateDark ? '#1e2a35' : '#ffffff'" },
-          "strokeWidth": { "value": 0.5 }
+          "fill": {
+            "signal": "agateDark ? '#0b1724' : '#eaf2f8'"
+          },
+          "stroke": {
+            "signal": "agateDark ? '#1d3247' : '#c9d9e6'"
+          },
+          "strokeWidth": {
+            "value": 1
+          }
         }
       },
-      "transform": [{ "type": "geoshape", "projection": "proj" }]
+      "transform": [
+        {
+          "type": "geoshape",
+          "projection": "proj"
+        }
+      ]
+    },
+    {
+      "type": "shape",
+      "from": {
+        "data": "graticule"
+      },
+      "interactive": false,
+      "encode": {
+        "update": {
+          "stroke": {
+            "signal": "agateDark ? '#ffffff' : '#000000'"
+          },
+          "strokeOpacity": {
+            "signal": "agateDark ? 0.07 : 0.06"
+          },
+          "strokeWidth": {
+            "value": 0.5
+          },
+          "fill": {
+            "value": null
+          }
+        }
+      },
+      "transform": [
+        {
+          "type": "geoshape",
+          "projection": "proj"
+        }
+      ]
+    },
+    {
+      "type": "shape",
+      "from": {
+        "data": "countries"
+      },
+      "interactive": false,
+      "encode": {
+        "update": {
+          "fill": {
+            "signal": "agateDark ? '#18293a' : '#d9e0e6'"
+          },
+          "stroke": {
+            "signal": "agateDark ? '#0b1724' : '#ffffff'"
+          },
+          "strokeWidth": {
+            "value": 0.6
+          }
+        }
+      },
+      "transform": [
+        {
+          "type": "geoshape",
+          "projection": "proj"
+        }
+      ]
+    },
+    {
+      "type": "shape",
+      "from": {
+        "data": "trips"
+      },
+      "encode": {
+        "update": {
+          "stroke": {
+            "scale": "purposeColour",
+            "field": "purpose"
+          },
+          "strokeWidth": {
+            "signal": "hoverTrip === datum.trip ? 12 : 7"
+          },
+          "strokeOpacity": {
+            "signal": "(hoverTrip === null || hoverTrip === datum.trip ? 1 : 0.2) * (agateDark ? 0.22 : 0.1)"
+          },
+          "strokeCap": {
+            "value": "round"
+          },
+          "fill": {
+            "value": null
+          }
+        }
+      },
+      "transform": [
+        {
+          "type": "geoshape",
+          "projection": "proj",
+          "field": "datum.geo"
+        }
+      ],
+      "interactive": false
     },
     {
       "type": "shape",
       "name": "route",
-      "from": { "data": "trips" },
+      "from": {
+        "data": "trips"
+      },
       "encode": {
-        "enter": { "cursor": { "value": "pointer" } },
+        "enter": {
+          "cursor": {
+            "value": "pointer"
+          }
+        },
         "update": {
-          "stroke": { "scale": "tripColour", "field": "trip" },
-          "strokeWidth": { "signal": "hoverTrip === datum.trip ? 3.5 : 2" },
-          "strokeOpacity": { "signal": "hoverTrip === null || hoverTrip === datum.trip ? 0.9 : 0.2" },
-          "strokeCap": { "value": "round" },
-          "fill": { "value": null },
-          "tooltip": { "signal": "{title: datum.fromName + ' → ' + datum.toName, 'Date': timeFormat(datum.when, '%b %d, %Y'), 'Trip': datum.trip, 'Mode': datum.note.mode}" }
+          "stroke": {
+            "scale": "purposeColour",
+            "field": "purpose"
+          },
+          "strokeWidth": {
+            "signal": "hoverTrip === datum.trip ? 4 : 2.2"
+          },
+          "strokeOpacity": {
+            "signal": "hoverTrip === null || hoverTrip === datum.trip ? 0.9 : 0.2"
+          },
+          "strokeCap": {
+            "value": "round"
+          },
+          "fill": {
+            "value": null
+          },
+          "tooltip": {
+            "signal": "{title: datum.trip, 'Leg': datum.fromName + ' → ' + datum.toName, 'Dates': timeFormat(datum.start, '%b %d') + ' – ' + timeFormat(datum.end, '%b %d, %Y'), 'Purpose': datum.purpose, 'With': isArray(datum.note.companions) && length(datum.note.companions) ? join(datum.note.companions, ', ') : 'solo'}"
+          }
         }
       },
-      "transform": [{ "type": "geoshape", "projection": "proj", "field": "datum.geo" }]
+      "transform": [
+        {
+          "type": "geoshape",
+          "projection": "proj",
+          "field": "datum.geo"
+        }
+      ]
     },
     {
       "type": "symbol",
-      "from": { "data": "cities" },
+      "from": {
+        "data": "cities"
+      },
       "encode": {
-        "enter": { "shape": { "value": "circle" }, "cursor": { "value": "pointer" } },
+        "enter": {
+          "shape": {
+            "value": "circle"
+          },
+          "cursor": {
+            "value": "pointer"
+          }
+        },
         "update": {
-          "x": { "field": "x" },
-          "y": { "field": "y" },
-          "size": { "scale": "visitSize", "field": "n" },
-          "fill": { "signal": "agateDark ? '#f2f2f2' : '#222222'" },
-          "stroke": { "signal": "agateDark ? '#16222e' : '#ffffff'" },
-          "strokeWidth": { "value": 1.5 },
-          "opacity": { "signal": "datum.visible ? 1 : 0" },
-          "tooltip": { "signal": "datum.visible ? {title: datum.name, 'Country': datum.note.country, 'Arrivals': datum.n} : null" }
+          "x": {
+            "field": "x"
+          },
+          "y": {
+            "field": "y"
+          },
+          "size": {
+            "scale": "visitSize",
+            "field": "n"
+          },
+          "fill": {
+            "signal": "agateDark ? '#f8f9fa' : '#212529'"
+          },
+          "stroke": {
+            "signal": "agateDark ? '#0b1724' : '#ffffff'"
+          },
+          "strokeWidth": {
+            "value": 1.5
+          },
+          "opacity": {
+            "signal": "datum.visible ? 1 : 0"
+          },
+          "tooltip": {
+            "signal": "datum.visible ? {title: datum.name, 'Country': datum.note.country, 'Arrivals': datum.n} : null"
+          }
         }
       }
     },
     {
       "type": "text",
       "style": "text",
-      "from": { "data": "cities" },
+      "from": {
+        "data": "cities"
+      },
       "interactive": false,
       "encode": {
         "update": {
-          "x": { "field": "x" },
-          "y": { "signal": "datum.y - 8" },
-          "align": { "value": "center" },
-          "baseline": { "value": "bottom" },
-          "fontSize": { "value": 10 },
-          "text": { "field": "name" },
-          "opacity": { "signal": "datum.visible ? 0.85 : 0" }
+          "x": {
+            "field": "x"
+          },
+          "y": {
+            "signal": "datum.y - 8"
+          },
+          "align": {
+            "value": "center"
+          },
+          "baseline": {
+            "value": "bottom"
+          },
+          "fontSize": {
+            "value": 10.5
+          },
+          "text": {
+            "field": "name"
+          },
+          "opacity": {
+            "signal": "datum.visible ? 0.85 : 0"
+          },
+          "fill": {
+            "signal": "agateDark ? '#c9d6e3' : '#343a40'"
+          }
         }
       }
     }

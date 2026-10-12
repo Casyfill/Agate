@@ -13,4 +13,5 @@ played_times: 7
 ---
 # Catan
 
-note thought plan detail up follow summary question follow next decision summary source summary note note decision thought next next.
+3–4 players, about 90 minutes, complexity 2.3. Played 7 times this year.
+

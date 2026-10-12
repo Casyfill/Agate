@@ -5,18 +5,30 @@ filters:
 views:
   - type: agate
     name: Globe
-    order: [file.name, date, from, to, trip]
+    order:
+      - file.name
+      - purpose
+      - start
+      - end
+      - legs
     specFile: charts/travel-globe.vg.json
   - type: agate
     name: Countries
-    order: [file.name, country]
+    order:
+      - file.name
+      - country
     specFile: charts/countries-visited.vl.json
   - type: table
     name: Trips
     filters:
       and:
         - type == "trip"
-    order: [file.name, date, from, to, mode, trip]
+    order:
+      - file.name
+      - purpose
+      - start
+      - nights
+      - companions
     sort:
-      - property: date
+      - property: start
         direction: DESC

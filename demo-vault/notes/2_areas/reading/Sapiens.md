@@ -3,12 +3,18 @@ type: book
 tags: [book]
 author: Yuval Noah Harari
 genre: non-fiction
-rating: 4
 pages: 443
-published: 2011-01-01
-status: read
+rating: 4
+status: finished
+started: 2024-11-13
+finished: 2024-12-13
 isbn: "9780062316097"
 ---
 # Sapiens
 
-follow idea sketch up plan up question follow follow note idea decision question draft idea follow plan summary draft reference.
+*Yuval Noah Harari*, 443 pages. Read in 30 days, ★★★★☆.
+
+## Notes
+
+- Kept underlining whole pages.
+

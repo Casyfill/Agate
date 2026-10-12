@@ -13,4 +13,5 @@ played_times: 0
 ---
 # Twilight Imperium
 
-draft summary context review plan summary draft step thought review follow next follow step note decision detail reference step thought.
+3–6 players, about 480 minutes, complexity 4.3. Not played this year.
+

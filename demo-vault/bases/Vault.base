@@ -1,3 +1,6 @@
+filters:
+  and:
+    - file.inFolder("notes")
 views:
   - type: agate
     name: Sunburst

@@ -13,4 +13,5 @@ played_times: 0
 ---
 # Root
 
-idea reference summary decision step question draft reference reference source source review detail decision summary follow summary draft detail up.
+2–4 players, about 90 minutes, complexity 3.7. Not played this year.
+

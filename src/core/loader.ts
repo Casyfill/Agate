@@ -89,6 +89,16 @@ export async function fetchRemote(uri: string): Promise<string> {
 export function createVaultLoader(deps: LoaderDeps): Loader {
   const base = vegaLoader();
   const originalLoad = base.load.bind(base);
+  const originalSanitize = base.sanitize.bind(base);
+
+  // Vega fetches image marks (map tiles, pictures) itself via sanitize(), outside load();
+  // hold them to the same "Load remote URLs" setting as data.
+  base.sanitize = async (uri: string, options?: unknown) => {
+    if (/^https?:/i.test(uri) && !deps.allowRemote) {
+      throw new Error(`Remote URL blocked: ${uri}. Enable "Load remote URLs" in Agate settings to allow it.`);
+    }
+    return originalSanitize(uri, options as never);
+  };
 
   base.load = async (uri: string, options?: unknown): Promise<string> => {
     const m = SCHEME_RE.exec(uri);
