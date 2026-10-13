@@ -10,19 +10,19 @@ If you want a bar chart in two clicks and never want to see JSON, one of the sim
 
 ## What you can build with Agate and not with the others
 
-Every example below is a spec file in the repo's test vault with notes to match; `Surfaces/12 Gallery` in the test vault embeds them all. As far as their listings show, none of the Bases chart plugins draws any of these.
+Every example below is a spec file in the repo vault's `tests/` folder with notes to match; `tests/Surfaces/12 Gallery` embeds them all. As far as their listings show, none of the Bases chart plugins draws any of these.
 
 | Example | What it shows | Why it needs Agate | Spec |
 |---|---|---|---|
-| Horizon table | One row per note with its properties as columns and a cubism-style horizon chart of an external time series; hover runs a cursor across all rows | Per-row data (each note's CSV or URL), table cells that follow the Properties menu, dark-mode aware colours | [`horizon-table.vg.json`](../test-vault/charts/horizon-table.vg.json) |
-| Vault sunburst | DaisyDisk-style rings of folders sized by bytes; click to zoom into a folder, click a file to open it | The folder tree with totals, Vega's partition layout, open on click | [`vault-sunburst.vg.json`](../test-vault/charts/vault-sunburst.vg.json) |
-| Link graph | The notes of a base and the links between them, force-directed, coloured by a property; hover lights up neighbours | Links between the base's notes from Obsidian's link index; Vega's force layout. Unlike the core graph view, the base decides which notes are in and properties drive size and colour | [`link-graph.vg.json`](../test-vault/charts/link-graph.vg.json) |
-| Arc diagram over time | The same links, notes placed on a timeline by creation date; long arcs are ideas reaching back | Links dataset plus a time scale | [`link-arcs.vg.json`](../test-vault/charts/link-arcs.vg.json) |
-| Travel globe | Trips as great-circle routes between place notes on an orthographic globe you drag to spin, or a flat projection | Vega's map projections; trips link places with ordinary `[[links]]` | [`travel-globe.vg.json`](../test-vault/charts/travel-globe.vg.json) |
-| Sankey | Notes flowing across three properties (genre → status → rating band) | Built from Vega transforms; no chart plugin option list can express it | [`reading-sankey.vg.json`](../test-vault/charts/reading-sankey.vg.json) |
-| Linked dashboard | Brush a timeline and the other panels filter | Vega-Lite selections across views, on top of the Bases toolbar filters | [`reading-dashboard.vl.json`](../test-vault/charts/reading-dashboard.vl.json) |
-| Mood beeswarm | One dot per daily note, never overlapping, colour and size from properties; click a dot to open the day | Force layout along a time axis, open on click | [`mood-beeswarm.vg.json`](../test-vault/charts/mood-beeswarm.vg.json) |
-| Tooltip images | A cover picture in the tooltip, from a URL a formula builds per note | A tooltip field titled `image` | [`covers-tooltip.vl.json`](../test-vault/charts/covers-tooltip.vl.json) |
+| Horizon table | One row per note with its properties as columns and a cubism-style horizon chart of an external time series; hover runs a cursor across all rows | Per-row data (each note's CSV or URL), table cells that follow the Properties menu, dark-mode aware colours | [`horizon-table.vg.json`](../demo-vault/tests/charts/horizon-table.vg.json) |
+| Vault sunburst | DaisyDisk-style rings of folders sized by bytes; click to zoom into a folder, click a file to open it | The folder tree with totals, Vega's partition layout, open on click | [`vault-sunburst.vg.json`](../demo-vault/tests/charts/vault-sunburst.vg.json) |
+| Link graph | The notes of a base and the links between them, force-directed, coloured by a property; hover lights up neighbours | Links between the base's notes from Obsidian's link index; Vega's force layout. Unlike the core graph view, the base decides which notes are in and properties drive size and colour | [`link-graph.vg.json`](../demo-vault/tests/charts/link-graph.vg.json) |
+| Arc diagram over time | The same links, notes placed on a timeline by creation date; long arcs are ideas reaching back | Links dataset plus a time scale | [`link-arcs.vg.json`](../demo-vault/tests/charts/link-arcs.vg.json) |
+| Travel globe | Trips as great-circle routes between place notes on an orthographic globe you drag to spin, or a flat projection | Vega's map projections; trips link places with ordinary `[[links]]` | [`travel-globe.vg.json`](../demo-vault/tests/charts/travel-globe.vg.json) |
+| Sankey | Notes flowing across three properties (genre → status → rating band) | Built from Vega transforms; no chart plugin option list can express it | [`reading-sankey.vg.json`](../demo-vault/tests/charts/reading-sankey.vg.json) |
+| Linked dashboard | Brush a timeline and the other panels filter | Vega-Lite selections across views, on top of the Bases toolbar filters | [`reading-dashboard.vl.json`](../demo-vault/tests/charts/reading-dashboard.vl.json) |
+| Mood beeswarm | One dot per daily note, never overlapping, colour and size from properties; click a dot to open the day | Force layout along a time axis, open on click | [`mood-beeswarm.vg.json`](../demo-vault/tests/charts/mood-beeswarm.vg.json) |
+| Tooltip images | A cover picture in the tooltip, from a URL a formula builds per note | A tooltip field titled `image` | [`covers-tooltip.vl.json`](../demo-vault/tests/charts/covers-tooltip.vl.json) |
 
 How each one works, and the `usermeta.agate` switches they use (`rowData`, `cells`, `edges`, `tree`, `open`, `agateDark`), is in the [user guide](guide.md), sections 6 to 10.
 

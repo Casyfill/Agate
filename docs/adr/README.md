@@ -7,3 +7,4 @@ Sections: Status table, Context, Decision (numbered D1…Dn so later ADRs can re
 | # | Title | Status |
 |---|---|---|
 | [0001](0001-architecture-and-roadmap.md) | Agate architecture and roadmap for v0.1, with v0.2 preparation | Accepted |
+| [0002](0002-one-vault.md) | One repo vault for showcase and tests | Accepted |

@@ -464,7 +464,7 @@ for (const [name, date, end, lat, lon, outcome, phase, text] of battles) {
 }
 
 // --- shared data -----------------------------------------------------------------------------------
-const world = new URL("../test-vault/geo/world-110m.json", import.meta.url).pathname;
+const world = new URL("../demo-vault/tests/geo/world-110m.json", import.meta.url).pathname;
 mkdirSync(join(ROOT, "attachments/geo"), { recursive: true });
 if (existsSync(world)) copyFileSync(world, join(ROOT, "attachments/geo/world-110m.json"));
 

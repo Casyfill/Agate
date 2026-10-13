@@ -1,0 +1,22 @@
+filters:
+  and:
+    - file.inFolder("tests/Journal")
+    - file.ext == "md"
+views:
+  - type: agate
+    name: Mood swarm
+    order:
+      - file.name
+      - date
+      - mood
+      - energy
+      - sleep
+    specFile: tests/charts/mood-beeswarm.vg.json
+  - type: table
+    name: Table
+    order:
+      - date
+      - mood
+      - energy
+      - sleep
+      - file.tags

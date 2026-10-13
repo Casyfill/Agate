@@ -1,0 +1,20 @@
+filters:
+  and:
+    - file.inFolder("tests")
+views:
+  - type: agate
+    name: Sunburst
+    order:
+      - file.name
+      - file.folder
+      - file.size
+    specFile: tests/charts/vault-sunburst.vg.json
+  - type: table
+    name: Largest files
+    order:
+      - file.name
+      - file.folder
+      - file.size
+    sort:
+      - property: file.size
+        direction: DESC

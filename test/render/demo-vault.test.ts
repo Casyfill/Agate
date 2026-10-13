@@ -17,11 +17,11 @@ import { cellsDatasetName, tableCells } from "../../src/core/data/table";
 import { edgesDatasetName, linkEdges, pathTree, treeDatasetName } from "../../src/core/data/structure";
 import { ensureNamedData, withInitialValues, withSignalValues } from "../../src/core/spec";
 import type { AnySpec, Row } from "../../src/core/types";
-import { demoVaultDir, vaultResolvedLinks, vaultRows } from "../fixtures/vault";
+import { vaultDir, vaultResolvedLinks, vaultRows } from "../fixtures/vault";
 
-const chartsDir = join(demoVaultDir, "charts");
+const chartsDir = join(vaultDir, "charts");
 const ofType = (...types: string[]) => (): Row[] =>
-  vaultRows((p) => p.endsWith(".md"), undefined, demoVaultDir).filter((r) => types.includes(String((r.note as { type?: unknown }).type)));
+  vaultRows((p) => p.endsWith(".md"), undefined, vaultDir).filter((r) => types.includes(String((r.note as { type?: unknown }).type)));
 
 /** Which notes each chart's base selects, and the visible properties for table layouts. */
 const ROWS: Record<string, () => Row[]> = {
@@ -37,7 +37,7 @@ const ROWS: Record<string, () => Row[]> = {
   "mood-beeswarm.vg.json": ofType("journal"),
   "reading-journey.vg.json": ofType("book"),
   "campaign-1812.vg.json": ofType("battle"),
-  "vault-sunburst.vg.json": () => vaultRows((p) => p.startsWith("notes/"), undefined, demoVaultDir),
+  "vault-sunburst.vg.json": () => vaultRows((p) => p.startsWith("notes/"), undefined, vaultDir),
 };
 
 const previewDark = {
@@ -52,7 +52,7 @@ const previewDark = {
 };
 
 const loader = vega.loader();
-loader.load = async (uri: string) => readFileSync(join(demoVaultDir, uri), "utf8");
+loader.load = async (uri: string) => readFileSync(join(vaultDir, uri), "utf8");
 
 async function render(name: string, rows: Row[]): Promise<{ svg: string; errors: string[] }> {
   const raw = JSON.parse(readFileSync(join(chartsDir, name), "utf8")) as AnySpec;
@@ -60,14 +60,14 @@ async function render(name: string, rows: Row[]): Promise<{ svg: string; errors:
   const mode = isVL ? "vega-lite" : "vega";
   const datasets: Record<string, Row[]> = { base: rows };
   for (const def of rowDataDefs(raw)) {
-    const { records, errors } = await expandRowData(rows, def, { load: async (u) => readFileSync(join(demoVaultDir, u), "utf8") });
+    const { records, errors } = await expandRowData(rows, def, { load: async (u) => readFileSync(join(vaultDir, u), "utf8") });
     expect(errors).toEqual([]);
     datasets[def.name] = records;
   }
   const cells = cellsDatasetName(raw);
   if (cells) datasets[cells] = tableCells(rows, ["file.name"], (id) => id);
   const edges = edgesDatasetName(raw);
-  if (edges) datasets[edges] = linkEdges(rows, vaultResolvedLinks(rows, demoVaultDir));
+  if (edges) datasets[edges] = linkEdges(rows, vaultResolvedLinks(rows, vaultDir));
   const tree = treeDatasetName(raw);
   if (tree) datasets[tree] = pathTree(rows, "demo-vault");
 

@@ -36,13 +36,13 @@ test: ## vitest, one pass
 test-watch: ## vitest in watch mode
 	npm run test:watch
 
-install-local: ## Symlink the build into test-vault (or AGATE_VAULT=/path make install-local)
+install-local: ## Symlink the build into demo-vault (or AGATE_VAULT=/path make install-local)
 	npm run install:local
 
 demo: ## Regenerate demo-vault notes and data, build, and link the plugin into it
 	node scripts/demo-vault.mjs
 	npm run build
-	AGATE_VAULT=demo-vault npm run install:local
+	npm run install:local
 
 clean: ## Remove build output and dependencies
 	rm -rf main.js node_modules

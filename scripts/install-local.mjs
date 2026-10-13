@@ -1,6 +1,6 @@
 // Links (or copies) the built plugin into a vault's .obsidian/plugins/agate/.
 //
-//   npm run install:local                       -> test-vault/
+//   npm run install:local                       -> demo-vault/
 //   AGATE_VAULT=/path/to/vault npm run install:local
 //
 // Symlinks mean `npm run dev` rebuilds are picked up without re-running this.
@@ -11,7 +11,7 @@ import { existsSync, mkdirSync, rmSync, symlinkSync, copyFileSync, lstatSync } f
 import { resolve, join } from "path";
 
 const repo = resolve(import.meta.dirname, "..");
-const vault = resolve(process.env.AGATE_VAULT ?? join(repo, "test-vault"));
+const vault = resolve(process.env.AGATE_VAULT ?? join(repo, "demo-vault"));
 const target = join(vault, ".obsidian", "plugins", "agate");
 const files = ["main.js", "manifest.json", "styles.css"];
 

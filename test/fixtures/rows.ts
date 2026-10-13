@@ -1,6 +1,6 @@
 import type { Row } from "../../src/core/types";
 
-/** Rows in the ADR-0001 D4 shape, mirroring a few notes from test-vault/Library. */
+/** Rows in the ADR-0001 D4 shape, mirroring a few notes from demo-vault/tests/Library. */
 export const defaultRows: Row[] = [
   {
     file: { name: "Dune", path: "Library/Dune.md", ext: "md", folder: "Library", size: 412 },

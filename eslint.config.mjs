@@ -6,7 +6,6 @@ export default defineConfig([
   globalIgnores([
     "main.js",
     "node_modules/",
-    "test-vault/",
     "demo-vault/",
     "docs/",
     "**/__snapshots__/",

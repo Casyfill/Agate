@@ -10,7 +10,7 @@ Agate needs Obsidian 1.13 or newer with the Bases core plugin turned on.
 
 Until Agate is in the community directory, install it with [BRAT](https://github.com/TfTHacker/obsidian42-brat): Settings → BRAT → Add beta plugin → `Casyfill/Agate`. Or download `main.js`, `manifest.json` and `styles.css` from a GitHub release into `<vault>/.obsidian/plugins/agate/` and enable Agate under Community plugins.
 
-To try everything in this guide without touching your own vault, open the repo's `test-vault/` as a vault and start with `Start here.md`.
+To try everything in this guide without touching your own vault, open the repo's `demo-vault/` as a vault and start with `Start here.md` (examples for every surface are in `tests/`).
 
 ## 2. Your first chart (five minutes)
 
@@ -19,7 +19,7 @@ The fastest way: open a base, add a view, set its layout to **Agate chart**. The
 - **Pick a recipe** lists ready-made charts (timeline, bars, scatter, histogram, line over time, calendar heatmap, folder sunburst, link graph, arc diagram, travel globe, sankey, beeswarm). Pick one and Agate asks which of the base's properties to use for each part ("When", "Colour by"), offering only properties of the right type, then writes the spec into your spec folder and points the view at it. The same picker is in the command palette: **New chart from recipe**.
 - **Copy prompt for an LLM** copies a description of this base (its properties and their types, three sample rows, how Agate passes data, the extras) to the clipboard. Paste it into any AI assistant, say what chart you want, and save the reply as a `.vl.json` file in your spec folder. If the chart errors, the error box has a **Copy error** button for the next round.
 
-Your own recipes: set **Recipe folder** in Settings → Agate, and any spec in it with a `usermeta.agate.recipe` block joins the picker. `test-vault/charts/recipes/count-by-decade.vl.json` is a small example; the format is described in the architecture doc (D13).
+Your own recipes: set **Recipe folder** in Settings → Agate, and any spec in it with a `usermeta.agate.recipe` block joins the picker. `demo-vault/tests/charts/recipes/count-by-decade.vl.json` is a small example; the format is described in the architecture doc (D13).
 
 By hand:
 
@@ -151,7 +151,7 @@ The format comes from the extension (`.csv`, `.tsv`, `.json`); otherwise Agate s
 - At most two requests run at once per site, with two retries on network errors and server errors.
 - One failing note leaves its row empty and logs a warning; the chart shows an error only when every row fails, and the message names the URL.
 
-The worked example is `test-vault/Markets`: twelve notes, one per FRED series, drawn as a table with a cubism-style horizon column (`charts/horizon-table.vg.json`).
+The worked example is `demo-vault/tests/Markets`: twelve notes, one per FRED series, drawn as a table with a cubism-style horizon column (`tests/charts/horizon-table.vg.json`).
 
 ## 7. A table with a chart column
 
@@ -175,11 +175,11 @@ A tooltip field titled `image` is drawn as a picture, and one titled `title` bec
 ]
 ```
 
-`test-vault` builds `formula.cover` from each book's ISBN with Open Library's covers service (`Surfaces/11 Tooltip images`). Images load the way any remote image in a note does; **Load remote data** governs chart data only.
+The repo vault's `tests/Library/Books.base` builds `formula.cover` from each book's ISBN with Open Library's covers service (`tests/Surfaces/11 Tooltip images`). Images load the way any remote image in a note does; **Load remote data** governs chart data only.
 
 ## 10. Gallery: structure, maps, flows
 
-These examples use Vega layouts that other Obsidian chart plugins do not have. Each is a spec in `test-vault/charts/` with notes to match; open `Surfaces/12 Gallery` in the test vault to see them all.
+These examples use Vega layouts that other Obsidian chart plugins do not have. Each is a spec in `demo-vault/tests/charts/` with notes to match; open `tests/Surfaces/12 Gallery` in that vault to see them all.
 
 | Example | Spec | Data it needs | Agate extras |
 |---|---|---|---|

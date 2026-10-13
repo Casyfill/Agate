@@ -22,6 +22,7 @@ All notable changes to Agate. The format follows [Keep a Changelog](https://keep
 
 ### Changed
 
+- One repo vault (ADR-0002): `test-vault/` moved into `demo-vault/tests/`, so the showcase and the test fixtures live in one vault and every chart in it is rendered by the test suite. Test notes that share a name with a showcase note got a ` (test)` suffix; test bases only look inside `tests/`. `npm run install:local` now targets `demo-vault/`.
 - A spec's `description` no longer pops up as an Obsidian tooltip over the whole chart. Vega puts descriptions in `aria-label`, which Obsidian shows on hover; Agate moves them to `aria-description`, so screen readers still get them.
 - "Load remote data" now also covers images Vega fetches itself (image marks such as map tiles); with it off they are skipped and the rest of the chart draws.
 - Theme `obsidian`: Vega-Lite text marks use the theme's text colour (they were black, unreadable in dark mode).

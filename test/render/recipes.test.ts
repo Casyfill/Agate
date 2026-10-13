@@ -1,5 +1,5 @@
 /**
- * Every built-in recipe (D13), filled with properties from test-vault notes, renders headlessly
+ * Every built-in recipe (D13), filled with properties from test notes, renders headlessly
  * without Vega errors; suggestions cover every required role; leaving optional roles empty
  * still yields a valid chart.
  */
@@ -15,7 +15,7 @@ import { edgesDatasetName, linkEdges, pathTree, treeDatasetName } from "../../sr
 import type { AnySpec, Row } from "../../src/core/types";
 import { vaultDir, vaultResolvedLinks, vaultRows } from "../fixtures/vault";
 
-const md = (...folders: string[]) => (p: string) => folders.some((f) => p.startsWith(`${f}/`)) && p.endsWith(".md");
+const md = (...folders: string[]) => (p: string) => folders.some((f) => p.startsWith(`tests/${f}/`)) && p.endsWith(".md");
 const library = () => vaultRows(md("Library"));
 const journal = () => vaultRows(md("Journal"));
 const ideas = () => vaultRows(md("Ideas"));
@@ -29,7 +29,7 @@ const CASES: Record<string, { rows: () => Row[]; full: Record<string, string>; s
   histogram: { rows: library, full: { value: "note.pages" } },
   line: { rows: journal, full: { date: "note.date", value: "note.mood" } },
   calendar: { rows: journal, full: { date: "note.date" } },
-  sunburst: { rows: () => vaultRows(() => true), full: {} },
+  sunburst: { rows: () => vaultRows((p) => p.startsWith("tests/")), full: {} },
   graph: { rows: ideas, full: { colour: "note.topic" }, sparse: {} },
   arcs: { rows: ideas, full: { date: "note.created", colour: "note.topic" }, sparse: { date: "note.created" } },
   globe: {
@@ -70,7 +70,7 @@ async function render(spec: AnySpec, rows: Row[]): Promise<{ svg: string; errors
   const edges = edgesDatasetName(spec);
   if (edges) datasets[edges] = linkEdges(rows, vaultResolvedLinks(rows));
   const tree = treeDatasetName(spec);
-  if (tree) datasets[tree] = pathTree(rows, "test-vault");
+  if (tree) datasets[tree] = pathTree(rows, "demo-vault");
   let s = spec;
   for (const [name, values] of Object.entries(datasets)) {
     s = ensureNamedData(s, mode, name);
@@ -118,8 +118,8 @@ describe("built-in recipes", () => {
   }
 
   it("a user recipe from the test vault's recipe folder parses and renders", async () => {
-    const raw = JSON.parse(readFileSync(join(vaultDir, "charts/recipes/count-by-decade.vl.json"), "utf8")) as AnySpec;
-    const recipe = parseRecipe(raw, "charts/recipes/count-by-decade.vl.json", "x")!;
+    const raw = JSON.parse(readFileSync(join(vaultDir, "tests/charts/recipes/count-by-decade.vl.json"), "utf8")) as AnySpec;
+    const recipe = parseRecipe(raw, "tests/charts/recipes/count-by-decade.vl.json", "x")!;
     expect(recipe.id).toBe("decades");
     const { svg, errors } = await render(fillRecipe(recipe, { date: "note.published", stack: "note.genre" }), library());
     expect(errors).toEqual([]);

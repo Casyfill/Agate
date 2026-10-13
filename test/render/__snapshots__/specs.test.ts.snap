@@ -40,7 +40,7 @@ exports[`fixture specs render headlessly with D4 rows > reading-sankey.vg.json 1
 
 exports[`fixture specs render headlessly with D4 rows > travel-globe.vg.json 1`] = `
 {
-  "hash": "bcc83b273d60979a",
+  "hash": "c9cee30260e4797a",
   "shapes": 233,
 }
 `;

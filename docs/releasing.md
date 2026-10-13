@@ -25,7 +25,7 @@ Also confirm: no `innerHTML` (vega-embed builds its own DOM; we do not touch it)
 ## C. Functional gate
 
 1. `make check` green locally and in CI on `main`.
-2. Full manual checklist in `test-vault/` (`M0 Checklist.md`, to be trimmed into `Checklist.md`) on desktop, light and dark theme.
+2. Full manual checklist in `demo-vault/tests/` (`M0 Checklist.md`, to be trimmed into `Checklist.md`) on desktop, light and dark theme.
 3. Real mobile device: install via BRAT (below) or by copying the three files into `<vault>/.obsidian/plugins/agate/` through Files/iCloud. Charts render, tooltips work on touch, load time acceptable. Decide `isDesktopOnly` from this; if false, the directory will also list it for mobile.
 4. Fresh-vault test: a vault that never had Agate, install from the release assets, enable, follow `docs/quickstart.md` without touching the repo. Everything the quickstart says must be true.
 5. Upgrade test: install 0.0.x, then the release candidate over it; settings survive, charts still render.

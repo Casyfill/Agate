@@ -34,7 +34,7 @@ Ideas parked for after 0.1.0. Not commitments; reviewed when 0.1.0 ships. Each e
 
 **Canvas renderer default if hover isolation proves insufficient.** The `isShown` problem is handled by stopping `mouseover` at the chart element. If some Obsidian handler still reaches SVG marks, the canvas renderer sidesteps it (event targets become an HTMLCanvasElement) at the cost of styleable SVG.
 
-**End-to-end tests.** `wdio-obsidian-service` against `test-vault/` in CI once the manual checklist is longer than a screen.
+**End-to-end tests.** `wdio-obsidian-service` against `demo-vault/` in CI once the manual checklist is longer than a screen.
 
 **Declarative settings (`getSettingDefinitions`).** Obsidian 1.13 indexes plugin settings for its settings search only when the tab implements the declarative API. The lint rule flags this; adopting it is mechanical. Small; M2 candidate.
 

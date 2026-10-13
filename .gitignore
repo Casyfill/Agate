@@ -8,14 +8,6 @@ main.js
 .vscode/
 .idea/
 
-# test vault: Obsidian's own state and the symlinked plugin build
-test-vault/.obsidian/workspace.json
-test-vault/.obsidian/workspace-mobile.json
-test-vault/.obsidian/plugins/agate/
-test-vault/.obsidian/plugins/hot-reload/
-test-vault/.obsidian/cache
-test-vault/.trash/
-
 # demo vault: Obsidian's own state and the symlinked plugin build
 demo-vault/.obsidian/workspace.json
 demo-vault/.obsidian/workspace-mobile.json

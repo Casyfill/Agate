@@ -1,0 +1,32 @@
+filters:
+  and:
+    - file.inFolder("tests/Ideas")
+    - file.ext == "md"
+formulas:
+  links_out: file.links.length
+views:
+  - type: agate
+    name: Graph
+    order:
+      - file.name
+      - topic
+      - status
+    specFile: tests/charts/link-graph.vg.json
+  - type: agate
+    name: Arc diagram
+    sort:
+      - property: created
+        direction: ASC
+    order:
+      - file.name
+      - topic
+      - created
+    specFile: tests/charts/link-arcs.vg.json
+  - type: table
+    name: Table
+    order:
+      - file.name
+      - topic
+      - status
+      - created
+      - formula.links_out

@@ -1,0 +1,51 @@
+filters:
+  and:
+    - file.inFolder("tests/Markets")
+    - file.hasTag("market")
+formulas:
+  csv: '"https://fred.stlouisfed.org/graph/fredgraph.csv?id=" + fred'
+properties:
+  note.fred:
+    displayName: FRED id
+  note.kind:
+    displayName: Kind
+  note.region:
+    displayName: Region
+  note.unit:
+    displayName: Unit
+  formula.csv:
+    displayName: CSV
+views:
+  - type: agate
+    name: Table
+    order:
+      - file.name
+      - kind
+      - region
+      - unit
+    specFile: tests/charts/horizon-table.vg.json
+  - type: agate
+    name: Table by kind
+    groupBy:
+      property: kind
+      direction: ASC
+    order:
+      - file.name
+      - kind
+      - region
+      - unit
+    specFile: tests/charts/horizon-table.vg.json
+  - type: agate
+    name: Horizon only
+    order:
+      - file.name
+    specFile: tests/charts/horizon.vg.json
+  - type: table
+    name: Bases table
+    order:
+      - file.name
+      - fred
+      - kind
+      - region
+      - unit
+      - formula.csv

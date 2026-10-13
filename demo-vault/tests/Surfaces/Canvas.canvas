@@ -1,0 +1,9 @@
+{
+	"nodes":[
+		{"id":"a0a1a2a3a4a5a6a7","type":"text","text":"# Text card with an agate block\n\n```agate\nspec: tests/charts/ratings-by-genre.vl.json\nbase: tests/Library/Books.base\n```\n","x":-40,"y":-20,"width":560,"height":380},
+		{"id":"c0c1c2c3c4c5c6c7","type":"file","file":"tests/Surfaces/9 Canvas card text.md","x":-40,"y":420,"width":560,"height":460},
+		{"id":"d0d1d2d3d4d5d6d7","type":"text","text":"# Static map (interactive: false)\n\n```agate\ninteractive: false\nspec: tests/charts/world-map.vl.json\n```\n","x":580,"y":480,"width":680,"height":400},
+		{"id":"b0b1b2b3b4b5b6b7","type":"file","file":"tests/Library/Books.base","subpath":"#Scatter","x":580,"y":-20,"width":680,"height":440}
+	],
+	"edges":[]
+}

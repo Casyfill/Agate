@@ -5,8 +5,8 @@ import { parse } from "yaml";
 import type { Row } from "../../src/core/types";
 
 const root = fileURLToPath(new URL("../..", import.meta.url));
-export const vaultDir = join(root, "test-vault");
-export const demoVaultDir = join(root, "demo-vault");
+/** The one repo vault: showcase notes plus the test notes under `tests/`. */
+export const vaultDir = join(root, "demo-vault");
 
 function walk(dir: string, base = vaultDir, out: string[] = []): string[] {
   for (const name of readdirSync(dir)) {
@@ -22,7 +22,7 @@ const FRONTMATTER = /^---\n([\s\S]*?)\n---/;
 const WIKILINK = /\[\[([^\]|#]+)(?:[#|][^\]]*)?\]\]/g;
 
 /**
- * Rows in the D4 shape for test-vault files, the way the Bases view would build them:
+ * Rows in the D4 shape for vault files, the way the Bases view would build them:
  * `file` from the path and size, `note` from the frontmatter, `file.tags` from `tags`.
  * Formulas are not evaluated; pass them in when a spec needs one.
  */
