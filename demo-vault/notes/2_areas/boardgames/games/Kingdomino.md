@@ -10,6 +10,7 @@ price: 20
 kids: true
 owned: true
 played_times: 5
+image: "https://upload.wikimedia.org/wikipedia/en/a/a3/Kingdomino_Box_Cover.png"
 ---
 # Kingdomino
 

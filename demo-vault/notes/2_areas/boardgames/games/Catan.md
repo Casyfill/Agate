@@ -10,6 +10,7 @@ price: 45
 kids: true
 owned: true
 played_times: 7
+image: "https://upload.wikimedia.org/wikipedia/en/a/a3/Catan-2015-boxart.jpg"
 ---
 # Catan
 

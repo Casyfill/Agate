@@ -10,6 +10,7 @@ price: 60
 kids: false
 owned: true
 played_times: 7
+image: "https://upload.wikimedia.org/wikipedia/en/c/c3/3d-wingspan-768x752.png"
 ---
 # Wingspan
 

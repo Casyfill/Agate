@@ -10,6 +10,7 @@ price: 40
 kids: true
 owned: true
 played_times: 7
+image: "https://upload.wikimedia.org/wikipedia/en/7/79/Cascadia_box_cover.JPG"
 ---
 # Cascadia
 

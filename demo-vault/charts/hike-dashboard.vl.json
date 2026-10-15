@@ -1,6 +1,6 @@
 {
   "$schema": "https://vega.github.io/schema/vega-lite/v6.json",
-  "description": "Multi-day hike dashboard, drawn like an instrument readout: every logged point is a dot. Each day note links its GPS track (CSV: time, lat, lon, ele_m, hr, temp_c, cloud_pct, precip_mm; the watch keeps logging overnight at camp) in `track`; Agate loads them all (rowData). Distance, speed and climb are computed here from the raw points, the sun's altitude from each point's position and time. All panels share local time (`utcOffset`, hours from UTC); camps are the dotted blocks on the speed panel. Hover the route or any panel for a reading; drag across the elevation panel to zoom the others. Click the route to open that day's note. Colours come from the Obsidian theme (`agateColors`: text for data, accent for hover and selection). The chart is as wide as the note. Route and heights: OpenStreetMap, Copernicus DEM. Basemap: static keyless tiles (Esri hillshade by default); needs Load remote data.",
+  "description": "Multi-day hike dashboard, drawn like an instrument readout: every logged point is a dot. Each day note links its GPS track (CSV: time, lat, lon, ele_m, hr, temp_c, cloud_pct, precip_mm; the watch keeps logging overnight at camp) in `track`; Agate loads them all (rowData). Distance, speed and climb are computed here from the raw points, the sun's altitude from each point's position and time. All panels share local time (`utcOffset`, hours from UTC); camps are the dotted blocks on the speed panel. Hover the route or any panel for a reading; drag across the elevation panel to zoom the others. Click the route to open that day's note. Colours come from the Obsidian theme (`agateColors`: text for data, accent for hover and selection). The chart is as wide as the note. Route and heights: OpenStreetMap, Copernicus DEM. Basemap: USGS 3DEP multidirectional hillshade by default (keyless, US only; one image for the map frame, multiplied into the background in light mode and drawn faintly in dark mode), or static keyless tiles; needs Load remote data.",
   "usermeta": {
     "agate": {
       "rowData": {
@@ -235,6 +235,9 @@
         {
           "transform": [
             {
+              "filter": "bm !== '3dep'"
+            },
+            {
               "calculate": "mapCenter[0] - width / 2 / mapScale * 180 / PI",
               "as": "vlon0"
             },
@@ -335,6 +338,77 @@
             "values": [
               {}
             ]
+          }
+        },
+        {
+          "data": {
+            "values": [
+              {}
+            ]
+          },
+          "transform": [
+            {
+              "filter": "bm === '3dep'"
+            },
+            {
+              "calculate": "mapCenter[0] - width / 2 / mapScale * 180 / PI",
+              "as": "lon0"
+            },
+            {
+              "calculate": "mapCenter[0] + width / 2 / mapScale * 180 / PI",
+              "as": "lon1"
+            },
+            {
+              "calculate": "(mercY[0] + mercY[1]) / 2 + 340 / 2 / mapScale",
+              "as": "y1"
+            },
+            {
+              "calculate": "(mercY[0] + mercY[1]) / 2 - 340 / 2 / mapScale",
+              "as": "y0"
+            },
+            {
+              "calculate": "(2 * atan(exp(datum.y1)) - PI / 2) * 180 / PI",
+              "as": "lat1"
+            },
+            {
+              "calculate": "(2 * atan(exp(datum.y0)) - PI / 2) * 180 / PI",
+              "as": "lat0"
+            },
+            {
+              "calculate": "'https://elevation.nationalmap.gov/arcgis/rest/services/3DEPElevation/ImageServer/exportImage?bboxSR=3857&imageSR=3857&format=png&f=image&bbox=' + round(datum.lon0 * 20037508.34 / 180) + ',' + round(datum.y0 * 6378137) + ',' + round(datum.lon1 * 20037508.34 / 180) + ',' + round(datum.y1 * 6378137) + '&size=' + round(width * 2) + ',' + 680 + '&renderingRule=%7B%22rasterFunction%22%3A%22Hillshade%20Multidirectional%22%7D'",
+              "as": "url"
+            }
+          ],
+          "mark": {
+            "type": "image",
+            "aspect": false,
+            "clip": true,
+            "blend": {
+              "expr": "agateDark ? 'normal' : 'multiply'"
+            },
+            "opacity": {
+              "expr": "agateDark ? 0.22 : 1"
+            }
+          },
+          "encoding": {
+            "longitude": {
+              "field": "lon0",
+              "type": "quantitative"
+            },
+            "latitude": {
+              "field": "lat1",
+              "type": "quantitative"
+            },
+            "longitude2": {
+              "field": "lon1"
+            },
+            "latitude2": {
+              "field": "lat0"
+            },
+            "url": {
+              "field": "url",
+              "type": "nominal"
+            }
           }
         },
         {
@@ -2492,7 +2566,7 @@
         },
         "text": {
           "value": {
-            "expr": "upper((bm === 'satellite' ? 'Imagery Esri, Maxar' : bm === 'usgs' ? 'Basemap USGS' : bm === 'hillshade' ? 'Basemap Esri, USGS' : 'Map © OpenStreetMap, OpenTopoMap') + ' · trail © OSM contributors · Copernicus DEM · Open-Meteo ERA5 · shower invented · not for navigation')"
+            "expr": "upper((bm === '3dep' ? 'Basemap USGS 3DEP' : bm === 'satellite' ? 'Imagery Esri, Maxar' : bm === 'usgs' ? 'Basemap USGS' : bm === 'hillshade' ? 'Basemap Esri, USGS' : 'Map © OpenStreetMap, OpenTopoMap') + ' · trail © OSM contributors · Copernicus DEM · Open-Meteo ERA5 · shower invented · not for navigation')"
           }
         }
       }
@@ -2536,24 +2610,26 @@
         "input": "select",
         "options": [
           "auto",
+          "3dep",
+          "hillshade",
           "topo",
           "satellite",
-          "usgs",
-          "hillshade"
+          "usgs"
         ],
         "labels": [
-          "Auto (hillshade, follows dark mode)",
+          "Auto (USGS 3DEP multidirectional hillshade)",
+          "USGS 3DEP multidirectional (US only)",
+          "Esri hillshade",
           "OpenTopoMap",
           "Satellite (Esri)",
-          "USGS Topo",
-          "Hillshade (Esri)"
+          "USGS Topo"
         ],
         "name": "Basemap "
       }
     },
     {
       "name": "bm",
-      "expr": "basemap === 'auto' ? 'hillshade' : basemap"
+      "expr": "basemap === 'auto' ? '3dep' : basemap"
     },
     {
       "name": "lonX",

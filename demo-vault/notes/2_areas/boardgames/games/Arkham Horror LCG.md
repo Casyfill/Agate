@@ -10,6 +10,7 @@ price: 50
 kids: false
 owned: true
 played_times: 2
+image: "https://upload.wikimedia.org/wikipedia/en/d/d0/Arkham_Horror_Box.png"
 ---
 # Arkham Horror LCG
 

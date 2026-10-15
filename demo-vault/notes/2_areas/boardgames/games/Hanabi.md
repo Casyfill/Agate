@@ -10,6 +10,7 @@ price: 10
 kids: true
 owned: true
 played_times: 4
+image: "https://thumb.wikimedia.org/wikipedia/en/thumb/b/b1/Hanabi_cover.jpg/330px-Hanabi_cover.jpg"
 ---
 # Hanabi
 

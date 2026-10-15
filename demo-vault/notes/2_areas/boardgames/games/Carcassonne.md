@@ -10,6 +10,7 @@ price: 35
 kids: true
 owned: true
 played_times: 6
+image: "https://upload.wikimedia.org/wikipedia/en/5/5e/Carcassonne-game.jpg"
 ---
 # Carcassonne
 

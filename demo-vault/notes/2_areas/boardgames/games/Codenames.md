@@ -10,6 +10,7 @@ price: 20
 kids: true
 owned: true
 played_times: 8
+image: "https://thumb.wikimedia.org/wikipedia/commons/thumb/b/b0/Codenames_board_game.jpg/330px-Codenames_board_game.jpg"
 ---
 # Codenames
 

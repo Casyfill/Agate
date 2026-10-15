@@ -56,6 +56,68 @@
   font-family: var(--font-interface);
 }
 
+/* Experimental: a stats spec (usermeta.agate.output: "stats") as a row of big numbers in note text */
+.agate-chart.agate-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6em 2.4em;
+  margin: 0.5em 0 1em;
+  overflow: visible;
+}
+
+.agate-stat {
+  color: var(--text-muted);
+  font-size: var(--font-ui-small);
+  letter-spacing: 0.01em;
+}
+
+.agate-stat-top {
+  display: flex;
+  align-items: baseline;
+  gap: 0.45em;
+}
+
+.agate-stat-value {
+  color: var(--text-normal);
+  font-size: 2.1em;
+  font-weight: 700;
+  line-height: 1.1;
+  font-variant-numeric: tabular-nums lining-nums;
+}
+
+/* Secondary value: an arrow for the direction; green when it is good news, red when not */
+.agate-stat-change {
+  font-size: 1em;
+  font-weight: 600;
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums lining-nums;
+}
+.agate-stat-change.is-up::before { content: "▲ "; font-size: 0.7em; }
+.agate-stat-change.is-down::before { content: "▼ "; font-size: 0.7em; }
+.agate-stat-change.is-good { color: var(--color-green); }
+.agate-stat-change.is-bad { color: var(--color-red); }
+
+
+.agate-stat-note {
+  color: var(--text-faint);
+  font-size: 0.9em;
+}
+
+/* A base block or embed showing stats is a line of numbers, not a database view: no title or
+   toolbar above it, and no fixed view height around it. */
+.block-language-base:has(.agate-stats) .bases-header,
+.bases-embed:has(.agate-stats) .bases-header {
+  display: none;
+}
+.block-language-base:has(.agate-stats) .bases-view,
+.bases-embed:has(.agate-stats) .bases-view,
+.agate-bases-view:has(.agate-stats) {
+  height: auto;
+  min-height: 0;
+  padding: 0;
+  overflow: visible;
+}
+
 /* Bases view container */
 .agate-bases-view {
   padding: var(--size-4-3);

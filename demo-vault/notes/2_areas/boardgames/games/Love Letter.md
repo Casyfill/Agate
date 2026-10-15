@@ -10,6 +10,7 @@ price: 12
 kids: true
 owned: true
 played_times: 6
+image: "https://upload.wikimedia.org/wikipedia/en/e/e1/Love_Letter_box_cover.jpg"
 ---
 # Love Letter
 

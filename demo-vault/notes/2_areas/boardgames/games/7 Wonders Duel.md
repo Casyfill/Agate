@@ -10,6 +10,7 @@ price: 30
 kids: true
 owned: true
 played_times: 2
+image: "https://upload.wikimedia.org/wikipedia/en/6/6d/7_Wonders_Duel_cover.png"
 ---
 # 7 Wonders Duel
 

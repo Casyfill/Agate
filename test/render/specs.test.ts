@@ -25,6 +25,7 @@ function rowsFor(name: string, hasRowData: boolean): Row[] {
   if (hasRowData) return marketRows();
   const md = (folder: string) => (p: string) => p.startsWith(`tests/${folder}/`) && p.endsWith(".md");
   if (name.startsWith("link-")) return vaultRows(md("Ideas"));
+  if (name.startsWith("stats-")) return vaultRows((p) => md("Library")(p) && /^\s*- book$/m.test(readFileSync(join(vaultDir, p), "utf8")));
   if (name.startsWith("travel-")) return vaultRows((p) => md("Trips")(p) || md("Places")(p));
   if (name.startsWith("mood-")) return vaultRows(md("Journal"));
   if (name.startsWith("vault-")) return vaultRows((p) => p.startsWith("tests/"));

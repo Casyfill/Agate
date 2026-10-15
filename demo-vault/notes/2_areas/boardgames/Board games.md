@@ -37,3 +37,5 @@ Every play is a note (who played, who won, how long); every game is a note with 
 ## The shelf
 
 ![[Board games.base#Games]]
+
+Hover a bubble for the game's picture (its `image` property): lead images of the games' Wikipedia articles, box art © its publishers.

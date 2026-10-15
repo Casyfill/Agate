@@ -10,6 +10,7 @@ price: 35
 kids: true
 owned: true
 played_times: 5
+image: "https://upload.wikimedia.org/wikipedia/en/2/2e/BoardGameSplendorLogoFairUse.jpg"
 ---
 # Splendor
 

@@ -37,5 +37,6 @@ This folder exists to exercise the plugin; the rest of the vault is the showcase
 10. [[tests/Surfaces/10 Markets table]] — per-row CSV from FRED, table cells, horizon chart (needs network)
 11. [[tests/Surfaces/11 Tooltip images]] — cover image from a note's URL in the tooltip (needs network)
 12. [[tests/Surfaces/12 Gallery]] — sunburst, link graph, arc diagram, travel globe, sankey, linked dashboard, beeswarm
+13. [[tests/Surfaces/13 Stats]] — live big numbers: drawn by Vega, or computed by Vega and shown as HTML (experimental)
 
 Also open [[tests/Library/Books.base]] directly and switch views from the toolbar.

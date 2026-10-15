@@ -10,6 +10,7 @@ price: 80
 kids: false
 owned: true
 played_times: 0
+image: "https://thumb.wikimedia.org/wikipedia/commons/thumb/d/d6/Game_in_progress%2C_Spirit_Island.jpg/330px-Game_in_progress%2C_Spirit_Island.jpg"
 ---
 # Spirit Island
 

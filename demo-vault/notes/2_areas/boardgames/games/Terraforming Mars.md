@@ -10,6 +10,7 @@ price: 70
 kids: false
 owned: true
 played_times: 0
+image: "https://upload.wikimedia.org/wikipedia/en/f/f0/Terraforming_Mars_board_game_box_cover.jpg"
 ---
 # Terraforming Mars
 

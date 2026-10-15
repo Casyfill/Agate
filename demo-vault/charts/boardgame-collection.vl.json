@@ -1,6 +1,6 @@
 {
   "$schema": "https://vega.github.io/schema/vega-lite/v6.json",
-  "description": "The collection: complexity against playing time, bubble area = times played this year (from the play notes), colour = kind of game. Games not played this year are dashed rings (the shelf of shame). Click a game to open it.",
+  "description": "The collection: complexity against playing time, bubble area = times played this year (from the play notes), colour = kind of game. Games not played this year are dashed rings (the shelf of shame). Click a game to open it. The tooltip shows each game's picture from its `image` property (a tooltip field titled \"image\" is drawn as a picture).",
   "usermeta": {
     "agate": {
       "open": "click"
@@ -143,6 +143,10 @@
           }
         },
         "tooltip": [
+          {
+            "field": "note.image",
+            "title": "image"
+          },
           {
             "field": "file.name",
             "title": "title"

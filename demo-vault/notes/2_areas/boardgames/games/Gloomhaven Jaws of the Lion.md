@@ -10,6 +10,7 @@ price: 50
 kids: false
 owned: true
 played_times: 0
+image: "https://thumb.wikimedia.org/wikipedia/en/thumb/e/ee/Gloomhaven_Cover_Art.jpg/330px-Gloomhaven_Cover_Art.jpg"
 ---
 # Gloomhaven: Jaws of the Lion
 

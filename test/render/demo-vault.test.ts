@@ -16,6 +16,7 @@ import { expandRowData, rowDataDefs } from "../../src/core/data/rowdata";
 import { cellsDatasetName, tableCells } from "../../src/core/data/table";
 import { edgesDatasetName, linkEdges, pathTree, treeDatasetName } from "../../src/core/data/structure";
 import { ensureNamedData, withInitialValues, withSignalValues } from "../../src/core/spec";
+import { computeStats, isStatsSpec } from "../../src/core/stats";
 import type { AnySpec, Row } from "../../src/core/types";
 import { vaultDir, vaultResolvedLinks, vaultRows } from "../fixtures/vault";
 
@@ -32,6 +33,8 @@ const ROWS: Record<string, () => Row[]> = {
   "boardgame-plays.vl.json": ofType("boardgame", "play"),
   "interview-cold-score.vl.json": ofType("interview-attempt"),
   "interview-domains.vl.json": ofType("interview-attempt"),
+  "interview-stats.vl.json": ofType("interview-attempt"),
+  "hike-stats.vl.json": ofType("hike-day"),
   "meetings-heatmap.vl.json": ofType("meeting"),
   "people-graph.vg.json": ofType("meeting", "person", "project"),
   "habit-grid.vl.json": ofType("journal"),
@@ -55,7 +58,7 @@ const previewDark = {
 const loader = vega.loader();
 loader.load = async (uri: string) => readFileSync(join(vaultDir, uri), "utf8");
 
-async function render(name: string, rows: Row[]): Promise<{ svg: string; errors: string[] }> {
+async function render(name: string, rows: Row[]): Promise<{ svg: string; errors: string[]; stats?: unknown }> {
   const raw = JSON.parse(readFileSync(join(chartsDir, name), "utf8")) as AnySpec;
   const isVL = typeof raw.$schema === "string" && /vega-lite/.test(raw.$schema);
   const mode = isVL ? "vega-lite" : "vega";
@@ -106,7 +109,9 @@ async function render(name: string, rows: Row[]): Promise<{ svg: string; errors:
   const svg = await view.toSVG();
   view.finalize();
   if (env.AGATE_PREVIEW) writeFileSync(join(env.AGATE_PREVIEW, `demo-${name.replace(/\.json$/, ".svg")}`), svg);
-  return { svg, errors };
+  // Experimental stats specs: also check the numbers Agate would show as HTML.
+  const stats = isStatsSpec(raw) ? await computeStats(spec, mode, {}, loader) : undefined;
+  return { svg, errors, stats };
 }
 
 const charts = readdirSync(chartsDir).filter((f) => f.endsWith(".json")).sort();
@@ -120,17 +125,18 @@ describe("demo vault charts", () => {
     it(name, async () => {
       const rows = ROWS[name]?.() ?? [];
       expect(rows.length).toBeGreaterThan(0);
-      const { svg, errors } = await render(name, rows);
+      const { svg, errors, stats } = await render(name, rows);
       expect(errors).toEqual([]);
-      expect((svg.match(/<(path|rect|line|text)\b/g) ?? []).length).toBeGreaterThan(20);
+      if (stats) expect(stats).toMatchSnapshot();
+      else expect((svg.match(/<(path|rect|line|text)\b/g) ?? []).length).toBeGreaterThan(20);
     });
   }
 });
 
 describe("hike basemap", () => {
-  it("auto is the hillshade basemap, which follows dark mode itself", async () => {
+  it("auto is the USGS 3DEP multidirectional hillshade in both modes", async () => {
     const raw = JSON.parse(readFileSync(join(chartsDir, "hike-dashboard.vl.json"), "utf8")) as AnySpec;
-    for (const [dark, want] of [[true, "hillshade"], [false, "hillshade"]] as const) {
+    for (const [dark, want] of [[true, "3dep"], [false, "3dep"]] as const) {
       const spec = withSignalValues(raw, "vega-lite", { agateDark: dark });
       const view = new vega.View(vega.parse(vl.compile(spec as never).spec), { renderer: "none" });
       await view.runAsync();

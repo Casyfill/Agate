@@ -57,6 +57,7 @@
     "hike": "text",
     "track": "text",
     "weather": "text",
+    "image": "text",
     "domain": "text",
     "question_id": "text",
     "topic": "text",

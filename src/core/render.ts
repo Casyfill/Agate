@@ -15,6 +15,7 @@ import { errorMessage, type Logger } from "../util/log";
 import { quietAriaLabels } from "./aria";
 import { themeColors } from "./theme";
 import { containerSignals, isBounce } from "./resize";
+import { computeStats, isStatsSpec } from "./stats";
 
 export interface RenderInput {
   resolved: ResolvedSpec;
@@ -126,6 +127,27 @@ export class AgateRenderer {
       }
       spec = defaultToContainerWidth(spec, resolved.mode);
       spec = withSignalValues(spec, resolved.mode, env);
+
+      // Experimental: a stats spec renders as HTML numbers, not as a chart.
+      if (isStatsSpec(resolved.spec)) {
+        const stats = await computeStats(spec, resolved.mode, input.config, input.loader);
+        if (gen !== this.generation) return;
+        this.chartEl.empty();
+        this.chartEl.addClass("agate-stats");
+        for (const s of stats) {
+          const cell = this.chartEl.createDiv({ cls: "agate-stat" });
+          const top = cell.createDiv({ cls: "agate-stat-top" });
+          top.createSpan({ cls: "agate-stat-value", text: s.value });
+          if (s.change) {
+            const cls = ["agate-stat-change", `is-${s.direction ?? "flat"}`];
+            if (s.good !== undefined) cls.push(s.good ? "is-good" : "is-bad");
+            top.createSpan({ cls: cls.join(" "), text: s.change });
+          }
+          cell.createDiv({ cls: "agate-stat-label", text: s.label });
+          if (s.note) cell.createDiv({ cls: "agate-stat-note", text: s.note });
+        }
+        return;
+      }
 
       const embedOptions: EmbedOptions = {
         mode: resolved.mode,

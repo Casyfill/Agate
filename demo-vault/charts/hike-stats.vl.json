@@ -1,0 +1,249 @@
+{
+  "$schema": "https://vega.github.io/schema/vega-lite/v6.json",
+  "description": "AT Georgia headline numbers from the GPS tracks (experimental stats output): miles, feet climbed and the biggest day, high point and its day, hours moving and the average pace, nights at camp. Same per-point maths as hike-dashboard.vl.json.",
+  "usermeta": {
+    "agate": {
+      "output": "stats",
+      "rowData": {
+        "name": "track",
+        "from": "note.track"
+      }
+    }
+  },
+  "data": {
+    "name": "track"
+  },
+  "width": "container",
+  "height": 52,
+  "transform": [
+    {
+      "calculate": "toDate(datum.time)",
+      "as": "t"
+    },
+    {
+      "calculate": "datum.note.day",
+      "as": "day"
+    },
+    {
+      "calculate": "'Day ' + datum.note.day + ': ' + datum.note.from + ' → ' + datum.note.to",
+      "as": "stage"
+    },
+    {
+      "window": [
+        {
+          "op": "lag",
+          "field": "lat",
+          "as": "lat0"
+        },
+        {
+          "op": "lag",
+          "field": "lon",
+          "as": "lon0"
+        },
+        {
+          "op": "lag",
+          "field": "t",
+          "as": "t0"
+        },
+        {
+          "op": "lag",
+          "field": "ele_m",
+          "as": "ele0"
+        }
+      ],
+      "groupby": [
+        "day"
+      ],
+      "sort": [
+        {
+          "field": "t"
+        }
+      ]
+    },
+    {
+      "calculate": "isValid(datum.lat0) ? 2 * 6371000 * asin(sqrt(pow(sin((datum.lat - datum.lat0) * PI / 360), 2) + cos(datum.lat0 * PI / 180) * cos(datum.lat * PI / 180) * pow(sin((datum.lon - datum.lon0) * PI / 360), 2))) : 0",
+      "as": "seg_m"
+    },
+    {
+      "calculate": "isValid(datum.t0) ? (datum.t - datum.t0) / 3600000 : 0",
+      "as": "dt_h"
+    },
+    {
+      "calculate": "isValid(datum.ele0) ? max(0, datum.ele_m - datum.ele0) * 3.28084 : 0",
+      "as": "climb_ft"
+    },
+    {
+      "calculate": "datum.dt_h > 0 ? datum.seg_m / 1609.34 / datum.dt_h : 0",
+      "as": "mph_raw"
+    },
+    {
+      "window": [
+        {
+          "op": "sum",
+          "field": "seg_m",
+          "as": "cum_m"
+        }
+      ],
+      "sort": [
+        {
+          "field": "t"
+        }
+      ],
+      "frame": [
+        null,
+        0
+      ]
+    },
+    {
+      "calculate": "datum.cum_m / 1609.34",
+      "as": "mi"
+    },
+    {
+      "calculate": "datum.ele_m * 3.28084",
+      "as": "ele_ft"
+    },
+    {
+      "calculate": "datum.mph_raw > 0.3 ? datum.dt_h : 0",
+      "as": "moving_h"
+    },
+    {
+      "joinaggregate": [
+        {
+          "op": "sum",
+          "field": "climb_ft",
+          "as": "dayClimb"
+        }
+      ],
+      "groupby": [
+        "day"
+      ]
+    },
+    {
+      "aggregate": [
+        {
+          "op": "max",
+          "field": "mi",
+          "as": "mi"
+        },
+        {
+          "op": "sum",
+          "field": "climb_ft",
+          "as": "climb"
+        },
+        {
+          "op": "max",
+          "field": "dayClimb",
+          "as": "bigDay"
+        },
+        {
+          "op": "argmax",
+          "field": "dayClimb",
+          "as": "bigRow"
+        },
+        {
+          "op": "argmax",
+          "field": "ele_ft",
+          "as": "topRow"
+        },
+        {
+          "op": "max",
+          "field": "ele_ft",
+          "as": "top"
+        },
+        {
+          "op": "sum",
+          "field": "moving_h",
+          "as": "moving"
+        },
+        {
+          "op": "distinct",
+          "field": "day",
+          "as": "days"
+        }
+      ]
+    },
+    {
+      "calculate": "datum.days - 1",
+      "as": "nights"
+    },
+    {
+      "fold": [
+        "mi",
+        "climb",
+        "top",
+        "moving",
+        "nights"
+      ],
+      "as": [
+        "key",
+        "raw"
+      ]
+    },
+    {
+      "calculate": "datum.key === 'mi' || datum.key === 'moving' ? format(datum.raw, '.1f') : format(datum.raw, ',.0f')",
+      "as": "value"
+    },
+    {
+      "calculate": "{mi: 'miles', climb: 'ft climbed', top: 'ft high point', moving: 'hours moving', nights: 'nights at camp'}[datum.key]",
+      "as": "label"
+    },
+    {
+      "calculate": "datum.key === 'mi' ? datum.days + ' days' : datum.key === 'climb' ? format(datum.bigDay, ',.0f') + ' on day ' + datum.bigRow.day : datum.key === 'top' ? 'on day ' + datum.topRow.day : datum.key === 'moving' ? format(datum.mi / datum.moving, '.1f') + ' mph on average' : 'in shelters'",
+      "as": "note"
+    },
+    {
+      "calculate": "indexof(['mi', 'climb', 'top', 'moving', 'nights'], datum.key)",
+      "as": "i"
+    }
+  ],
+  "encoding": {
+    "x": {
+      "field": "i",
+      "type": "ordinal",
+      "axis": null,
+      "bandPosition": 0,
+      "scale": {
+        "type": "band",
+        "paddingInner": 0,
+        "paddingOuter": 0
+      }
+    }
+  },
+  "layer": [
+    {
+      "mark": {
+        "type": "text",
+        "align": "left",
+        "baseline": "alphabetic",
+        "fontSize": 28,
+        "fontWeight": 700,
+        "y": 30
+      },
+      "encoding": {
+        "text": {
+          "field": "value"
+        }
+      }
+    },
+    {
+      "mark": {
+        "type": "text",
+        "align": "left",
+        "baseline": "alphabetic",
+        "fontSize": 11,
+        "opacity": 0.7,
+        "y": 48
+      },
+      "encoding": {
+        "text": {
+          "field": "label"
+        }
+      }
+    }
+  ],
+  "config": {
+    "view": {
+      "stroke": null
+    }
+  }
+}

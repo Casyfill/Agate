@@ -10,6 +10,7 @@ price: 35
 kids: true
 owned: true
 played_times: 4
+image: "https://upload.wikimedia.org/wikipedia/en/2/23/Picture_of_Azul_game_box.jpg"
 ---
 # Azul
 

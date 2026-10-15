@@ -199,7 +199,21 @@ The extras, all declared under `usermeta.agate` in the spec:
 - `"tree": "tree"` adds the folder hierarchy: one node per folder (root `/`) and per note, with `parent`, `depth`, `ancestors`, and `size` and `count` totals. Feed it to Vega's `stratify` and then `partition`, `treemap` or `tree`.
 - `"open": "click"` opens the note behind a mark when it is clicked (Cmd/Ctrl for a new tab). It works for any mark whose data carries `file.path`, which base rows and every Agate dataset do.
 
-## 11. Troubleshooting
+## 11. Experimental: big numbers as note text
+
+A row of headline numbers (books read, mean rating, pages) can be drawn by Vega as text marks, but SVG text does not wrap, cannot be selected and uses the chart font. Add one line to the spec instead:
+
+```json
+"usermeta": {"agate": {"output": "stats"}}
+```
+
+Agate then runs the spec without drawing it and shows the rows behind its first mark as HTML: each row's `value` large, its `label` small under it, and an optional `note`. Vega still does all the work (filters, aggregates, formatting), the numbers follow the base like any chart, and they wrap and select like note text in the note's own fonts. Outside Agate the spec draws its own marks, so give it a simple text layer as a fallback. `demo-vault/tests/Surfaces/13 Stats.md` shows both approaches side by side; the specs are `tests/charts/stats-row-vega.vl.json` and `stats-row-html.vl.json`.
+
+Rows can also carry a secondary value. A numeric `change` is shown with an arrow for its direction (▲ 0.4, ▼ −3), in the theme's green when it is good news and red when not; up is good unless the row says `better: "down"` (for time, cost, errors). A text `change` such as "+12%" gives its direction by its sign. Put what it is compared against in `note`.
+
+Two things to know. In Vega-Lite's `aggregate`, a field written `note.rating` is read as one flat name, so copy nested fields out with a `calculate` first. And the format may still change: this is experimental.
+
+## 12. Troubleshooting
 
 | You see | Likely cause |
 |---|---|
@@ -211,7 +225,7 @@ The extras, all declared under `usermeta.agate` in the spec:
 | White box in dark mode | The vault theme is a stock Vega theme; switch to `obsidian`. |
 | Chart did not pick up a spec edit | Inline specs are not watched; move it to a file, or reopen the note. |
 
-## 12. Further reading
+## 13. Further reading
 
 - `README.md`: overview, settings, limits, API for plugin authors.
 - `docs/adr/0001-architecture-and-roadmap.md`: how it works and why (D3 surfaces, D4 rows, D7 API, D11 settings, D12 per-row data).

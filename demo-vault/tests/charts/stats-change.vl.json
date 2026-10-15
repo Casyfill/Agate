@@ -1,0 +1,158 @@
+{
+  "$schema": "https://vega.github.io/schema/vega-lite/v6.json",
+  "description": "Stats with a secondary value (experimental): books, mean rating and mean length, each with how the books published since 2000 differ from the whole library. `better: \"down\"` on the length row makes a rise read as bad news.",
+  "usermeta": {
+    "agate": {
+      "output": "stats"
+    }
+  },
+  "data": {
+    "name": "base"
+  },
+  "width": "container",
+  "height": 52,
+  "transform": [
+    {
+      "calculate": "isValid(datum.note.rating) && datum.note.rating !== '' ? toNumber(datum.note.rating) : null",
+      "as": "rating"
+    },
+    {
+      "calculate": "isValid(datum.note.pages) && datum.note.pages !== '' ? toNumber(datum.note.pages) : null",
+      "as": "pages"
+    },
+    {
+      "calculate": "isValid(datum.note.published) && datum.note.published !== '' && year(toDate(datum.note.published)) >= 2000",
+      "as": "recent"
+    },
+    {
+      "calculate": "datum.recent ? datum.rating : null",
+      "as": "rRating"
+    },
+    {
+      "calculate": "datum.recent ? datum.pages : null",
+      "as": "rPages"
+    },
+    {
+      "calculate": "datum.recent ? 1 : 0",
+      "as": "rCount"
+    },
+    {
+      "aggregate": [
+        {
+          "op": "count",
+          "as": "books"
+        },
+        {
+          "op": "sum",
+          "field": "rCount",
+          "as": "recentBooks"
+        },
+        {
+          "op": "mean",
+          "field": "rating",
+          "as": "avg"
+        },
+        {
+          "op": "mean",
+          "field": "rRating",
+          "as": "rAvg"
+        },
+        {
+          "op": "mean",
+          "field": "pages",
+          "as": "len"
+        },
+        {
+          "op": "mean",
+          "field": "rPages",
+          "as": "rLen"
+        }
+      ]
+    },
+    {
+      "fold": [
+        "books",
+        "avg",
+        "len"
+      ],
+      "as": [
+        "key",
+        "raw"
+      ]
+    },
+    {
+      "calculate": "datum.key === 'books' ? 'books' : datum.key === 'avg' ? 'mean rating' : 'pages per book'",
+      "as": "label"
+    },
+    {
+      "calculate": "datum.key === 'avg' ? format(datum.raw, '.1f') : format(datum.raw, ',.0f')",
+      "as": "value"
+    },
+    {
+      "calculate": "datum.key === 'books' ? datum.recentBooks : datum.key === 'avg' ? round((datum.rAvg - datum.avg) * 10) / 10 : round(datum.rLen - datum.len)",
+      "as": "change"
+    },
+    {
+      "calculate": "datum.key === 'books' ? 'published since 2000' : 'since 2000 vs all'",
+      "as": "note"
+    },
+    {
+      "calculate": "datum.key === 'len' ? 'down' : 'up'",
+      "as": "better"
+    },
+    {
+      "calculate": "indexof(['books', 'avg', 'len'], datum.key)",
+      "as": "i"
+    }
+  ],
+  "encoding": {
+    "x": {
+      "field": "i",
+      "type": "ordinal",
+      "axis": null,
+      "bandPosition": 0,
+      "scale": {
+        "type": "band",
+        "paddingInner": 0,
+        "paddingOuter": 0
+      }
+    }
+  },
+  "layer": [
+    {
+      "mark": {
+        "type": "text",
+        "align": "left",
+        "baseline": "alphabetic",
+        "fontSize": 28,
+        "fontWeight": 700,
+        "y": 30
+      },
+      "encoding": {
+        "text": {
+          "field": "value"
+        }
+      }
+    },
+    {
+      "mark": {
+        "type": "text",
+        "align": "left",
+        "baseline": "alphabetic",
+        "fontSize": 11,
+        "opacity": 0.7,
+        "y": 48
+      },
+      "encoding": {
+        "text": {
+          "field": "label"
+        }
+      }
+    }
+  ],
+  "config": {
+    "view": {
+      "stroke": null
+    }
+  }
+}

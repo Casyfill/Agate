@@ -8,11 +8,10 @@ cssclasses: [agate-area]
 
 *Springer Mountain to Neel Gap, three days in October 2025.*
 
-> [!stats]
-> - **29.2** miles
-> - **3** days
-> - **4,422 ft** Blood Mountain
-> - **2** nights in shelters
+```agate
+spec: charts/hike-stats.vl.json
+base: bases/Hiking.base
+```
 
 The first 30 miles of the Appalachian Trail, from the southern terminus to the outfitter at Neel Gap. Each day is a note with its GPS track. Every dot is one reading from the watch, which kept logging overnight at camp. Hover the route or any panel to read elevation, speed, heart rate, the sun's height and the temperature at that moment; drag across the elevation panel to zoom into a stretch of time.
 

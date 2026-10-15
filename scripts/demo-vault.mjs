@@ -165,6 +165,10 @@ while (day < new Date("2026-10-03T00:00:00Z")) {
   }
   day = addDays(day, 1);
 }
+// Each game's picture: the lead image of its English Wikipedia article (mostly the box; for a few a
+// photo of the game in play), hotlinked from Wikimedia like the test vault's book covers. Fetched once
+// (2026-10-14) into scripts/data/boardgame-images.json; four games have no usable image. Box art © its publishers.
+const BOX = JSON.parse(readFileSync(new URL("./data/boardgame-images.json", import.meta.url), "utf8"));
 for (const [name, min, max, time, complexity, theme, price, kids] of games) {
   const played = playCounts.get(name);
   note(
@@ -181,6 +185,7 @@ for (const [name, min, max, time, complexity, theme, price, kids] of games) {
       kids,
       owned: name !== "Twilight Imperium" || true,
       played_times: played,
+      image: BOX[name],
     },
     `# ${name}\n\n${min === max ? `${min}` : `${min}–${max}`} players, about ${time} minutes, complexity ${complexity}. ${played ? `Played ${played} time${played > 1 ? "s" : ""} this year.` : "Not played this year."}\n`,
   );
@@ -534,7 +539,7 @@ obs("types.json", {
     ...typeOf("number", ["initial", "readup", "final", "lc", "priority", "duration", "players_min", "players", "time", "complexity", "price", "played_times", "lat", "lon", "mood", "energy", "sleep", "rating", "pages", "day"]),
     ...typeOf("multitext", ["tags", "people", "attendees", "habits", "participants"]),
     ...typeOf("checkbox", ["kids", "owned", "coding", "retest"]),
-    ...typeOf("text", ["type", "area", "status", "kind", "theme", "winner", "trip", "mode", "country", "country_id", "author", "genre", "isbn", "role", "team", "from", "to", "project", "game", "hike", "track", "weather", "domain", "question_id", "topic", "level", "problem"]),
+    ...typeOf("text", ["type", "area", "status", "kind", "theme", "winner", "trip", "mode", "country", "country_id", "author", "genre", "isbn", "role", "team", "from", "to", "project", "game", "hike", "track", "weather", "image", "domain", "question_id", "topic", "level", "problem"]),
   },
 });
 
@@ -726,8 +731,11 @@ const unlink = (v) => String(v).replace(/^\[\[|\]\]$/g, "");
 const fmt = (n) => n.toLocaleString("en-US");
 const plural = (n, w) => `${n} ${w}${n === 1 ? "" : "s"}`;
 const TODAY = new Date("2026-10-07T00:00:00Z");
-function areaNote(path, { title, look, tags = [], dek, stats, intro, sections }) {
-  const stat = `> [!stats]\n${stats.map(([v, l]) => `> - **${v}** ${l}`).join("\n")}`;
+function areaNote(path, { title, look, tags = [], dek, stats, statsSpec, intro, sections }) {
+  // statsSpec: live numbers from a spec over the base (Agate's experimental stats output); otherwise a static [!stats] row.
+  const stat = statsSpec
+    ? `\`\`\`agate\nspec: ${statsSpec.spec}\nbase: ${statsSpec.base}\n\`\`\``
+    : `> [!stats]\n${stats.map(([v, l]) => `> - **${v}** ${l}`).join("\n")}`;
   const fm = `---\ntype: hub\nlook: ${look}\ntags: [${["hub", ...tags].join(", ")}]\ncssclasses: [agate-area]\n---\n`;
   write(path, `${fm}# ${title}\n\n*${dek}*\n\n${stat}\n\n${intro}\n\n${sections.join("\n\n")}\n`);
 }
@@ -828,6 +836,7 @@ const todos = (xs) => xs.map(([done, x]) => `- [${done ? "x" : " "}] ${x}`).join
       `## Next\n\n${todos([[false, "Book a Saturday for [[Twilight Imperium]] (needs 6 and a whole day)"], [false, "Teach [[Spirit Island]] to Ben"], [true, "Sleeve [[Cascadia]]"]])}`,
       "## Game nights\n\n![[Board games.base#Game nights]]",
       "## The shelf\n\n![[Board games.base#Games]]",
+      "Hover a bubble for the game's picture (its `image` property): lead images of the games' Wikipedia articles, box art © its publishers.",
     ],
   });
 }
@@ -853,7 +862,7 @@ const todos = (xs) => xs.map(([done, x]) => `- [${done ? "x" : " "}] ${x}`).join
   areaNote(`${PREP}/Interview prep.md`, {
     title: "Interview prep", look: "dark", tags: ["career"],
     dek: `${Math.round((new Date(dated.at(-1).props.date) - new Date(dated[0].props.date)) / 6048e5)} weeks of practice questions, graded cold, after reading up, and cold again days later.`,
-    stats: [[at.length, "attempts"], [problems.size, "problems"], [fmt(mean(at.map((a) => a.props.initial))), "mean cold grade"], [retests.length, "cold re-tests"]],
+    statsSpec: { spec: "charts/interview-stats.vl.json", base: "bases/Interview prep.base" },
     // A Side-Notes margin note (HTML format, its default): beside the chart in Reading and Editing view.
     intro: `<span class="sidenote margin-note">Each attempt is a note: the question, its domain and topic, and three grades from 1 to 5: cold (the first answer, no notes), after read-up, and a cold re-test days later. The dots are cold grades, the grey line a 7-attempt rolling mean; a ring is a re-test.</span>`,
     sections: [
@@ -941,7 +950,7 @@ const todos = (xs) => xs.map(([done, x]) => `- [${done ? "x" : " "}] ${x}`).join
   areaNote("notes/2_areas/hiking/AT Georgia 2025/AT Georgia 2025.md", {
     title: "AT Georgia 2025", look: "dark", tags: ["area/hiking", "trip"],
     dek: "Springer Mountain to Neel Gap, three days in October 2025.",
-    stats: [[hikeMiles.toFixed(1), "miles"], [3, "days"], [`${Math.round(hikeTop * 3.28084).toLocaleString("en-US")} ft`, "Blood Mountain"], [2, "nights in shelters"]],
+    statsSpec: { spec: "charts/hike-stats.vl.json", base: "bases/Hiking.base" },
     intro: `The first 30 miles of the Appalachian Trail, from the southern terminus to the outfitter at Neel Gap. Each day is a note with its GPS track. Every dot is one reading from the watch, which kept logging overnight at camp. Hover the route or any panel to read elevation, speed, heart rate, the sun's height and the temperature at that moment; drag across the elevation panel to zoom into a stretch of time.`,
     sections: [
       "![[Hiking.base#Dashboard]]",

@@ -10,6 +10,7 @@ price: 150
 kids: false
 owned: true
 played_times: 0
+image: "https://thumb.wikimedia.org/wikipedia/en/thumb/7/77/Twilight-imperium-layout_12.jpg/330px-Twilight-imperium-layout_12.jpg"
 ---
 # Twilight Imperium
 

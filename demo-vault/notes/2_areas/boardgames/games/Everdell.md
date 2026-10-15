@@ -10,6 +10,7 @@ price: 60
 kids: true
 owned: true
 played_times: 2
+image: "https://thumb.wikimedia.org/wikipedia/commons/thumb/7/7b/Components_of_board_game_Everdell.jpg/330px-Components_of_board_game_Everdell.jpg"
 ---
 # Everdell
 

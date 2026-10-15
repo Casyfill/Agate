@@ -10,6 +10,7 @@ price: 60
 kids: false
 owned: true
 played_times: 0
+image: "https://thumb.wikimedia.org/wikipedia/commons/thumb/9/9f/Turn_1_in_board_game_Root.jpg/330px-Turn_1_in_board_game_Root.jpg"
 ---
 # Root
 
