@@ -88,10 +88,44 @@ export function obsidianTheme(): Config {
   } as Config;
 }
 
+/**
+ * The dynamic `instrument` theme: the `obsidian` theme redrawn as a monochrome readout, after the
+ * demo vault's hike dashboard. Monospace type, ink-coloured marks and small filled dots, no axis
+ * lines or ticks, dotted grids, y labels inside the plot, axis titles as small corner labels above
+ * each plot, and the accent kept for selections. Colours still come from the Obsidian theme.
+ */
+export function instrumentTheme(): Config {
+  const c = themeColors();
+  const mono = getComputedStyle(document.body).getPropertyValue("--font-monospace").trim() || "ui-monospace, SFMono-Regular, Menlo, Consolas, monospace";
+  const label = { labelFont: mono, labelFontSize: 9, labelColor: c.muted, titleFont: mono, titleFontSize: 9, titleFontWeight: 600, titleColor: c.text };
+  return mergeConfig(obsidianTheme(), {
+    font: mono,
+    title: { font: mono, fontSize: 11, fontWeight: 600, color: c.text, subtitleFont: mono, subtitleColor: c.muted, anchor: "start" },
+    axis: { ...label, domain: false, ticks: false, grid: true, gridDash: [1, 3], gridColor: c.border, gridOpacity: 0.8, labelOverlap: "greedy", labelFlush: false },
+    // y axes: the title as a corner label above the plot; numeric labels inside it (category labels stay outside)
+    axisY: { titleAngle: 0, titleAlign: "left", titleBaseline: "bottom", titleX: 0, titleY: -14 },
+    axisYQuantitative: { labelAlign: "left", labelBaseline: "bottom", labelPadding: -2 },
+    legend: { ...label, symbolType: "circle", symbolSize: 40 },
+    header: { labelFont: mono, titleFont: mono },
+    mark: { color: c.text },
+    point: { filled: true, size: 6, strokeWidth: 0 },
+    circle: { size: 6 },
+    line: { strokeWidth: 1.2 },
+    area: { opacity: 0.12 },
+    rule: { color: c.muted },
+    text: { color: c.text, font: mono },
+    range: { category: [...new Set([c.text, c.accent, c.blue, c.green, c.orange, c.purple, c.cyan, c.yellow, c.pink, c.red])] },
+    style: { "guide-label": { font: mono }, "guide-title": { font: mono }, text: { font: mono } },
+    // Vega-Lite: interval selections (brushes) in the accent
+    selection: { interval: { mark: { fill: c.accent, fillOpacity: 0.12, stroke: c.accent, strokeOpacity: 0.6 } } },
+  } as Config);
+}
+
 /** Built-in themes: the dynamic Obsidian theme plus the static ones shipped by vega-themes. */
 export function builtinThemes(): Map<string, ThemeSource> {
   const map = new Map<string, ThemeSource>();
   map.set("obsidian", obsidianTheme);
+  map.set("instrument", instrumentTheme);
   for (const [name, cfg] of Object.entries(vegaThemes as Record<string, unknown>)) {
     if (name === "version" || name === "default" || typeof cfg !== "object" || cfg === null) continue;
     map.set(name, cfg);

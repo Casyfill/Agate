@@ -645,6 +645,7 @@ views:
       - property: day
         direction: ASC
     specFile: charts/hike-dashboard.vl.json
+    theme: instrument
   - type: table
     name: Days
     order: [day, date, from, to, weather, track]

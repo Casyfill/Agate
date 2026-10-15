@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { describe, expect, it } from "vitest";
-import { builtinThemes, composeConfig, materialize, obsidianTheme, themeColors } from "../../src/core/theme";
+import { builtinThemes, composeConfig, instrumentTheme, materialize, obsidianTheme, themeColors } from "../../src/core/theme";
 
 describe("themes (D5, D11)", () => {
   it("ships the dynamic obsidian theme plus vega-themes, without the version export", () => {
@@ -27,6 +27,19 @@ describe("themes (D5, D11)", () => {
     document.body.style.removeProperty("--text-muted");
     const cfg = obsidianTheme() as { axis: { labelColor: string } };
     expect(cfg.axis.labelColor).toBe("#777");
+  });
+
+  it("derives the instrument theme from the Obsidian theme: monospace, ink marks, accent brushes", () => {
+    document.body.style.setProperty("--font-monospace", "JetBrains Mono");
+    document.body.style.setProperty("--text-normal", "rgb(236, 239, 244)");
+    document.body.style.setProperty("--color-accent", "rgb(191, 97, 106)");
+    const cfg = instrumentTheme() as { font: string; mark: { color: string }; axis: { domain: boolean }; range: { category: string[] }; selection: { interval: { mark: { fill: string } } } };
+    expect(builtinThemes().has("instrument")).toBe(true);
+    expect(cfg.font).toBe("JetBrains Mono");
+    expect(cfg.mark.color).toBe("rgb(236, 239, 244)");
+    expect(cfg.axis.domain).toBe(false);
+    expect(cfg.range.category[0]).toBe("rgb(236, 239, 244)");
+    expect(cfg.selection.interval.mark.fill).toBe("rgb(191, 97, 106)");
   });
 
   it("does not repeat the accent in the category palette when it is one of the named colours", () => {
