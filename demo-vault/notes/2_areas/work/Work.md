@@ -34,4 +34,4 @@ Every meeting is a note with its attendees and project. One row per person, one 
 
 ![[Meetings.base#People and projects]]
 
-Related: [[Projects]]
+Related: [[Interview prep]]

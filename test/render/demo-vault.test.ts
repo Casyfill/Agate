@@ -30,7 +30,8 @@ const ROWS: Record<string, () => Row[]> = {
   "countries-visited.vl.json": ofType("trip", "place"),
   "boardgame-collection.vl.json": ofType("boardgame", "play"),
   "boardgame-plays.vl.json": ofType("boardgame", "play"),
-  "project-gantt.vl.json": ofType("project"),
+  "interview-cold-score.vl.json": ofType("interview-attempt"),
+  "interview-domains.vl.json": ofType("interview-attempt"),
   "meetings-heatmap.vl.json": ofType("meeting"),
   "people-graph.vg.json": ofType("meeting", "person", "project"),
   "habit-grid.vl.json": ofType("journal"),
@@ -124,4 +125,17 @@ describe("demo vault charts", () => {
       expect((svg.match(/<(path|rect|line|text)\b/g) ?? []).length).toBeGreaterThan(20);
     });
   }
+});
+
+describe("hike basemap", () => {
+  it("auto is the hillshade basemap, which follows dark mode itself", async () => {
+    const raw = JSON.parse(readFileSync(join(chartsDir, "hike-dashboard.vl.json"), "utf8")) as AnySpec;
+    for (const [dark, want] of [[true, "hillshade"], [false, "hillshade"]] as const) {
+      const spec = withSignalValues(raw, "vega-lite", { agateDark: dark });
+      const view = new vega.View(vega.parse(vl.compile(spec as never).spec), { renderer: "none" });
+      await view.runAsync();
+      expect(view.signal("bm")).toBe(want);
+      view.finalize();
+    }
+  });
 });

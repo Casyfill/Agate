@@ -7,7 +7,7 @@ SHELL := /bin/bash
 VERSION ?=
 BRANCH  := $(shell git rev-parse --abbrev-ref HEAD)
 
-.PHONY: help install dev build check typecheck lint test test-watch install-local demo clean preflight release
+.PHONY: help install dev build check typecheck lint test test-watch install-local demo extras clean preflight release
 
 help: ## List targets
 	@grep -E '^[a-zA-Z_-]+:.*?## ' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  %-14s %s\n", $$1, $$2}'
@@ -43,6 +43,25 @@ demo: ## Regenerate demo-vault notes and data, build, and link the plugin into i
 	node scripts/demo-vault.mjs
 	npm run build
 	npm run install:local
+
+# Downloaded, not committed: themes and plugins keep their own licences (AnuPpuccin is GPL-3.0).
+THEMES  := AnuPpuccin=anubisnekhet/AnuPpuccin Tufte=pleiadesm/TufteObsidian Minimal=kepano/obsidian-minimal
+PLUGINS := tufte-suite=pleiadesm/tufte-suite side-notes=cparsell/sidenotes obsidian-minimal-settings=kepano/obsidian-minimal-settings
+extras: ## Download the demo vault's themes (AnuPpuccin, Tufte, Minimal) and plugins (Tufte Suite, Side-Notes, Minimal Settings)
+	@for t in $(THEMES); do \
+	  dir=demo-vault/.obsidian/themes/$${t%%=*}; mkdir -p $$dir; \
+	  for f in manifest.json theme.css; do \
+	    curl -fsSL https://github.com/$${t#*=}/releases/latest/download/$$f -o $$dir/$$f || exit 1; \
+	  done; echo "installed $$dir"; \
+	done
+	@for p in $(PLUGINS); do \
+	  dir=demo-vault/.obsidian/plugins/$${p%%=*}; mkdir -p $$dir; \
+	  for f in manifest.json main.js; do \
+	    curl -fsSL https://github.com/$${p#*=}/releases/latest/download/$$f -o $$dir/$$f || exit 1; \
+	  done; \
+	  curl -fsSL https://github.com/$${p#*=}/releases/latest/download/styles.css -o $$dir/styles.css 2>/dev/null || true; \
+	  echo "installed $$dir"; \
+	done
 
 clean: ## Remove build output and dependencies
 	rm -rf main.js node_modules

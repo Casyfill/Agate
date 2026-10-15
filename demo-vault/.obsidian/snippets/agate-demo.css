@@ -51,3 +51,12 @@
   color: var(--text-muted);
   font-size: 1.15em;
 }
+
+/* Tufte Suite figure callouts holding a chart: in the editor, drop the callout's inset so the
+   chart is as wide as the text, the way it is in Reading view. */
+.markdown-source-view.mod-cm6 .callout[data-callout|="figure"] {
+  padding-inline: 0;
+}
+.markdown-source-view.mod-cm6 .callout[data-callout|="figure"] > .callout-content {
+  padding-inline: 0;
+}

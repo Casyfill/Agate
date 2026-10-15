@@ -6,6 +6,10 @@
     "end": "date",
     "published": "date",
     "created": "date",
+    "initial": "number",
+    "readup": "number",
+    "final": "number",
+    "lc": "number",
     "priority": "number",
     "duration": "number",
     "players_min": "number",
@@ -29,6 +33,8 @@
     "participants": "multitext",
     "kids": "checkbox",
     "owned": "checkbox",
+    "coding": "checkbox",
+    "retest": "checkbox",
     "type": "text",
     "area": "text",
     "status": "text",
@@ -50,6 +56,11 @@
     "game": "text",
     "hike": "text",
     "track": "text",
-    "weather": "text"
+    "weather": "text",
+    "domain": "text",
+    "question_id": "text",
+    "topic": "text",
+    "level": "text",
+    "problem": "text"
   }
 }

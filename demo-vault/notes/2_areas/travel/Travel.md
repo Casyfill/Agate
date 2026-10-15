@@ -39,4 +39,4 @@ Every trip is a note with its stops in order and a purpose (family, work, person
 
 ![[Travel.base#Trips]]
 
-Related: [[AT Georgia 2025]] · [[Projects]]
+Related: [[AT Georgia 2025]] · [[Interview prep]]

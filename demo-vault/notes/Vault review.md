@@ -9,7 +9,7 @@ cssclasses: [agate-area]
 *What this vault is made of, by folder and by size.*
 
 > [!stats]
-> - **599** notes
+> - **683** notes
 > - **5** top-level folders
 > - **8** in the inbox
 > - **30** resources

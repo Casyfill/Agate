@@ -9,20 +9,20 @@ cssclasses: [agate-area]
 *Springer Mountain to Neel Gap, three days in October 2025.*
 
 > [!stats]
-> - **31.7** miles
+> - **29.2** miles
 > - **3** days
-> - **4,458 ft** Blood Mountain
+> - **4,422 ft** Blood Mountain
 > - **2** nights in shelters
 
-The first 31 miles of the Appalachian Trail, from the southern terminus to the outfitter at Neel Gap. Each day is a note with its GPS track. Hover the route to read elevation, speed and heart rate at that point; drag across the profile to zoom into a stretch. At night the map switches to satellite.
+The first 30 miles of the Appalachian Trail, from the southern terminus to the outfitter at Neel Gap. Each day is a note with its GPS track. Every dot is one reading from the watch, which kept logging overnight at camp. Hover the route or any panel to read elevation, speed, heart rate, the sun's height and the temperature at that moment; drag across the elevation panel to zoom into a stretch of time.
 
 ![[Hiking.base#Dashboard]]
 
 ## Day by day
 
-- [[Day 1 Springer Mountain to Hawk Mountain Shelter]]: 6.7 mi, clear, cool.
-- [[Day 2 Hawk Mountain Shelter to Woody Gap]]: 14.5 mi, overcast, light wind.
-- [[Day 3 Woody Gap to Neel Gap]]: 10.5 mi, sunny, windy on Blood Mountain.
+- [[Day 1 Springer Mountain to Hawk Mountain Shelter]]: 7.4 mi, clear and cool.
+- [[Day 2 Hawk Mountain Shelter to Woody Gap]]: 11.8 mi, sunny, a shower after lunch.
+- [[Day 3 Woody Gap to Neel Gap]]: 10.0 mi, low cloud until mid-morning, then warm sun.
 
 ## Notes for next time
 

@@ -1,4 +1,7 @@
 {
   "theme": "obsidian",
-  "cssTheme": "Minimal"
+  "cssTheme": "Minimal",
+  "enabledCssSnippets": [
+    "agate-demo"
+  ]
 }

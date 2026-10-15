@@ -7,6 +7,6 @@ date: 2025-10-12
 from: Woody Gap
 to: Neel Gap
 track: attachments/hikes/2025-10-12-woody-gap-to-neel-gap.csv
-weather: "sunny, windy on Blood Mountain"
+weather: "low cloud until mid-morning, then warm sun"
 ---
-Waypoints: Woody Gap → Big Cedar Mountain → Lance Creek → Jarrard Gap → Blood Mountain → Neel Gap. Track synthetic, route approximate.
+Waypoints: Woody Gap → Big Cedar Mountain → Lance Creek → Jarrard Gap → Blood Mountain → Neel Gap. The route is the real trail (OpenStreetMap); times and heart rate are invented. The watch kept logging overnight at camp.

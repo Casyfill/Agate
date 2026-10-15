@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { describe, expect, it } from "vitest";
-import { builtinThemes, composeConfig, materialize, obsidianTheme } from "../../src/core/theme";
+import { builtinThemes, composeConfig, materialize, obsidianTheme, themeColors } from "../../src/core/theme";
 
 describe("themes (D5, D11)", () => {
   it("ships the dynamic obsidian theme plus vega-themes, without the version export", () => {
@@ -27,6 +27,19 @@ describe("themes (D5, D11)", () => {
     document.body.style.removeProperty("--text-muted");
     const cfg = obsidianTheme() as { axis: { labelColor: string } };
     expect(cfg.axis.labelColor).toBe("#777");
+  });
+
+  it("does not repeat the accent in the category palette when it is one of the named colours", () => {
+    document.body.style.setProperty("--color-accent", "rgb(191, 97, 106)");
+    document.body.style.setProperty("--color-red", "rgb(191, 97, 106)");
+    const { range } = obsidianTheme() as { range: { category: string[] } };
+    expect(range.category.filter((x) => x === "rgb(191, 97, 106)")).toHaveLength(1);
+  });
+
+  it("exposes the theme colours by role for the agateColors signal", () => {
+    document.body.style.setProperty("--background-primary", "rgb(30, 30, 46)");
+    document.body.style.setProperty("--color-yellow", "rgb(249, 226, 175)");
+    expect(themeColors()).toMatchObject({ background: "rgb(30, 30, 46)", yellow: "rgb(249, 226, 175)", blue: "#086ddd" });
   });
 
   it("materializes functions and merges overrides in order", () => {

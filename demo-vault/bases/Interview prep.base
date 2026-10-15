@@ -1,0 +1,18 @@
+filters:
+  and:
+    - type == "interview-attempt"
+views:
+  - type: agate
+    name: Cold score
+    order: [file.name, date, domain, topic, initial, readup, final]
+    specFile: charts/interview-cold-score.vl.json
+  - type: agate
+    name: By domain
+    order: [file.name, date, domain, question_id, initial, final]
+    specFile: charts/interview-domains.vl.json
+  - type: table
+    name: Attempts
+    order: [file.name, date, domain, topic, level, initial, readup, final]
+    sort:
+      - property: date
+        direction: DESC

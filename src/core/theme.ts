@@ -3,36 +3,47 @@ import * as vegaThemes from "vega-themes";
 import type { ThemeSource } from "./types";
 
 /**
- * The dynamic `obsidian` theme: a Vega config derived from the CSS variables of the
- * active Obsidian theme at call time, so it follows light/dark and community themes.
+ * The active Obsidian theme's colours, read from its CSS variables. Specs get them as the
+ * `agateColors` signal; the `obsidian` theme below builds its config from them.
  */
-export function obsidianTheme(): Config {
+export function themeColors(): Record<string, string> {
   const cs = getComputedStyle(document.body);
   const v = (name: string, fallback: string): string => {
     const raw = cs.getPropertyValue(name).trim();
     return raw.length > 0 ? raw : fallback;
   };
+  return {
+    text: v("--text-normal", "#222"),
+    muted: v("--text-muted", "#777"),
+    faint: v("--text-faint", "#999"),
+    background: v("--background-primary", "#fff"),
+    border: v("--background-modifier-border", "#ccc"),
+    accent: v("--color-accent", "#7c3aed"),
+    red: v("--color-red", "#e93147"),
+    orange: v("--color-orange", "#ec7500"),
+    yellow: v("--color-yellow", "#e0ac00"),
+    green: v("--color-green", "#08b94e"),
+    cyan: v("--color-cyan", "#00bfbc"),
+    blue: v("--color-blue", "#086ddd"),
+    purple: v("--color-purple", "#7852ee"),
+    pink: v("--color-pink", "#d53984"),
+  };
+}
 
-  const text = v("--text-normal", "#222");
-  const muted = v("--text-muted", "#777");
-  const faint = v("--text-faint", "#999");
-  const border = v("--background-modifier-border", "#ccc");
-  const accent = v("--color-accent", "#7c3aed");
-  const font = v("--font-interface", "sans-serif");
-  const textSize = parseFloat(v("--font-text-size", "16px")) || 16;
+/**
+ * The dynamic `obsidian` theme: a Vega config derived from the CSS variables of the
+ * active Obsidian theme at call time, so it follows light/dark and community themes.
+ */
+export function obsidianTheme(): Config {
+  const c = themeColors();
+  const { text, muted, faint, border, accent } = c;
+  const cs = getComputedStyle(document.body);
+  const font = cs.getPropertyValue("--font-interface").trim() || "sans-serif";
+  const textSize = parseFloat(cs.getPropertyValue("--font-text-size")) || 16;
 
-  // Obsidian's named colours make a category palette that matches the theme.
-  const category = [
-    accent,
-    v("--color-blue", "#086ddd"),
-    v("--color-green", "#08b94e"),
-    v("--color-orange", "#ec7500"),
-    v("--color-red", "#e93147"),
-    v("--color-purple", "#7852ee"),
-    v("--color-cyan", "#00bfbc"),
-    v("--color-yellow", "#e0ac00"),
-    v("--color-pink", "#d53984"),
-  ];
+  // Obsidian's named colours make a category palette that matches the theme. Many themes use one
+  // of them as the accent (Nord's is its red), so drop repeats or two categories share a colour.
+  const category = [...new Set([accent, c.blue, c.green, c.orange, c.red, c.purple, c.cyan, c.yellow, c.pink])];
 
   const labelFontSize = Math.round(textSize * 0.7);
   const titleFontSize = Math.round(textSize * 0.8);

@@ -131,20 +131,6 @@
               "Euro",
               "Thematic",
               "Epic & co-op"
-            ],
-            "range": [
-              {
-                "expr": "agateDark ? '#fab387' : '#fe640b'"
-              },
-              {
-                "expr": "agateDark ? '#a6e3a1' : '#40a02b'"
-              },
-              {
-                "expr": "agateDark ? '#cba6f7' : '#8839ef'"
-              },
-              {
-                "expr": "agateDark ? '#74c7ec' : '#209fb5'"
-              }
             ]
           },
           "legend": {

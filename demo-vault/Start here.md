@@ -1,6 +1,7 @@
 ---
 type: index
 ---
+
 # Agate demo vault
 
 A made-up personal vault, organised like a real one (inbox, projects, areas, resources, journal), with charts on top of it. Everything is invented. The hike follows the Appalachian Trail in Georgia only roughly; its GPS tracks are generated and not for navigation.
@@ -18,17 +19,17 @@ Open [[Home]] for the list of area notes (each one a small dashboard), or any ba
 
 ## What is where
 
-| Area note | Notes | Base and views | What it shows |
-|---|---|---|---|
-| [[AT Georgia 2025]] | `notes/2_areas/hiking/` (3 day notes, each linking a GPS track in `attachments/hikes/`) | `Hiking` → Dashboard, Days | Route on a topo basemap, hover for elevation, speed and heart rate; drag the profile to zoom |
-| [[Travel]] | `notes/2_areas/travel/` (13 trip notes with ordered stops and a purpose, 22 places with lat/lon) | `Travel` → Globe, Countries, Trips | Great-circle routes by family, work and personal on a globe you can spin |
-| [[Reading]] | `notes/2_areas/reading/` (26 books with start and finish dates) | `Reading` → Reading year, Shelf | One bar per book, or a flow from genre to outcome to time taken |
-| [[Board games]] | `notes/2_areas/boardgames/` (24 games, a year of plays) | `Board games` → Collection, Game nights, Games | Complexity vs time sized by plays; who wins; plays per day |
-| [[Projects]] | `notes/1_projects/<area>/` (12 projects) | `Projects` → Timeline | Gantt from start to due, today marked |
-| [[Work]] | `notes/2_areas/work/meetings/`, `notes/2_areas/people/` | `Meetings` → Who I meet, People and projects | People by week; a graph of who works on what |
-| [[Journal]] | `notes/journal/` (six months of daily notes) | `Journal` → Habits, Mood | Habits per week with mood; one dot per day |
-| [[Russian campaign 1812]] | `notes/3_resources/history/` (10 battle notes; army and temperatures in `attachments/history/`) | `Campaign 1812` → Minard map, Battles | Minard's band of the army on a map, the temperature on the retreat, battles you can click |
-| [[Vault review]] | everything under `notes/` | `Vault` → Sunburst, Largest files | DaisyDisk-style rings by folder and size |
+| Area note                 | Notes                                                                                            | Base and views                                 | What it shows                                                                                | status |
+| ------------------------- | ------------------------------------------------------------------------------------------------ | ---------------------------------------------- | -------------------------------------------------------------------------------------------- | ------ |
+| [[AT Georgia 2025]]       | `notes/2_areas/hiking/` (3 day notes, each linking a GPS track in `attachments/hikes/`)          | `Hiking` → Dashboard, Days                     | Route on a topo basemap, hover for elevation, speed and heart rate; drag the profile to zoom |        |
+| [[Travel]]                | `notes/2_areas/travel/` (13 trip notes with ordered stops and a purpose, 22 places with lat/lon) | `Travel` → Globe, Countries, Trips             | Great-circle routes by family, work and personal on a globe you can spin                     | [x]    |
+| [[Reading]]               | `notes/2_areas/reading/` (26 books with start and finish dates)                                  | `Reading` → Reading year, Shelf                | One bar per book, or a flow from genre to outcome to time taken                              |        |
+| [[Board games]]           | `notes/2_areas/boardgames/` (24 games, a year of plays)                                          | `Board games` → Collection, Game nights, Games | Complexity vs time sized by plays; who wins; plays per day                                   | [x]    |
+| [[Interview prep]]        | `notes/1_projects/Interview prep/` (75 real practice attempts, scrubbed; a prep note per domain)  | `Interview prep` → Cold score, By domain, Attempts | Cold grades over time with a rolling mean and re-test rings; problems and mean grade per domain |        |
+| [[Work]]                  | `notes/2_areas/work/meetings/`, `notes/2_areas/people/`                                          | `Meetings` → Who I meet, People and projects   | People by week; a graph of who works on what                                                 |        |
+| [[Journal]]               | `notes/journal/` (six months of daily notes)                                                     | `Journal` → Habits, Mood                       | Habits per week with mood; one dot per day                                                   | [x]    |
+| [[Russian campaign 1812]] | `notes/3_resources/history/` (10 battle notes; army and temperatures in `attachments/history/`)  | `Campaign 1812` → Minard map, Battles          | Minard's band of the army on a map, the temperature on the retreat, battles you can click    | [x]    |
+| [[Vault review]]          | everything under `notes/`                                                                        | `Vault` → Sunburst, Largest files              | DaisyDisk-style rings by folder and size                                                     | [x]    |
 
 Area notes are written by the generator, so their numbers match the data.
 
@@ -46,8 +47,8 @@ Each area note is designed for one of three looks (its `look` property):
 
 | Look | Theme | Settings | Notes |
 |---|---|---|---|
-| elegant | Minimal, light | snippets `agate-demo` + `agate-elegant` | [[Russian campaign 1812]], [[Reading]], [[Projects]] |
-| dark | Minimal, dark | snippet `agate-demo` | [[AT Georgia 2025]], [[Travel]], [[Journal]] |
+| elegant | Tufte, light | snippet `agate-demo` | [[Russian campaign 1812]], [[Reading]] |
+| dark | Minimal, dark, Nord colour scheme (Minimal Settings), or Obsidian Nord | snippet `agate-demo` | [[AT Georgia 2025]], [[Interview prep]], [[Travel]], [[Journal]] |
 | colourful | AnuPpuccin (Mocha) | snippet `agate-demo` | [[Board games]], [[Work]], [[Vault review]] |
 
-Install Minimal and AnuPpuccin from Settings → Appearance → Themes. The snippets are in `.obsidian/snippets/`: `agate-demo` turns the `[!stats]` callout into a row of big numbers, `agate-elegant` sets a serif text font in light mode. Charts follow light and dark mode on their own.
+Install the themes and plugins with `make extras` in the repo (themes AnuPpuccin, Tufte and Minimal; plugins Tufte Suite, Side-Notes and Minimal Settings; downloaded rather than committed because they keep their own licences), or from Settings. The vault opens in Tufte. [[Russian campaign 1812]] uses Tufte Suite's figure and margin-note callouts; they lay out in the margin in Reading view. The snippets are in `.obsidian/snippets/`: `agate-demo` turns the `[!stats]` callout into a row of big numbers, `agate-elegant` sets a serif text font in light mode. Charts follow light and dark mode on their own.

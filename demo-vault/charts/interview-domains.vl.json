@@ -1,0 +1,217 @@
+{
+  "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+  "description": "Interview practice per domain: distinct problems attempted (a re-test counts once), mean cold grade in the label, colour by domain (the theme's category palette, as in the cold-score chart), and how many reached 4+ (cold, or on a re-test from `retestFrom` on).",
+  "title": "Per domain — problems attempted (re-tests count once), mean cold grade, how many reached 4+",
+  "width": "container",
+  "height": {
+    "step": 24
+  },
+  "params": [
+    {
+      "name": "retestFrom",
+      "value": "2026-08-09"
+    },
+    {
+      "name": "agateColors",
+      "value": {
+        "text": "#222",
+        "muted": "#777",
+        "faint": "#999",
+        "background": "#fff",
+        "border": "#ccc",
+        "accent": "#7c3aed",
+        "red": "#e93147",
+        "orange": "#ec7500",
+        "yellow": "#e0ac00",
+        "green": "#08b94e",
+        "cyan": "#00bfbc",
+        "blue": "#4e79a7",
+        "purple": "#7852ee",
+        "pink": "#d53984"
+      }
+    }
+  ],
+  "transform": [
+    {
+      "filter": "isValid(datum.note.initial) && datum.note.initial !== '' && isValid(datum.note.domain) && datum.note.domain !== ''"
+    },
+    {
+      "calculate": "indexof(datum.note.domain, 'Coding') >= 0 ? 'Coding & Algorithms' : datum.note.domain",
+      "as": "dom"
+    },
+    {
+      "calculate": "isValid(datum.note.topic) && datum.note.topic !== '' ? datum.note.topic : '(untagged)'",
+      "as": "topic"
+    },
+    {
+      "calculate": "replace(datum.note.question_id, /(R\\d?|-QS)$/, '')",
+      "as": "pid"
+    },
+    {
+      "calculate": "toNumber(datum.note.initial)",
+      "as": "ini"
+    },
+    {
+      "calculate": "isValid(datum.note.final) && datum.note.final !== '' && toDate(datum.note.date) >= toDate(retestFrom) ? toNumber(datum.note.final) : 0",
+      "as": "fin"
+    },
+    {
+      "calculate": "max(datum.ini, datum.fin)",
+      "as": "best"
+    },
+    {
+      "aggregate": [
+        {
+          "op": "max",
+          "field": "best",
+          "as": "pbest"
+        },
+        {
+          "op": "sum",
+          "field": "ini",
+          "as": "psum"
+        },
+        {
+          "op": "count",
+          "as": "preps"
+        }
+      ],
+      "groupby": [
+        "dom",
+        "pid"
+      ]
+    },
+    {
+      "calculate": "datum.pbest >= 4 ? 1 : 0",
+      "as": "psolved"
+    },
+    {
+      "aggregate": [
+        {
+          "op": "count",
+          "as": "problems"
+        },
+        {
+          "op": "sum",
+          "field": "psolved",
+          "as": "solved"
+        },
+        {
+          "op": "sum",
+          "field": "psum",
+          "as": "s"
+        },
+        {
+          "op": "sum",
+          "field": "preps",
+          "as": "reps"
+        }
+      ],
+      "groupby": [
+        "dom"
+      ]
+    },
+    {
+      "calculate": "datum.s / datum.reps",
+      "as": "avg"
+    },
+    {
+      "calculate": "format(datum.avg, '.1f') + ' avg · ' + datum.solved + '/' + datum.problems + ' at 4+'",
+      "as": "lbl"
+    },
+    {
+      "calculate": "datum.problems + 6",
+      "as": "pad"
+    }
+  ],
+  "encoding": {
+    "y": {
+      "field": "dom",
+      "type": "nominal",
+      "sort": "-x",
+      "title": null,
+      "axis": {
+        "labelLimit": 320
+      }
+    }
+  },
+  "layer": [
+    {
+      "mark": {
+        "type": "bar",
+        "cornerRadiusEnd": 3
+      },
+      "encoding": {
+        "x": {
+          "field": "problems",
+          "type": "quantitative",
+          "title": "Distinct problems attempted",
+          "axis": {
+            "tickMinStep": 1,
+            "format": "d"
+          }
+        },
+        "color": {
+          "field": "dom",
+          "type": "nominal",
+          "legend": null
+        },
+        "tooltip": [
+          {
+            "field": "dom",
+            "title": "Domain"
+          },
+          {
+            "field": "problems",
+            "title": "Problems"
+          },
+          {
+            "field": "solved",
+            "title": "Reached 4+"
+          },
+          {
+            "field": "reps",
+            "title": "Reps"
+          },
+          {
+            "field": "avg",
+            "format": ".2f",
+            "title": "Mean initial"
+          }
+        ]
+      }
+    },
+    {
+      "mark": {
+        "type": "text",
+        "align": "left",
+        "dx": 4,
+        "fontSize": 10,
+        "color": {
+          "expr": "agateColors.muted"
+        }
+      },
+      "encoding": {
+        "x": {
+          "field": "problems",
+          "type": "quantitative"
+        },
+        "text": {
+          "field": "lbl"
+        }
+      }
+    },
+    {
+      "mark": {
+        "type": "tick",
+        "opacity": 0
+      },
+      "encoding": {
+        "x": {
+          "field": "pad",
+          "type": "quantitative"
+        }
+      }
+    }
+  ]
+}

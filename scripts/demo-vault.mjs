@@ -3,7 +3,7 @@
 // tests are stable. Hand-written parts (demo-vault/charts, Start here, Dashboard) are left alone.
 // Everything here is invented; the hike follows the Appalachian Trail in Georgia only roughly
 // and must not be used for navigation.
-import { mkdirSync, rmSync, writeFileSync, copyFileSync, existsSync } from "fs";
+import { mkdirSync, rmSync, writeFileSync, copyFileSync, existsSync, readFileSync } from "fs";
 import { dirname, join } from "path";
 
 const ROOT = new URL("../demo-vault/", import.meta.url).pathname;
@@ -299,8 +299,27 @@ for (let i = 0; i < 30; i++) {
 }
 for (let i = 0; i < 8; i++) note(`notes/0_inbox/Inbox ${i + 1}.md`, { type: "inbox", created: iso(addDays(new Date("2026-09-20T00:00:00Z"), i)) }, lorem(8));
 
+// --- interview prep: real practice attempts, scrubbed ---------------------------------------------------
+// scripts/data/interview-attempts.json holds the properties of 75 real practice attempts and a
+// one-line question each, extracted once (2026-10-14) from a private vault. Answers, coaching notes
+// and anything naming an employer, product or real project were left out; behavioral and
+// project-deep-dive questions are reduced to a generic label.
+const ATTEMPTS = JSON.parse(readFileSync(new URL("./data/interview-attempts.json", import.meta.url), "utf8"));
+const PREP = "notes/1_projects/Interview prep";
+const trackOf = (domain) => (domain.includes("Coding") ? "Coding & Algorithms" : domain);
+for (const a of ATTEMPTS) {
+  const { name, question, ...props } = a;
+  note(`${PREP}/attempts/${name}.md`, { type: "interview-attempt", tags: ["career/interview"], ...props },
+    `# ${props.question_id}\n\n${question}\n\nGrades: cold ${props.initial}${props.readup ? `, after read-up ${props.readup}` : ""}${props.final ? `, re-test ${props.final}` : ""}. Prep: [[${trackOf(props.domain).replace(/ \/ /g, " - ")}]].`);
+}
+for (const track of [...new Set(ATTEMPTS.map((a) => trackOf(a.domain)))].sort()) {
+  const mine = ATTEMPTS.filter((a) => trackOf(a.domain) === track).sort((x, y) => String(x.date).localeCompare(String(y.date)));
+  note(`${PREP}/prep/${track.replace(/ \/ /g, " - ")}.md`, { type: "interview-prep", tags: ["career/interview"], domain: track },
+    `# ${track}\n\n${mine.length} attempts. Part of [[Interview prep]].\n\n${mine.map((a) => `- [[${a.name}]]: ${a.question} (cold ${a.initial}${a.final ? ` → ${a.final}` : ""})`).join("\n")}`);
+}
+
 // --- the hike: three days on the Appalachian Trail in Georgia ------------------------------------
-// Waypoints are approximate (public trail landmarks, rounded); the track between them is synthetic.
+// Landmarks along the way (rounded coordinates); each day ends at the trail point nearest its last one.
 const days = [
   ["2025-10-10", "Springer Mountain", "Hawk Mountain Shelter", [
     [34.6266, -84.1939, 1152, "Springer Mountain"], [34.6435, -84.1786, 869, ""], [34.6504, -84.1693, 771, "Three Forks"],
@@ -323,67 +342,92 @@ const hav = (a, b) => {
   return 2 * R * Math.asin(Math.sqrt(h));
 };
 const hikeNotes = [];
-const TRAIL_M = 31.7 * 1609.34; // Springer Mountain to Neel Gap along the trail
-/** One day's GPS points. `swing` (metres) sizes the switchbacks; the real track is ~1.5× the straight line. */
-function buildDay(di, wps, swing) {
-  const r = mulberry32(900 + di);
-  const g = () => Math.sqrt(-2 * Math.log(r() + 1e-12)) * Math.cos(2 * Math.PI * r());
-  const rows = ["time,lat,lon,ele_m,hr"];
-  let t = new Date(`${days[di][0]}T${di === 0 ? "09:40" : "08:15"}:00-04:00`).getTime();
-  const legLengths = wps.slice(1).map((w, i) => hav(wps[i], w));
-  const chord = legLengths.reduce((x, y) => x + y, 0);
-  const breakAt = [0.33, 0.55, 0.8].map((f) => Math.round((f * chord) / 40));
-  let step = 0, along = 0, length = 0, prev = null, prevEle = wps[0][2], hr = 95;
-  const phase = r() * 10;
-  for (let li = 0; li < legLengths.length; li++) {
-    const a = wps[li], b = wps[li + 1];
-    const n = Math.max(2, Math.round(legLengths[li] / 40));
-    const vn = (b[0] - a[0]) * 111320, ve = (b[1] - a[1]) * 111320 * Math.cos(rad(a[0]));
-    const L = Math.hypot(vn, ve) || 1;
-    for (let k = li === 0 ? 0 : 1; k <= n; k++) {
-      const f = k / n;
-      const d = along + f * legLengths[li];
-      // Switchbacks and ridge-line wiggle, perpendicular to the chord, zero at the waypoints.
-      const o = Math.sin(Math.PI * f) * (swing * Math.sin(d / 35) + 120 * Math.sin(d / 230 + phase) + 60 * Math.sin(d / 71));
-      const lat0 = a[0] + (b[0] - a[0]) * f, lon0 = a[1] + (b[1] - a[1]) * f;
-      const lat = lat0 + (o * (-ve / L)) / 111320;
-      const lon = lon0 + (o * (vn / L)) / (111320 * Math.cos(rad(lat0)));
-      const ele = a[2] + (b[2] - a[2]) * (0.5 - 0.5 * Math.cos(Math.PI * f)) + Math.sin(Math.PI * f) * (28 * Math.sin(d / 410 + phase) + 9 * Math.sin(d / 97));
-      const seg = prev ? hav(prev, [lat, lon]) : 0;
-      length += seg;
-      const grade = seg > 0 ? (ele - prevEle) / seg : 0;
-      // Tobler's hiking function, slowed by a 12 kg pack and the day's fatigue.
-      const kmh = 6 * Math.exp(-3.5 * Math.abs(grade + 0.05)) * (0.8 - 0.05 * (d / chord)) * (1 + 0.08 * g());
-      t += (seg / 1000 / Math.max(0.8, kmh)) * 3600 * 1000;
-      hr = 0.8 * hr + 0.2 * Math.max(88, Math.min(172, 102 + 900 * Math.max(0, grade) + 6 * g()));
-      rows.push(`${new Date(t).toISOString()},${lat.toFixed(6)},${lon.toFixed(6)},${ele.toFixed(1)},${Math.round(hr)}`);
-      if (breakAt.includes(step)) {
-        const minutes = step === breakAt[1] ? 35 : 10;
-        for (let m = 1; m <= minutes; m += 2) {
-          t += 120 * 1000;
-          hr = 0.6 * hr + 0.4 * 84;
-          rows.push(`${new Date(t).toISOString()},${(lat + 0.00001 * g()).toFixed(6)},${(lon + 0.00001 * g()).toFixed(6)},${ele.toFixed(1)},${Math.round(hr)}`);
-        }
-      }
-      prev = [lat, lon];
-      prevEle = ele;
-      step++;
+// Hourly weather, 2025-10-10T00Z to 2025-10-12T23Z at 34.69 N, 84.08 W (grid cell 760 m): real
+// temperature and cloud cover from the Open-Meteo archive (ERA5). It did not rain; the day-2
+// shower below is invented so the rain panel has something to show.
+const WX_TEMP = [13.8,13.9,14.3,13.7,12.4,11.7,10.6,10.2,9.8,9.4,8.9,8.5,8.3,10.2,12.3,13.9,15.6,16.7,18.3,18.6,18.6,18.0,16.7,14.2,12.4,12.2,11.0,10.4,10.0,9.7,8.9,8.9,8.8,8.5,8.0,7.3,7.5,11.8,14.5,16.2,17.8,18.7,20.3,20.5,20.6,20.4,19.5,16.3,14.4,13.5,12.4,12.0,12.0,12.0,10.7,10.5,10.1,9.3,9.1,8.9,8.2,11.8,14.5,17.0,19.2,20.6,22.3,22.3,22.3,21.6,19.7,16.8];
+const WX_CLOUD = [23,100,100,74,3,0,0,0,4,9,1,3,4,0,1,2,0,0,0,0,0,0,0,0,0,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,7,9,8,38,99,100,88,100,100,100,100,100,100,100,100,100,100,100,100,26,9,1,0,0,0,0,0,0,0,2,0];
+const WX_RAIN = { 41: 0.6, 42: 2.4, 43: 0.4 }; // hour index → mm/h: day 2, 1–4 pm EDT
+const WX_SHOWER = { 41: [85, -0.8], 42: [95, -2.4], 43: [70, -1.2] }; // cloud %, temperature change
+const WX_T0 = Date.parse("2025-10-10T00:00:00Z");
+/** Weather at time `t` and elevation `ele` (m): hourly values interpolated, temperature lapsed 6.5 °C/km from the grid cell. */
+function weatherAt(t, ele) {
+  const h = (t - WX_T0) / 3600000, i = Math.floor(h), f = h - i;
+  const at = (k) => [WX_TEMP[k] + (WX_SHOWER[k]?.[1] ?? 0), WX_SHOWER[k]?.[0] ?? WX_CLOUD[k]];
+  const [a0, c0] = at(i), [a1, c1] = at(i + 1);
+  return { temp: a0 + (a1 - a0) * f - (6.5 * (ele - 760)) / 1000, cloud: c0 + (c1 - c0) * f, rain: WX_RAIN[i] ?? 0 };
+}
+const wxCols = (t, ele) => {
+  const w = weatherAt(t, ele);
+  return `${w.temp.toFixed(1)},${Math.round(w.cloud)},${w.rain.toFixed(1)}`;
+};
+// The real trail: Appalachian Trail ways of OSM route relation 2007643 (© OpenStreetMap
+// contributors, ODbL), stitched Springer Mountain → Neel Gap, resampled every 40 m, heights from
+// the Copernicus 90 m DEM via Open-Meteo's elevation API. Fetched once (2026-10-13) into
+// scripts/data/at-georgia.json as [lat, lon, ele_m]; the times and heart rate below are invented.
+const TRAIL = JSON.parse(readFileSync(new URL("./data/at-georgia.json", import.meta.url), "utf8"));
+const smooth = (xs, k) => xs.map((_, i) => {
+  const w = xs.slice(Math.max(0, i - k), i + k + 1);
+  return w.reduce((a, b) => a + b, 0) / w.length;
+});
+const trailEle = smooth(TRAIL.map((p) => p[2]), 3); // the DEM is noisy at 40 m spacing
+const nearestOnTrail = (p) => TRAIL.reduce((best, q, i) => (hav(p, q) < hav(p, TRAIL[best]) ? i : best), 0);
+const dayEnds = [0, ...days.map(([, , , wps]) => nearestOnTrail(wps[wps.length - 1]))];
+dayEnds[3] = TRAIL.length - 1;
+const DAY_START = ["09:40", "07:50", "07:30"]; // local (EDT) start of each day
+/** One day's GPS points along the real trail: Tobler's pace on the smoothed grade, three breaks, a lagging heart rate. */
+function buildDay(di) {
+  const pts = TRAIL.slice(dayEnds[di], dayEnds[di + 1] + 1).map((p, i) => [p[0], p[1], trailEle[dayEnds[di] + i]]);
+  const along = [0];
+  for (let i = 1; i < pts.length; i++) along.push(along[i - 1] + hav(pts[i - 1], pts[i]));
+  const length = along[along.length - 1];
+  const grade = smooth(pts.map((p, i) => {
+    const a = Math.max(0, i - 2), b = Math.min(pts.length - 1, i + 2);
+    return along[b] > along[a] ? (pts[b][2] - pts[a][2]) / (along[b] - along[a]) : 0;
+  }), 2);
+  const effort = smooth(grade, 8); // heart rate follows the climb over ~300 m, not every DEM bump
+  const breakAt = new Map([[0.28, 15], [0.52, 45], [0.78, 20]].map(([f, min]) => [Math.round(f * (pts.length - 1)), min]));
+  const rows = ["time,lat,lon,ele_m,hr,temp_c,cloud_pct,precip_mm"];
+  let t = new Date(`${days[di][0]}T${DAY_START[di]}:00-04:00`).getTime();
+  let hr = 92;
+  const phase = di * 2.1;
+  const push = (p) => rows.push(`${new Date(t).toISOString()},${p[0].toFixed(6)},${p[1].toFixed(6)},${p[2].toFixed(1)},${Math.round(hr)},${wxCols(t, p[2])}`);
+  pts.forEach((p, i) => {
+    if (i > 0) {
+      // Tobler's hiking function, slowed to a loaded AT pace (~2 mph on the flat) and the day's fatigue, with a slow drift.
+      const kmh = 6 * Math.exp(-3.5 * Math.abs(grade[i] + 0.05)) * (0.6 - 0.06 * (along[i] / length)) * (1 + 0.05 * Math.sin(along[i] / 900 + phase));
+      t += ((along[i] - along[i - 1]) / 1000 / kmh) * 3600 * 1000;
+      const target = Math.max(92, Math.min(162, 104 + 750 * Math.max(0, effort[i]) + 120 * Math.max(0, -effort[i] - 0.15)));
+      hr += (target - hr) * 0.1;
     }
-    along += legLengths[li];
+    push(p);
+    const minutes = breakAt.get(i) ?? 0;
+    for (let m = 2; m <= minutes; m += 2) {
+      t += 120 * 1000;
+      hr += (80 - hr) * 0.35;
+      push(p);
+    }
+  });
+  // The watch keeps logging overnight at camp, every 15 minutes, until the next morning's start:
+  // speed zero, heart rate settling towards a sleeping rate, weather from the hourly record.
+  if (di < days.length - 1) {
+    const camp = pts[pts.length - 1];
+    const arrive = t;
+    const leave = new Date(`${days[di + 1][0]}T${DAY_START[di + 1]}:00-04:00`).getTime();
+    for (t = arrive + 15 * 60000; t < leave; t += 15 * 60000) {
+      const h = (t - arrive) / 3600000;
+      hr = 53 + 24 * Math.exp(-h / 1.4) + 2 * Math.sin(h / 3 + di) + (h > 10 ? 3 * (h - 10) : 0); // settles, then wakes
+      push(camp);
+    }
   }
-  return { rows, length };
+  return { rows, length, top: Math.max(...pts.map((p) => p[2])) };
 }
-// Pick the switchback size that makes the three days add up to the real trail length.
-let swing = 20, bestErr = Infinity;
-for (let s = 0; s <= 200; s += 2) {
-  const total = days.reduce((sum, [, , , wps], di) => sum + buildDay(di, wps, s).length, 0);
-  if (Math.abs(total - TRAIL_M) < bestErr) { bestErr = Math.abs(total - TRAIL_M); swing = s; }
-}
-let hikeMiles = 0;
+let hikeMiles = 0, hikeTop = 0;
 const dayMiles = [];
 days.forEach(([date, from, to, wps], di) => {
-  const { rows, length } = buildDay(di, wps, swing);
+  const { rows, length, top } = buildDay(di);
   hikeMiles += length / 1609.34;
+  hikeTop = Math.max(hikeTop, top);
   dayMiles.push(length / 1609.34);
   const csv = `attachments/hikes/${date} ${from} to ${to}.csv`.replace(/ /g, "-").toLowerCase();
   write(csv, rows.join("\n") + "\n");
@@ -400,15 +444,15 @@ days.forEach(([date, from, to, wps], di) => {
       from,
       to,
       track: csv,
-      weather: ["clear, cool", "overcast, light wind", "sunny, windy on Blood Mountain"][di],
+      weather: ["clear and cool", "sunny, a shower after lunch", "low cloud until mid-morning, then warm sun"][di],
     },
-    `Waypoints: ${wps.map((w) => w[3]).filter(Boolean).join(" → ")}. Track synthetic, route approximate.`,
+    `Waypoints: ${wps.map((w) => w[3]).filter(Boolean).join(" → ")}. The route is the real trail (OpenStreetMap); times and heart rate are invented. The watch kept logging overnight at camp.`,
   );
 });
 note(
   "notes/2_areas/hiking/AT Georgia 2025/AT Georgia 2025.md",
   { type: "hike", tags: ["hike"], start: "2025-10-10", end: "2025-10-12", trail: "Appalachian Trail", section: "Springer Mountain to Neel Gap" },
-  `# AT Georgia 2025\n\nThree days from Springer Mountain to Neel Gap over Blood Mountain. ${hikeNotes.map(link).join(", ")}.\n\nThe GPS tracks in attachments/hikes are generated for the demo: the waypoints follow the real trail roughly, the line between them, the times and the heart rate are invented. Not for navigation.`,
+  `# AT Georgia 2025\n\nThree days from Springer Mountain to Neel Gap over Blood Mountain. ${hikeNotes.map(link).join(", ")}.\n\nThe GPS tracks in attachments/hikes are generated for the demo: the route and heights are the real trail (© OpenStreetMap contributors; Copernicus DEM), the times and the heart rate are invented. Temperature and cloud cover are the real hourly values for those days (Open-Meteo archive, adjusted for elevation); the day-2 shower is invented. Not for navigation.`,
 );
 
 // --- Napoleon's Russian campaign, 1812: Minard's data and one note per battle ---------------------
@@ -469,23 +513,28 @@ mkdirSync(join(ROOT, "attachments/geo"), { recursive: true });
 if (existsSync(world)) copyFileSync(world, join(ROOT, "attachments/geo/world-110m.json"));
 
 // --- Obsidian config: Bases on, Agate enabled, property types declared -----------------------------
-const obs = (name, value) => write(`.obsidian/${name}`, JSON.stringify(value, null, 2) + "\n");
-obs("community-plugins.json", ["agate"]);
+// Obsidian rewrites these as you use the vault (theme, plugins), so they are only seeded when
+// missing; types.json is generated (it must match the notes) and always written.
+const obs = (name, value) => {
+  if (name !== "types.json" && existsSync(join(ROOT, ".obsidian", name))) return;
+  write(`.obsidian/${name}`, JSON.stringify(value, null, 2) + "\n");
+};
+obs("community-plugins.json", ["agate", "side-notes", "tufte-suite", "obsidian-minimal-settings"]);
 obs("core-plugins.json", {
   "file-explorer": true, "global-search": true, switcher: true, graph: true, backlink: true, canvas: true,
   "outgoing-link": true, "tag-pane": true, properties: true, "page-preview": true, "command-palette": true,
   outline: true, "word-count": true, "file-recovery": true, bases: true,
 });
 obs("app.json", { attachmentFolderPath: "attachments", newFileLocation: "folder", newFileFolderPath: "notes/0_inbox" });
-obs("appearance.json", { theme: "obsidian" });
+obs("appearance.json", { theme: "obsidian", cssTheme: "Tufte", enabledCssSnippets: ["agate-demo"] });
 const typeOf = (t, keys) => Object.fromEntries(keys.map((k) => [k, t]));
 obs("types.json", {
   types: {
     ...typeOf("date", ["date", "start", "due", "end", "published", "created"]),
-    ...typeOf("number", ["priority", "duration", "players_min", "players", "time", "complexity", "price", "played_times", "lat", "lon", "mood", "energy", "sleep", "rating", "pages", "day"]),
+    ...typeOf("number", ["initial", "readup", "final", "lc", "priority", "duration", "players_min", "players", "time", "complexity", "price", "played_times", "lat", "lon", "mood", "energy", "sleep", "rating", "pages", "day"]),
     ...typeOf("multitext", ["tags", "people", "attendees", "habits", "participants"]),
-    ...typeOf("checkbox", ["kids", "owned"]),
-    ...typeOf("text", ["type", "area", "status", "kind", "theme", "winner", "trip", "mode", "country", "country_id", "author", "genre", "isbn", "role", "team", "from", "to", "project", "game", "hike", "track", "weather"]),
+    ...typeOf("checkbox", ["kids", "owned", "coding", "retest"]),
+    ...typeOf("text", ["type", "area", "status", "kind", "theme", "winner", "trip", "mode", "country", "country_id", "author", "genre", "isbn", "role", "team", "from", "to", "project", "game", "hike", "track", "weather", "domain", "question_id", "topic", "level", "problem"]),
   },
 });
 
@@ -539,21 +588,25 @@ views:
       - property: played_times
         direction: DESC
 `);
-base("Projects", `
+base("Interview prep", `
 filters:
   and:
-    - type == "project"
+    - type == "interview-attempt"
 views:
   - type: agate
-    name: Timeline
-    order: [file.name, area, status, start, due, priority]
-    sort:
-      - property: start
-        direction: ASC
-    specFile: charts/project-gantt.vl.json
+    name: Cold score
+    order: [file.name, date, domain, topic, initial, readup, final]
+    specFile: charts/interview-cold-score.vl.json
+  - type: agate
+    name: By domain
+    order: [file.name, date, domain, question_id, initial, final]
+    specFile: charts/interview-domains.vl.json
   - type: table
-    name: Table
-    order: [file.name, area, status, priority, start, due]
+    name: Attempts
+    order: [file.name, date, domain, topic, level, initial, readup, final]
+    sort:
+      - property: date
+        direction: DESC
 `);
 base("Meetings", `
 filters:
@@ -710,7 +763,7 @@ const todos = (xs) => xs.map(([done, x]) => `- [${done ? "x" : " "}] ${x}`).join
       `## Next\n\n${todos([[false, "Japan in spring with Alex, this time Osaka and the Kumano Kodo"], [false, "Renew passport before March"], [true, "Collect receipts from [[2026-09 Atlanta client visit]]"]])}`,
       "## Where I've been\n\n![[Travel.base#Countries]]",
       "## Every trip\n\n![[Travel.base#Trips]]",
-      "Related: [[AT Georgia 2025]] · [[Projects]]",
+      "Related: [[AT Georgia 2025]] · [[Interview prep]]",
     ],
   });
 }
@@ -778,27 +831,40 @@ const todos = (xs) => xs.map(([done, x]) => `- [${done ? "x" : " "}] ${x}`).join
   });
 }
 
-// Projects
+// Interview prep
 {
-  const ps = of("project");
-  const st = (s) => ps.filter((p) => p.props.status === s);
-  const late = ps.filter((p) => p.props.status !== "done" && new Date(p.props.due) < TODAY);
-  const soon = st("active").filter((p) => (new Date(p.props.due) - TODAY) / 864e5 < 60).sort((a, b) => String(a.props.due).localeCompare(String(b.props.due)));
-  areaNote("notes/1_projects/Projects.md", {
-    title: "Projects", look: "elegant", tags: ["projects"],
-    dek: "Work, home, health and learning on one timeline.",
-    stats: [[st("active").length, "active"], [st("paused").length, "paused"], [st("idea").length, st("idea").length === 1 ? "idea" : "ideas"], [st("done").length, "done"]],
-    intro: `Each project is a note with a start, a due date and a status; the dashed line is today. Anything that crosses it in ochre is paused and needs a decision.`,
+  const at = of("interview-attempt");
+  const mean = (xs) => xs.reduce((a, b) => a + b, 0) / (xs.length || 1);
+  const pid = (q) => String(q).replace(/(R\d?|-QS)$/, "");
+  const problems = new Set(at.map((a) => pid(a.props.question_id)));
+  const byTrack = new Map();
+  for (const a of at) {
+    const t = trackOf(a.props.domain);
+    byTrack.set(t, [...(byTrack.get(t) ?? []), a.props.initial]);
+  }
+  const ranked = [...byTrack].filter(([, v]) => v.length >= 3).map(([t, v]) => [t, mean(v), v.length]).sort((x, y) => y[1] - x[1]);
+  const dated = [...at].sort((x, y) => String(x.props.date).localeCompare(String(y.props.date)));
+  const firstMonth = dated.filter((a) => a.props.date < "2026-08-23").map((a) => a.props.initial);
+  const lastMonth = dated.filter((a) => a.props.date >= "2026-09-13").map((a) => a.props.initial);
+  const retests = at.filter((a) => /R\d?$/.test(a.props.question_id));
+  const lifted = at.filter((a) => a.props.final && a.props.final > a.props.initial);
+  const fmt = (x) => x.toFixed(1);
+  areaNote(`${PREP}/Interview prep.md`, {
+    title: "Interview prep", look: "dark", tags: ["career"],
+    dek: `${Math.round((new Date(dated.at(-1).props.date) - new Date(dated[0].props.date)) / 6048e5)} weeks of practice questions, graded cold, after reading up, and cold again days later.`,
+    stats: [[at.length, "attempts"], [problems.size, "problems"], [fmt(mean(at.map((a) => a.props.initial))), "mean cold grade"], [retests.length, "cold re-tests"]],
+    // A Side-Notes margin note (HTML format, its default): beside the chart in Reading and Editing view.
+    intro: `<span class="sidenote margin-note">Each attempt is a note: the question, its domain and topic, and three grades from 1 to 5: cold (the first answer, no notes), after read-up, and a cold re-test days later. The dots are cold grades, the grey line a 7-attempt rolling mean; a ring is a re-test.</span>`,
     sections: [
-      "![[Projects.base#Timeline]]",
-      `## This quarter\n\n${bullets([
-        ...soon.map((p) => `[[${p.name}]] is due ${p.props.due}.`),
-        late.length ? `Overdue: ${late.map((p) => `[[${p.name}]]`).join(", ")}.` : "Nothing overdue.",
-        `Paused: ${st("paused").map((p) => `[[${p.name}]]`).join(", ")}. Decide by the end of October: restart or drop.`,
+      "![[Interview prep.base#Cold score]]",
+      `## What I noticed\n\n${bullets([
+        `Strongest cold: ${ranked[0][0]} (${fmt(ranked[0][1])} over ${ranked[0][2]} attempts). Weakest: ${ranked.at(-1)[0]} (${fmt(ranked.at(-1)[1])}).`,
+        `The cold grade moved from ${fmt(mean(firstMonth))} in the first month to ${fmt(mean(lastMonth))} in the last.`,
+        `${lifted.length} of ${at.length} attempts scored higher on the re-test than cold.`,
       ])}`,
-      `## To do\n\n${todos([[false, "Write the one-pager for [[Experiment platform]]"], [false, "Quotes from two contractors for [[Kitchen renovation]]"], [true, "Retro for [[Data catalog]]"]])}`,
-      "## Who works on what\n\n![[Meetings.base#People and projects]]",
-      "Related: [[Work]] · [[Journal]]",
+      "## By domain\n\n![[Interview prep.base#By domain]]",
+      `## Next\n\n${todos([[false, "Re-test the two weakest topics cold"], [false, "One system-design mock a week"], [true, "Blocked pass through arrays, hashing and two pointers"]])}`,
+      "Prep notes: " + [...byTrack.keys()].sort().map((t) => `[[${t.replace(/ \/ /g, " - ")}]]`).join(" · "),
     ],
   });
 }
@@ -831,7 +897,7 @@ const todos = (xs) => xs.map(([done, x]) => `- [${done ? "x" : " "}] ${x}`).join
       ])}`,
       `## This week\n\n${todos([[false, "Prep the [[Pricing model v2]] review with [[Hana Sato]]"], [false, "Move standups to async on Fridays"], [true, "Send [[Partner API]] notes to [[Maya Patel]]"]])}`,
       "## People and projects\n\n![[Meetings.base#People and projects]]",
-      "Related: [[Projects]]",
+      "Related: [[Interview prep]]",
     ],
   });
 }
@@ -874,8 +940,8 @@ const todos = (xs) => xs.map(([done, x]) => `- [${done ? "x" : " "}] ${x}`).join
   areaNote("notes/2_areas/hiking/AT Georgia 2025/AT Georgia 2025.md", {
     title: "AT Georgia 2025", look: "dark", tags: ["area/hiking", "trip"],
     dek: "Springer Mountain to Neel Gap, three days in October 2025.",
-    stats: [[hikeMiles.toFixed(1), "miles"], [3, "days"], ["4,458 ft", "Blood Mountain"], [2, "nights in shelters"]],
-    intro: `The first 31 miles of the Appalachian Trail, from the southern terminus to the outfitter at Neel Gap. Each day is a note with its GPS track. Hover the route to read elevation, speed and heart rate at that point; drag across the profile to zoom into a stretch. At night the map switches to satellite.`,
+    stats: [[hikeMiles.toFixed(1), "miles"], [3, "days"], [`${Math.round(hikeTop * 3.28084).toLocaleString("en-US")} ft`, "Blood Mountain"], [2, "nights in shelters"]],
+    intro: `The first 30 miles of the Appalachian Trail, from the southern terminus to the outfitter at Neel Gap. Each day is a note with its GPS track. Every dot is one reading from the watch, which kept logging overnight at camp. Hover the route or any panel to read elevation, speed, heart rate, the sun's height and the temperature at that moment; drag across the elevation panel to zoom into a stretch of time.`,
     sections: [
       "![[Hiking.base#Dashboard]]",
       `## Day by day\n\n${bullets(dayNotes.map((d, i) => `[[${d.name}]]: ${dayMiles[i].toFixed(1)} mi, ${d.props.weather}.`))}`,
@@ -893,10 +959,24 @@ const todos = (xs) => xs.map(([done, x]) => `- [${done ? "x" : " "}] ${x}`).join
     title: "Napoleon's Russian campaign, 1812", look: "elegant", tags: ["history"],
     dek: "Minard's map, rebuilt from his numbers, with the battles as notes.",
     stats: [["422,000", "crossed the Niemen"], ["100,000", "reached Moscow"], ["10,000", "came back"], ["−38 °C", "on December 6"]],
-    intro: `Charles Joseph Minard drew this in 1869: the band is the army, its width the number of men, gold going east and black coming back, with the temperature on the retreat underneath. Edward Tufte called it about the best statistical graphic ever drawn. Here the army and the temperatures come from Minard's own figures (the HistData tables); the battles are notes in this folder, so adding one puts it on the map.`,
+    intro: `Charles Joseph Minard drew this map [[#^fig-1|(Fig. 1)]] in 1869: the band is the army, its width the number of men, gold going east and black coming back, with the temperature on the retreat underneath. Edward Tufte called it about the best statistical graphic ever drawn. Here the army and the temperatures come from Minard's own figures (the HistData tables); the battles are notes in this folder, so adding one puts it on the map.`,
     sections: [
-      "![[Campaign 1812.base#Minard map]]",
+      // A Tufte Suite figure: the base view is the figure at text width; the caption and the notes on
+      // reading it sit beside it in the margin (Reading view). Notes go in the caption, not in separate
+      // [!marginnote] callouts: those float beside the text that follows them, not beside the figure.
+      [
+        "> [!figure] Fig. 1.",
+        "> ![[Campaign 1812.base#Minard map]]",
+        "> *Carte figurative des pertes successives en hommes de l'Armée Française dans la campagne de Russie, 1812–1813*, after Charles Joseph Minard (1869). Gold, the army marching east from the Niemen; black, the retreat; the line below, the temperature on the way back. Hover the band for the number of men, click a battle to open its note.",
+        ">",
+        "> Minard's scale was one millimetre of band for every 10,000 men. Here the band is fitted to the page, so it keeps his proportions rather than his millimetres.",
+        ">",
+        "> He gave the temperatures in degrees Réaumur: −30 °R on 6 December, about −38 °C (1 °R = 1.25 °C).",
+        "",
+        "^fig-1",
+      ].join("\n"),
       `## Reading the map\n\n${bullets([
+        "The thin branch to the north is the corps left to hold Polotsk; it rejoins what is left of the main army at the Berezina.",
         "Barely one soldier in forty came back. Most were lost to hunger, disease and desertion before the first snow, not in battle.",
         "Most of the loss happens in summer: the main column is down from 340,000 to 145,000 by Smolensk, months before the first frost.",
         `The cold arrives with the retreat. The worst readings, at the Berezina and after, line up with the band thinning to a thread: see [[Battle of the Berezina]].`,

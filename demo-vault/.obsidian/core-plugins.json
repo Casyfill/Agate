@@ -28,5 +28,6 @@
   "workspaces": false,
   "publish": false,
   "sync": true,
-  "webviewer": false
+  "webviewer": false,
+  "markdown-importer": false
 }

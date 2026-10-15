@@ -13,6 +13,8 @@ import {
 } from "./spec";
 import { errorMessage, type Logger } from "../util/log";
 import { quietAriaLabels } from "./aria";
+import { themeColors } from "./theme";
+import { containerSignals, isBounce } from "./resize";
 
 export interface RenderInput {
   resolved: ResolvedSpec;
@@ -46,7 +48,7 @@ function defaultToContainerWidth(spec: AnySpec, mode: "vega" | "vega-lite"): Any
 
 /** Signals a spec can declare to learn about its surroundings (see withSignalValues). */
 function environmentSignals(): Record<string, unknown> {
-  return { agateDark: document.body.classList.contains("theme-dark") };
+  return { agateDark: document.body.classList.contains("theme-dark"), agateColors: themeColors() };
 }
 
 function stopBubbling(evt: Event): void {
@@ -72,6 +74,8 @@ export class AgateRenderer {
   private resizeObserver: ResizeObserver | null = null;
   private ariaObserver: MutationObserver | null = null;
   private lastWidth = 0;
+  private prevWidth = 0;
+  private lastResizeAt = 0;
   private resizeTimer: number | null = null;
   private generation = 0;
 
@@ -211,16 +215,26 @@ export class AgateRenderer {
     this.resizeObserver = new ResizeObserver(() => {
       const w = el.clientWidth;
       if (w === 0 || w === this.lastWidth) return;
+      // A chart that resizes can toggle the pane's scrollbar, which hands it back the width it just
+      // left (A → B → A). Following that bounce is a loop; the first move is enough.
+      if (isBounce(w, this.prevWidth, Date.now() - this.lastResizeAt)) return;
+      this.prevWidth = this.lastWidth;
       this.lastWidth = w;
+      this.lastResizeAt = Date.now();
       if (this.resizeTimer !== null) window.clearTimeout(this.resizeTimer);
       this.resizeTimer = window.setTimeout(() => {
         this.resizeTimer = null;
-        const view = this.result?.view;
-        if (!view) return;
-        // Vega-Lite's `width: "container"` listens to window resize; pane resizes never fire it.
-        window.dispatchEvent(new Event("resize"));
-        view.resize();
-        void view.runAsync();
+        const result = this.result;
+        if (!result) return;
+        // `width: "container"` (Vega-Lite, and Vega specs written the same way) reads containerSize()
+        // only on window resize, and pane resizes never fire one. Set this chart's container-sized
+        // signals directly; a window-wide resize event would re-measure every chart and the workspace.
+        const box = result.view.container();
+        for (const name of containerSignals(result.vgSpec)) {
+          if (box) result.view.signal(name, name === "width" ? box.clientWidth : box.clientHeight);
+        }
+        result.view.resize();
+        void result.view.runAsync();
       }, 80);
     });
     this.resizeObserver.observe(el);

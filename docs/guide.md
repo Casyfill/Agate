@@ -162,6 +162,7 @@ Add `"cells": "cells"` next to `rowData` and Agate also hands the spec the view'
 - Theme `obsidian` derives fonts, text colours, gridlines and a category palette from your Obsidian theme, and redraws when you switch light/dark.
 - The other themes are Vega's stock themes, most with a fixed white background.
 - A spec that declares a signal (Vega) or param (Vega-Lite) named `agateDark` with a plain `value` gets `true` in dark mode. The horizon examples use it to reverse their colour ramp so small changes stay close to the background. In the Vega editor the spec's own default applies.
+- A spec that declares `agateColors` (a plain `value` object, used as the defaults outside Obsidian) gets the active theme's colours by role: `text`, `muted`, `faint`, `background`, `border`, `accent`, and the named colours `red`, `orange`, `yellow`, `green`, `cyan`, `blue`, `purple`, `pink`. Use them in expressions, e.g. `"color": {"expr": "agateColors.yellow"}` or a halo in `agateColors.background`. Charts re-render when the theme changes. The hike dashboard in `demo-vault/charts/` uses no other colours.
 
 ## 9. Images in tooltips
 
