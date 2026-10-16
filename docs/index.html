@@ -1,0 +1,310 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Agate for Obsidian</title>
+<meta name="description" content="Agate turns Obsidian Bases into live visualisations: maps, networks, timelines, dashboards and headline numbers, drawn with Vega and Vega-Lite.">
+<link rel="icon" href="images/agate-icon.svg" type="image/svg+xml">
+<script>try { var t = localStorage.getItem("theme"); if (t) document.documentElement.dataset.theme = t; } catch (e) {}</script>
+<style>
+  :root {
+    --bg: #f6f5f2;
+    --surface: #ffffff;
+    --ink: #1d1d1f;
+    --muted: #5f5f66;
+    --line: #e2e0da;
+    --accent: #8a4fd8;
+    --accent-ink: #ffffff;
+    --code-bg: #efede8;
+    --shadow: 0 1px 2px rgba(0, 0, 0, 0.06), 0 8px 28px rgba(0, 0, 0, 0.08);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #141416;
+      --surface: #1c1c1f;
+      --ink: #ececef;
+      --muted: #a2a2ab;
+      --line: #2c2c31;
+      --accent: #b48cf2;
+      --accent-ink: #141416;
+      --code-bg: #232327;
+      --shadow: 0 1px 2px rgba(0, 0, 0, 0.4), 0 10px 32px rgba(0, 0, 0, 0.45);
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #141416; --surface: #1c1c1f; --ink: #ececef; --muted: #a2a2ab; --line: #2c2c31;
+    --accent: #b48cf2; --accent-ink: #141416; --code-bg: #232327;
+    --shadow: 0 1px 2px rgba(0, 0, 0, 0.4), 0 10px 32px rgba(0, 0, 0, 0.45);
+  }
+
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font: 17px/1.6 -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", Roboto, sans-serif;
+  }
+  a { color: var(--accent); }
+  code, pre { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 0.86em; }
+  code { background: var(--code-bg); padding: 0.1em 0.35em; border-radius: 4px; }
+  code.nowrap { white-space: nowrap; }
+  pre { background: var(--code-bg); padding: 14px 16px; border-radius: 10px; overflow-x: auto; line-height: 1.5; margin: 12px 0 0; }
+  pre code { background: none; padding: 0; font-size: 1em; }
+
+  .wrap { max-width: 1080px; margin: 0 auto; padding: 0 16px; }
+
+  header.top { display: flex; align-items: center; gap: 12px; padding: 18px 0; }
+  header.top img { width: 30px; height: 30px; }
+  header.top .name { font-weight: 700; font-size: 18px; }
+  header.top nav { margin-left: auto; display: flex; gap: 18px; font-size: 15px; }
+  header.top nav a { color: var(--muted); text-decoration: none; }
+  header.top nav a:hover { color: var(--ink); }
+  header.top nav { align-items: center; }
+  .mode { font: inherit; font-size: 16px; line-height: 1; width: 32px; height: 32px; border-radius: 8px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); cursor: pointer; }
+
+  .hero { padding: 40px 0 28px; max-width: 760px; }
+  .badge { display: inline-block; font-size: 13px; color: var(--muted); border: 1px solid var(--line); border-radius: 999px; padding: 2px 10px; margin-bottom: 18px; }
+  h1 { font-size: clamp(34px, 6vw, 56px); line-height: 1.05; letter-spacing: -0.02em; margin: 0 0 18px; }
+  .lede { font-size: clamp(18px, 2.4vw, 21px); color: var(--muted); margin: 0 0 26px; }
+  .cta { display: flex; flex-wrap: wrap; gap: 12px; }
+  .btn { display: inline-block; padding: 11px 18px; border-radius: 10px; font-weight: 600; font-size: 16px; text-decoration: none; border: 1px solid var(--line); color: var(--ink); background: var(--surface); }
+  .btn.primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+
+  figure { margin: 0; }
+  .shot { display: block; border-radius: 12px; overflow: hidden; box-shadow: var(--shadow); border: 1px solid var(--line); background: #000; }
+  .shot img { display: block; width: 100%; height: auto; }
+  .hero-shot { margin: 8px 0 10px; }
+  .hero-shot .shot img { aspect-ratio: 16 / 10; object-fit: cover; object-position: top; }
+  figcaption { color: var(--muted); font-size: 14px; margin-top: 10px; }
+
+  section { padding: 56px 0 8px; }
+  h2 { font-size: clamp(26px, 3.6vw, 34px); letter-spacing: -0.01em; margin: 0 0 8px; }
+  .sub { color: var(--muted); margin: 0 0 26px; max-width: 680px; }
+
+  .steps { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+  .step { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 20px; min-width: 0; }
+  .step .n { width: 28px; height: 28px; border-radius: 50%; background: var(--accent); color: var(--accent-ink); display: grid; place-items: center; font-weight: 700; font-size: 14px; margin-bottom: 12px; }
+  .step h3 { margin: 0 0 6px; font-size: 18px; }
+  .step p { margin: 0; color: var(--muted); font-size: 15.5px; }
+
+  .gallery { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 28px 24px; }
+  .gallery .shot img { aspect-ratio: 4 / 3; object-fit: cover; object-position: top; }
+  .gallery h3 { margin: 14px 0 2px; font-size: 18px; }
+  .gallery p { margin: 0; color: var(--muted); font-size: 15.5px; }
+
+
+  .demo { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 26px; }
+  .demo p { margin: 0; color: var(--muted); }
+
+  footer { padding: 56px 0 40px; color: var(--muted); font-size: 14px; }
+
+  .hl { color: var(--accent); }
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; margin: 22px 0 0; padding: 0; list-style: none; }
+  .chips li { font-size: 14px; font-weight: 600; border: 1px solid var(--line); background: var(--surface); border-radius: 999px; padding: 4px 12px; }
+  .tag { display: inline-block; font-size: 12px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--accent); margin: 14px 0 0; }
+  .tag + h3 { margin-top: 2px !important; }
+  .eyebrow { font-size: 13px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--accent); margin: 0 0 6px; }
+
+  .flow { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; margin-top: 8px; }
+  .flow div { border-left: 3px solid var(--accent); padding: 2px 0 2px 14px; }
+  .flow b { display: block; font-size: 17px; }
+  .flow span { color: var(--muted); font-size: 15.5px; }
+
+  .cards { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+  .card { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 20px; min-width: 0; }
+  .card h3 { margin: 0 0 6px; font-size: 18px; }
+  .card p { margin: 0; color: var(--muted); font-size: 15.5px; }
+  .usecases { margin: 22px 0 0; color: var(--muted); font-size: 15.5px; }
+  .usecases b { color: var(--ink); }
+
+  .gallery .wide { grid-column: 1 / -1; }
+  .gallery .wide .shot img { aspect-ratio: 16 / 9; object-position: 50% 12%; }
+
+  .styles { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 20px; }
+  .styles .shot img { aspect-ratio: 1 / 1; object-fit: cover; }
+  .styles h3 { margin: 12px 0 2px; font-size: 17px; }
+  .styles p { margin: 0; color: var(--muted); font-size: 15px; }
+
+  @media (max-width: 820px) {
+    .steps, .cards, .flow, .styles { grid-template-columns: 1fr; }
+    .gallery { grid-template-columns: 1fr; }
+  }
+  @media (max-width: 520px) {
+    header.top nav .wide { display: none; }
+    header.top nav { gap: 14px; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <img src="images/agate-icon.svg" alt="">
+    <span class="name">Agate</span>
+    <nav>
+      <a class="wide" href="#reuse">Why</a>
+      <a class="wide" href="#gallery">Gallery</a>
+      <a class="wide" href="#start">Quickstart</a>
+      <a href="https://github.com/Casyfill/Agate/blob/main/docs/guide.md">Guide</a>
+      <a href="https://github.com/Casyfill/Agate">GitHub</a>
+      <button class="mode" type="button" aria-label="Switch light or dark mode">◐</button>
+    </nav>
+  </header>
+
+  <div class="hero">
+    <span class="badge">Obsidian plugin · pre-release · free and open source</span>
+    <h1>Your notes, <span class="hl">visualised.</span></h1>
+    <p class="lede">Agate turns any Obsidian base into a live visualisation. The base picks the notes; a chart draws them. Add a note, change a rating, filter the view, and the chart redraws. Under the hood it's Vega and Vega-Lite, a mature chart grammar with a large public gallery, so you never run out of chart types.</p>
+    <div class="cta">
+      <a class="btn primary" href="#start">Make your first chart</a>
+      <a class="btn" href="#gallery">See the gallery</a>
+    </div>
+    <ul class="chips" aria-label="What you can draw">
+      <li>Maps &amp; globes</li><li>Networks</li><li>Timelines</li><li>Headline numbers</li><li>Flows</li><li>Hierarchies</li><li>Habit grids</li><li>Linked dashboards</li>
+    </ul>
+  </div>
+
+  <figure class="hero-shot">
+    <a class="shot" href="site/minard.jpg"><img src="site/minard.jpg" alt="An Obsidian note with Minard's map of Napoleon's 1812 campaign drawn from battle notes, a hover tooltip on the Battle of Smolensk and a caption in the margin" width="1600" height="1768"></a>
+    <figcaption>Minard's map of 1812, rebuilt from his own numbers. Every battle is a note in a base: hover one to read it, click to open it.</figcaption>
+  </figure>
+
+  <section>
+    <p class="eyebrow">How it works</p>
+    <div class="flow">
+      <div><b>1. A base picks the notes</b><span>Filters, sort and grouping you already know. Each note's properties are its data.</span></div>
+      <div><b>2. A spec draws them</b><span>Start from a built-in recipe, ask an LLM, or paste any Vega example.</span></div>
+      <div><b>3. The chart lives in your vault</b><span>As a base view, embedded in a note, in Canvas or the sidebar. Updates as you write.</span></div>
+    </div>
+  </section>
+
+  <section id="reuse">
+    <p class="eyebrow">Build it once</p>
+    <h2>Quick to start, and every chart is reusable.</h2>
+    <p class="sub">You don't need to learn a chart library or a query language. Pick a recipe or ask an assistant, and the spec you end up with works in any base, any note and any vault.</p>
+    <div class="cards">
+      <div class="card"><h3>Twelve recipes</h3><p>Timeline, bars, lines, scatter, histogram, calendar heatmap, beeswarm, sankey, globe, link graph, arc diagram, sunburst. Agate asks which property goes where and writes the spec.</p></div>
+      <div class="card"><h3>Prompt any LLM</h3><p><b>Copy prompt for an LLM</b> packs your base's properties and sample rows with the rules Agate needs. Describe the chart you want, then paste back the spec.</p></div>
+      <div class="card"><h3>One spec, many views</h3><p>The same file can back a filtered view, a grouped view and an embed in a daily note. Put it in a note template and every new note gets the chart.</p></div>
+      <div class="card"><h3>The toolbar drives it</h3><p>Filter, sort, group and show or hide properties from the Bases toolbar. The chart follows, and you don't edit the spec.</p></div>
+      <div class="card"><h3>Portable, plain Vega</h3><p>Specs are ordinary Vega and Vega-Lite JSON. Borrow from the official galleries, prototype in the online Vega editor, share with people who don't use Obsidian.</p></div>
+      <div class="card"><h3>Every mark opens its note</h3><p>Click a dot, a route or a node to open the note behind it. A chart works as a way to get around your vault.</p></div>
+    </div>
+    <p class="usecases"><b>Made for:</b> reading logs · journals and habits · trips · projects and people · hikes and workouts · collections · study plans · history notes · anything you keep as notes with properties.</p>
+  </section>
+
+  <section id="gallery">
+    <p class="eyebrow">What you can draw</p>
+    <h2>Much more than bar charts.</h2>
+    <p class="sub">Each of these is a real note in the demo vault, with a plain spec over ordinary notes. Click any picture for the full screenshot.</p>
+    <div class="gallery">
+      <figure class="wide">
+        <a class="shot" href="site/projects.jpg"><img src="site/projects.jpg" alt="A force-directed network of people and project notes linked by meetings, above a project timeline with a today line" loading="lazy" width="1600" height="982"></a>
+        <span class="tag">Networks</span>
+        <h3>Who works on what, from your links</h3>
+        <p>People and projects are notes; the <code>[[links]]</code> between them are edges. A force layout, coloured by property, with a slider that hides weak ties. A project timeline sits underneath, from the same notes.</p>
+      </figure>
+      <figure>
+        <a class="shot" href="site/travel.jpg"><img src="site/travel.jpg" alt="A globe with great-circle routes for trips, coloured by family, work and personal" loading="lazy" width="1600" height="1768"></a>
+        <span class="tag">Maps</span>
+        <h3>Trips on a globe you can spin</h3>
+        <p>Trip notes list their stops; place notes carry coordinates. Every leg is a great circle.</p>
+      </figure>
+      <figure>
+        <a class="shot" href="site/interview.jpg"><img src="site/interview.jpg" alt="Interview practice: live headline numbers, cold grades over time with a rolling mean, and problems per domain" loading="lazy" width="1600" height="1768"></a>
+        <span class="tag">Stats &amp; counts</span>
+        <h3>Headline numbers that stay true</h3>
+        <p>Big numbers, a rolling mean and per-domain counts, all computed from the base. Add a note and they update. (Headline numbers are experimental.)</p>
+      </figure>
+      <figure>
+        <a class="shot" href="site/boardgames.jpg"><img src="site/boardgames.jpg" alt="A bubble chart of board games by complexity and playing time, with a tooltip showing the Wingspan box" loading="lazy" width="1600" height="1004"></a>
+        <span class="tag">Collections</span>
+        <h3>Pictures in tooltips</h3>
+        <p>A board-game shelf by complexity and length. The tooltip shows the box art from each note's <code>image</code> property.</p>
+      </figure>
+      <figure>
+        <a class="shot" href="site/vault.jpg"><img src="site/vault.jpg" alt="A sunburst of the vault's folders sized by bytes" loading="lazy" width="1600" height="1768"></a>
+        <span class="tag">Hierarchies</span>
+        <h3>The vault itself</h3>
+        <p>A DaisyDisk-style sunburst of folders and files. Click a ring to zoom in, click a note to open it.</p>
+      </figure>
+    </div>
+  </section>
+
+  <section>
+    <p class="eyebrow">Your look</p>
+    <h2>Matches your vault, or has a style of its own.</h2>
+    <p class="sub">Charts take fonts and colours from your Obsidian theme and switch with light and dark mode. If you want a particular look, pick a theme per chart.</p>
+    <div class="styles">
+      <figure>
+        <a class="shot" href="site/journal.jpg"><img src="site/journal.jpg" alt="A habit grid and a mood line from daily notes, in the vault's own colours" loading="lazy" width="1600" height="1768" style="object-position: 50% 18%"></a>
+        <h3>Obsidian</h3>
+        <p>Follows your theme: a habit grid and mood line from daily notes.</p>
+      </figure>
+      <figure>
+        <a class="shot" href="site/hike.jpg"><img src="site/hike.jpg" alt="A hike dashboard: the Appalachian Trail over a hillshade map with elevation, speed, heart rate, sun and temperature panels" loading="lazy" width="1600" height="1004" style="object-position: 50% 30%"></a>
+        <h3>Instrument</h3>
+        <p>A monochrome readout for dense time series: three days on the Appalachian Trail over a hillshade.</p>
+      </figure>
+      <figure>
+        <a class="shot" href="site/minard.jpg"><img src="site/minard.jpg" alt="Minard's 1812 map in a Tufte-style note" loading="lazy" width="1600" height="1768" style="object-position: 40% 22%"></a>
+        <h3>Tufte</h3>
+        <p>Serif type with the caption in the margin, for notes that read like essays.</p>
+      </figure>
+    </div>
+  </section>
+
+  <section id="start">
+    <p class="eyebrow">Quickstart</p>
+    <h2>Your first chart in five minutes.</h2>
+    <p class="sub">Needs Obsidian 1.13 or later with the core Bases plugin turned on.</p>
+    <div class="steps">
+      <div class="step">
+        <div class="n">1</div>
+        <h3>Install</h3>
+        <p>Agate isn't in the community directory yet. With <a href="https://github.com/TfTHacker/obsidian42-brat">BRAT</a>, add <code>Casyfill/Agate</code>. Or copy <code>main.js</code>, <code>manifest.json</code> and <code>styles.css</code> from the <a href="https://github.com/Casyfill/Agate/releases">latest release</a> into <code>.obsidian/plugins/agate/</code>, then enable Agate.</p>
+      </div>
+      <div class="step">
+        <div class="n">2</div>
+        <h3>Pick a recipe</h3>
+        <p>Open any base, add a view with the <b>Agate chart</b> layout and click <b>Pick a recipe</b>. Choose which property goes where, and you have a chart.</p>
+      </div>
+      <div class="step">
+        <div class="n">3</div>
+        <h3>Put it in a note</h3>
+        <p>Embed the view with <code class="nowrap">![[Books.base#Ratings]]</code>, or pull rows from a base into any spec:</p>
+        <pre><code>```agate
+spec: charts/ratings.vl.json
+base: Library/Books.base
+```</code></pre>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="demo">
+      <h2>Try the demo vault</h2>
+      <p>Everything on this page ships in the repo as a made-up vault. Open it in Obsidian, change a note and watch the charts follow.</p>
+      <pre><code>git clone https://github.com/Casyfill/Agate.git && cd Agate
+npm install && make demo extras   # build, link the plugin, fetch the themes
+# then open the demo-vault folder as a vault in Obsidian</code></pre>
+    </div>
+  </section>
+
+  <footer>
+    Agate is MIT-licensed and made by <a href="https://github.com/Casyfill">Philipp Kats</a>. Vega and Vega-Lite are by the <a href="https://vega.github.io/">UW Interactive Data Lab</a>. Not affiliated with Obsidian.
+  </footer>
+
+</div>
+<script>
+  document.querySelector(".mode").onclick = function () {
+    var root = document.documentElement;
+    var dark = root.dataset.theme ? root.dataset.theme === "dark" : matchMedia("(prefers-color-scheme: dark)").matches;
+    root.dataset.theme = dark ? "light" : "dark";
+    try { localStorage.setItem("theme", root.dataset.theme); } catch (e) {}
+  };
+</script>
+</body>
+</html>
