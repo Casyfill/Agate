@@ -1,0 +1,160 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Gallery · Agate for Obsidian</title>
+<meta name="description" content="What Agate can draw over an Obsidian base — maps, networks, hierarchies, dashboards and experiments — each with the feature it relies on and a link to its spec.">
+<link rel="icon" href="images/agate-icon.svg" type="image/svg+xml">
+<script>try { var t = localStorage.getItem("theme"); if (t) document.documentElement.dataset.theme = t; } catch (e) {}</script>
+<link rel="stylesheet" href="site.css">
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <img src="images/agate-icon.svg" alt="">
+    <span class="name"><a href="index.html">Agate</a></span>
+    <nav>
+      <a class="wide" href="index.html#why">Why</a>
+      <a class="wide" href="gallery.html" aria-current="page">Gallery</a>
+      <a class="wide" href="quickstart.html">Quickstart</a>
+      <a href="https://github.com/Casyfill/Agate/blob/main/docs/guide.md">Guide</a>
+      <a href="https://github.com/Casyfill/Agate">GitHub</a>
+      <button class="mode" type="button" aria-label="Switch light or dark mode">◐</button>
+    </nav>
+  </header>
+
+  <div class="hero narrow">
+    <p class="eyebrow">gallery</p>
+    <h1>What you can draw.</h1>
+    <p class="lede">Every example is a real note in the demo vault: a plain Vega or Vega-Lite spec over ordinary notes. Each shows the Agate feature it leans on, and links to its spec. Click a picture for the full screenshot.</p>
+  </div>
+
+  <section>
+    <div class="gallery">
+
+      <figure class="wide">
+        <a class="shot" href="site/minard.jpg"><img src="site/crops/minard.jpg" alt="Minard's 1812 map rebuilt from battle notes" loading="lazy" width="790" height="593"></a>
+        <span class="tag">maps · history</span>
+        <h3>Minard's 1812, from battle notes</h3>
+        <p>The army's path and width come from Minard's own figures; every battle is a note in a base, so adding one drops a mark on the map. Hover a mark for the note's date, outcome and phase; a temperature chart below shares the same scale.</p>
+        <p class="feat"><b>feature:</b> layered maps · tooltips from note properties · the Editorial theme</p>
+      </figure>
+
+      <figure>
+        <a class="shot" href="site/travel.jpg"><img src="site/crops/travel.jpg" alt="A globe with great-circle trip routes and the Trips table below" loading="lazy" width="1234" height="925"></a>
+        <span class="tag">maps</span>
+        <h3>Trips on a globe you can spin</h3>
+        <p>Trip notes list their stops; place notes carry coordinates. Every leg is a great circle on an orthographic globe you drag to rotate. The Trips table below is the base that feeds it.</p>
+        <p class="feat"><b>feature:</b> map projections · links between notes · <a href="https://github.com/Casyfill/Agate/blob/main/demo-vault/tests/charts/travel-globe.vg.json">travel-globe.vg.json</a></p>
+      </figure>
+
+      <figure>
+        <a class="shot" href="site/boardgames.jpg"><img src="site/crops/boardgames.jpg" alt="A bubble chart of board games with a tooltip showing box art and properties" loading="lazy" width="1147" height="860"></a>
+        <span class="tag">collections</span>
+        <h3>Pictures in tooltips</h3>
+        <p>A board-game shelf by complexity and playing time, bubbles sized by plays. The tooltip shows the box art pulled from each note's <code>image</code> property, with its stats underneath.</p>
+        <p class="feat"><b>feature:</b> images in tooltips · <a href="https://github.com/Casyfill/Agate/blob/main/demo-vault/tests/charts/covers-tooltip.vl.json">covers-tooltip.vl.json</a></p>
+      </figure>
+
+      <figure>
+        <a class="shot" href="site/vault.jpg"><img src="site/crops/vault.jpg" alt="A sunburst of the vault's folders sized by bytes" loading="lazy" width="880" height="660"></a>
+        <span class="tag">hierarchies</span>
+        <h3>The vault itself</h3>
+        <p>A DaisyDisk-style sunburst of folders and files, arc length by bytes. Click a ring to zoom into a folder, the centre to go back up, a file to open it.</p>
+        <p class="feat"><b>feature:</b> the folder tree · partition layout · open-on-click · <a href="https://github.com/Casyfill/Agate/blob/main/demo-vault/tests/charts/vault-sunburst.vg.json">vault-sunburst.vg.json</a></p>
+      </figure>
+
+      <figure>
+        <a class="shot" href="site/interview.jpg"><img src="site/crops/interview.jpg" alt="Interview practice: cold grades over time with a rolling mean and headline numbers" loading="lazy" width="1210" height="908"></a>
+        <span class="tag">stats &amp; counts</span>
+        <h3>Headline numbers that stay true</h3>
+        <p>Big numbers, a rolling mean and per-domain counts, all computed from the base. Add a note and they update — the headline figures are rendered as real text, not pixels (see Experiments).</p>
+        <p class="feat"><b>feature:</b> stats-as-HTML · rolling means · <a href="https://github.com/Casyfill/Agate/blob/main/demo-vault/tests/charts/stats-row-html.vl.json">stats-row-html.vl.json</a></p>
+      </figure>
+
+      <figure>
+        <a class="shot" href="site/projects.jpg"><img src="site/crops/projects.jpg" alt="A force-directed network of people and project notes" loading="lazy" width="1600" height="982"></a>
+        <span class="tag">networks</span>
+        <h3>Who works on what, from your links</h3>
+        <p>People and projects are notes; the <code>[[links]]</code> between them are edges. A force layout coloured by property, with a slider that hides weak ties. Unlike the core graph view, the base decides which notes are in, and properties drive size and colour.</p>
+        <p class="feat"><b>feature:</b> links as edges · force layout · <a href="https://github.com/Casyfill/Agate/blob/main/demo-vault/tests/charts/link-graph.vg.json">link-graph.vg.json</a></p>
+      </figure>
+
+    </div>
+  </section>
+
+  <section>
+    <p class="eyebrow">your look</p>
+    <h2>Three themes, one of them dynamic.</h2>
+    <p class="sub">The <code>obsidian</code> theme reads your Obsidian fonts and colours and redraws the instant you switch light and dark. The others give a chart a fixed character.</p>
+    <div class="strip">
+      <figure>
+        <a class="shot" href="site/journal.jpg"><img src="site/crops/journal.jpg" alt="A habit grid and mood line in the vault's own colours" loading="lazy" width="650" height="488"></a>
+        <div class="label"><span class="tag">obsidian · dynamic</span><h3>Follows your theme</h3></div>
+      </figure>
+      <figure>
+        <a class="shot" href="site/hike.jpg"><img src="site/crops/hike.jpg" alt="A monochrome instrument-style hike dashboard over a hillshade" loading="lazy" width="745" height="560"></a>
+        <div class="label"><span class="tag">instrument</span><h3>A monochrome readout</h3></div>
+      </figure>
+      <figure>
+        <a class="shot" href="site/minard.jpg"><img src="site/crops/minard.jpg" alt="Minard's map in a serif, Tufte-style note" loading="lazy" width="790" height="593"></a>
+        <div class="label"><span class="tag">editorial</span><h3>Serif, margin captions</h3></div>
+      </figure>
+    </div>
+  </section>
+
+  <section>
+    <p class="eyebrow">experiments</p>
+    <h2>Things a fixed chart menu can't do.</h2>
+    <p class="sub">Because every chart is a full Vega spec and Agate hands it the vault's links, folder tree and per-note external data, some charts step outside the usual list. The full set is in <a href="https://github.com/Casyfill/Agate/blob/main/docs/why-agate.md">why-agate.md</a>.</p>
+    <div class="cards three">
+      <div class="card">
+        <span class="k">tables</span>
+        <h3>Charts inside table rows</h3>
+        <p>One row per note, its properties as columns, and a cubism-style horizon chart of that note's own time series in the last column. Hover runs a cursor across every row at once.</p>
+        <p class="feat"><a href="https://github.com/Casyfill/Agate/blob/main/demo-vault/tests/charts/horizon-table.vg.json">horizon-table.vg.json</a></p>
+      </div>
+      <div class="card">
+        <span class="k">maps</span>
+        <h3>Set the basemap</h3>
+        <p>Put a map on a real basemap and choose which one — a keyless hillshade in light and dark out of the box, or a private provider (MapTiler, Stadia, Mapbox) with your own key, read from the environment and kept out of the spec.</p>
+        <p class="feat">see the Instrument hike dashboard above</p>
+      </div>
+      <div class="card">
+        <span class="k">text</span>
+        <h3>Numbers as text, not pixels</h3>
+        <p>A spec marked <code>output: "stats"</code> runs headlessly: Vega aggregates, then Agate renders the result as real HTML in your note's fonts, so the big numbers wrap and select like text.</p>
+        <p class="feat"><a href="https://github.com/Casyfill/Agate/blob/main/demo-vault/tests/charts/stats-row-html.vl.json">stats-row-html.vl.json</a></p>
+      </div>
+    </div>
+    <p class="usecases">More in the repo: a <a href="https://github.com/Casyfill/Agate/blob/main/demo-vault/tests/charts/reading-sankey.vg.json">sankey</a> across properties, an <a href="https://github.com/Casyfill/Agate/blob/main/demo-vault/tests/charts/link-arcs.vg.json">arc diagram</a> of links over time, a <a href="https://github.com/Casyfill/Agate/blob/main/demo-vault/tests/charts/reading-dashboard.vl.json">linked dashboard</a>, and a <a href="https://github.com/Casyfill/Agate/blob/main/demo-vault/tests/charts/mood-beeswarm.vg.json">beeswarm</a>.</p>
+  </section>
+
+  <section>
+    <div class="panel">
+      <h2>Make one over your own notes.</h2>
+      <p>Pick a recipe or prompt an assistant — no chart library to learn.</p>
+      <div class="lead-links">
+        <a href="quickstart.html">Five-minute quickstart</a>
+        <a href="https://github.com/Casyfill/Agate/blob/main/docs/guide.md">Full guide</a>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    Agate is MIT-licensed and made by <a href="https://github.com/Casyfill">Philipp Kats</a>. Vega and Vega-Lite are by the <a href="https://vega.github.io/">UW Interactive Data Lab</a>. Not affiliated with Obsidian.
+  </footer>
+
+</div>
+<script>
+  document.querySelector(".mode").onclick = function () {
+    var root = document.documentElement;
+    var dark = root.dataset.theme ? root.dataset.theme === "dark" : matchMedia("(prefers-color-scheme: dark)").matches;
+    root.dataset.theme = dark ? "light" : "dark";
+    try { localStorage.setItem("theme", root.dataset.theme); } catch (e) {}
+  };
+</script>
+</body>
+</html>

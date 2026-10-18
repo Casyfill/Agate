@@ -6,13 +6,13 @@ import { version as vegaLiteVersion } from "vega-lite";
 import { version as vegaEmbedVersion } from "vega-embed";
 import { AgateSettingTab, DEFAULT_SETTINGS, type AgateSettings } from "./settings";
 import { createLogger, errorMessage, type Logger } from "./util/log";
-import { builtinThemes, composeConfig, materialize } from "./core/theme";
+import { builtinThemes, composeConfig, materialize, themeColors, themeFonts } from "./core/theme";
 import { createVaultLoader } from "./core/loader";
 import { parseJsonOrYaml, resolveVaultFile } from "./core/spec";
 import { resolveChartOptions } from "./core/options";
 import { RowDataCache, expandRowData, rowDataDefs } from "./core/data/rowdata";
 import { parseRecipe, type Recipe } from "./core/recipes";
-import type { PromptEnvironment } from "./core/prompt";
+import { buildThemePrompt, type PromptEnvironment } from "./core/prompt";
 import { builtinRecipes } from "./recipes";
 import type {
   AnySpec,
@@ -96,6 +96,12 @@ export default class AgatePlugin extends Plugin {
         if (!checking) void view.copyChartPrompt();
         return true;
       },
+    });
+
+    this.addCommand({
+      id: "copy-theme-prompt",
+      name: "Copy theme prompt for an LLM (from the current Obsidian theme)",
+      callback: () => void this.copyThemePrompt(),
     });
 
     this.addCommand({
@@ -240,6 +246,19 @@ export default class AgatePlugin extends Plugin {
       datasets[def.name] = records;
     }
     return datasets;
+  }
+
+  /** Copy a prompt for generating a static Vega theme from the active Obsidian theme and current overrides. */
+  async copyThemePrompt(): Promise<void> {
+    const text = buildThemePrompt({
+      colors: themeColors(),
+      fonts: themeFonts(),
+      currentOverrides: this.settings.configOverrides,
+      themeFilePath: this.settings.themeFile,
+      env: this.promptEnvironment(),
+    });
+    await navigator.clipboard.writeText(text);
+    new Notice("Agate: theme prompt copied. Paste it into your assistant, describe the look, and save the reply to the theme file setting.");
   }
 
   /** Versions and settings the chart prompt reports, so an assistant writes for what is installed (D13). */

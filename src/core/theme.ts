@@ -30,6 +30,21 @@ export function themeColors(): Record<string, string> {
   };
 }
 
+/** The active Obsidian theme's fonts, read from its CSS variables. Used by the theme-generation prompt. */
+export function themeFonts(): { interface: string; text: string; mono: string; textSize: number } {
+  const cs = getComputedStyle(document.body);
+  const v = (name: string, fallback: string): string => {
+    const raw = cs.getPropertyValue(name).trim();
+    return raw.length > 0 ? raw : fallback;
+  };
+  return {
+    interface: v("--font-interface", "sans-serif"),
+    text: v("--font-text", "serif"),
+    mono: v("--font-monospace", "ui-monospace, SFMono-Regular, Menlo, Consolas, monospace"),
+    textSize: parseFloat(cs.getPropertyValue("--font-text-size")) || 16,
+  };
+}
+
 /**
  * The dynamic `obsidian` theme: a Vega config derived from the CSS variables of the
  * active Obsidian theme at call time, so it follows light/dark and community themes.

@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Quickstart · Agate for Obsidian</title>
+<meta name="description" content="Install Agate and draw your first chart from an Obsidian base in about five minutes.">
+<link rel="icon" href="images/agate-icon.svg" type="image/svg+xml">
+<script>try { var t = localStorage.getItem("theme"); if (t) document.documentElement.dataset.theme = t; } catch (e) {}</script>
+<link rel="stylesheet" href="site.css">
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <img src="images/agate-icon.svg" alt="">
+    <span class="name"><a href="index.html">Agate</a></span>
+    <nav>
+      <a class="wide" href="index.html#why">Why</a>
+      <a class="wide" href="gallery.html">Gallery</a>
+      <a class="wide" href="quickstart.html" aria-current="page">Quickstart</a>
+      <a href="https://github.com/Casyfill/Agate/blob/main/docs/guide.md">Guide</a>
+      <a href="https://github.com/Casyfill/Agate">GitHub</a>
+      <button class="mode" type="button" aria-label="Switch light or dark mode">◐</button>
+    </nav>
+  </header>
+
+  <div class="hero narrow">
+    <p class="eyebrow">quickstart</p>
+    <h1>Your first chart in five minutes.</h1>
+    <p class="lede">The chart comes from your notes, so start there. You need Obsidian 1.13 or later with the core <b>Bases</b> plugin turned on.</p>
+  </div>
+
+  <section>
+    <p class="eyebrow">step 0 · install</p>
+    <h2>Install Agate</h2>
+    <p class="sub">Agate isn't in the community directory yet, so install it one of two ways.</p>
+    <div class="cards">
+      <div class="card">
+        <span class="k">recommended</span>
+        <h3>With BRAT</h3>
+        <p>Install the <a href="https://github.com/TfTHacker/obsidian42-brat">BRAT</a> plugin, then <b>Add beta plugin</b> and enter <code>Casyfill/Agate</code>. BRAT keeps it updated as new releases ship.</p>
+      </div>
+      <div class="card">
+        <span class="k">manual</span>
+        <h3>From a release</h3>
+        <p>Download <code>main.js</code>, <code>manifest.json</code> and <code>styles.css</code> from the <a href="https://github.com/Casyfill/Agate/releases">latest release</a> into <code>.obsidian/plugins/agate/</code>, then enable Agate in <b>Community plugins</b>.</p>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <p class="eyebrow">the three steps</p>
+    <h2>From notes to a chart.</h2>
+    <div class="steps">
+      <div class="step">
+        <div class="n">1</div>
+        <h3>Have a base of notes</h3>
+        <p>Any folder of notes with properties works: a reading log, trips, projects, a journal. Make a base over them and tidy the columns with the Bases toolbar.</p>
+        <p>The properties you see are exactly the fields your chart can draw.</p>
+      </div>
+      <div class="step">
+        <div class="n">2</div>
+        <h3>Make the chart</h3>
+        <p>Add a view with the <b>Agate chart</b> layout, then <b>Pick a recipe</b> and map a property to each axis.</p>
+        <p>Or hit <b>Copy prompt for an LLM</b>, describe the chart you want in plain words, and paste the returned spec into the view.</p>
+      </div>
+      <div class="step">
+        <div class="n">3</div>
+        <h3>Put it in a note</h3>
+        <p>Embed the base view wherever you write:</p>
+        <pre><code>![[Books.base#Ratings]]</code></pre>
+        <p>Or point an Agate block at a spec file and a base:</p>
+        <pre><code>```agate
+spec: charts/ratings.vl.json
+base: Library/Books.base
+```</code></pre>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <p class="eyebrow">good to know</p>
+    <div class="cards">
+      <div class="card">
+        <span class="k">reuse</span>
+        <h3>One spec, many views</h3>
+        <p>The same spec file backs a filtered view, a grouped view and an embed in a daily note. Drop it in a note template and every new note gets the chart.</p>
+      </div>
+      <div class="card">
+        <span class="k">per-chart</span>
+        <h3>Options live in the view</h3>
+        <p>Theme, renderer (SVG or canvas), interactivity and the export menu are set per chart in the base view options, or as envelope keys in an Agate block — over the vault-wide defaults in Settings → Agate.</p>
+      </div>
+      <div class="card">
+        <span class="k">your look</span>
+        <h3>Themes follow your vault</h3>
+        <p>The dynamic <code>obsidian</code> theme reads your Obsidian fonts and colours and redraws on light/dark switch. For a fixed look, set a theme per chart, or paste a <b>Copy theme prompt</b> result into the Theme file setting.</p>
+      </div>
+      <div class="card">
+        <span class="k">external data</span>
+        <h3>Per-note data, if you need it</h3>
+        <p>A note can point at a CSV or URL (or a FRED id); Agate loads one dataset per row so each note draws its own series. Remote fetching is off until you turn on <b>Load remote data</b>.</p>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <p class="eyebrow">play with it</p>
+    <div class="panel">
+      <h2>Try the demo vault</h2>
+      <p>Everything on this site ships in the repo as a made-up personal vault. Open it, change a note and watch the charts follow.</p>
+      <pre><code>git clone https://github.com/Casyfill/Agate.git &amp;&amp; cd Agate
+npm install &amp;&amp; make demo extras   # build, link the plugin, fetch the themes
+# then open the demo-vault folder as a vault in Obsidian</code></pre>
+      <div class="lead-links">
+        <a href="https://github.com/Casyfill/Agate/blob/main/docs/guide.md">Read the full guide</a>
+        <a href="gallery.html">See the gallery</a>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    Agate is MIT-licensed and made by <a href="https://github.com/Casyfill">Philipp Kats</a>. Vega and Vega-Lite are by the <a href="https://vega.github.io/">UW Interactive Data Lab</a>. Not affiliated with Obsidian.
+  </footer>
+
+</div>
+<script>
+  document.querySelector(".mode").onclick = function () {
+    var root = document.documentElement;
+    var dark = root.dataset.theme ? root.dataset.theme === "dark" : matchMedia("(prefers-color-scheme: dark)").matches;
+    root.dataset.theme = dark ? "light" : "dark";
+    try { localStorage.setItem("theme", root.dataset.theme); } catch (e) {}
+  };
+</script>
+</body>
+</html>

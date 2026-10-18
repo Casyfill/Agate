@@ -86,6 +86,13 @@ export class AgateSettingTab extends PluginSettingTab {
         control: { type: "file", key: "themeFile", placeholder: "agate/theme.json" },
       },
       {
+        name: "Generate a theme with an LLM",
+        desc: "Copies a prompt describing your current Obsidian theme and overrides. Paste it into any assistant, describe the look you want, and save the reply to the Theme file above.",
+        render: (setting) => {
+          setting.addButton((b) => b.setButtonText("Copy theme prompt").onClick(() => void this.plugin.copyThemePrompt()));
+        },
+      },
+      {
         type: "group",
         heading: "Rendering",
         items: [
