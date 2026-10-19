@@ -199,6 +199,39 @@ The extras, all declared under `usermeta.agate` in the spec:
 - `"tree": "tree"` adds the folder hierarchy: one node per folder (root `/`) and per note, with `parent`, `depth`, `ancestors`, and `size` and `count` totals. Feed it to Vega's `stratify` and then `partition`, `treemap` or `tree`.
 - `"open": "click"` opens the note behind a mark when it is clicked (Cmd/Ctrl for a new tab). It works for any mark whose data carries `file.path`, which base rows and every Agate dataset do.
 
+### Basemaps under a route
+
+A spec can draw map tiles under its own marks, without Leaflet or a tile plugin. The hike dashboard (`demo-vault/charts/hike-dashboard.vl.json`) does it like this:
+
+1. From the extent of the data, compute which XYZ tiles cover it at a fixed zoom (the `tz` signal).
+2. For each tile, compute its corner longitudes and latitudes, and build its URL in a `calculate` (`{z}/{y}/{x}` for Esri and USGS, `{z}/{x}/{y}` for OpenTopoMap).
+3. Draw the tiles as `image` marks placed by those corners, in the same Web Mercator projection as the route, so the route sits exactly on the terrain.
+
+To reuse it, copy the tile layer and the `basemap`, `bm` and `tz` signals into your spec, and change which dataset gives the extent. A `basemap` select lets the reader switch sources. The keyless sources the demo uses are Esri World Hillshade (with a `_Dark` variant chosen by `agateDark`), Esri World Imagery, USGS Topo, USGS 3DEP hillshade (US only, one image for the whole frame) and OpenTopoMap. Keep an attribution line in the chart; the terms of every source require one.
+
+Tiles are remote images, so they load only when **Load remote data** is on.
+
+#### Providers that need an API key
+
+Don't write a key into a spec: it would travel with every copy of the spec. Keep it in an environment variable instead, and put a placeholder in the URL:
+
+```json
+{ "calculate": "'https://api.maptiler.com/maps/outdoor-v2/256/' + tz + '/' + datum.x + '/' + datum.y + '.png?key={env:MAPTILER_KEY}'", "as": "url" }
+```
+
+1. Set the variable where Obsidian can see it, e.g. `export MAPTILER_KEY=…` in your shell profile. On macOS, Obsidian started from the Dock does not read the shell profile: run `launchctl setenv MAPTILER_KEY …` once (and again after a restart), or start Obsidian from a terminal.
+2. In **Settings → Agate → Environment variables in URLs**, allow it for the one host it may be sent to, one pair per line:
+
+   ```text
+   MAPTILER_KEY api.maptiler.com
+   ```
+
+3. Turn on **Load remote data**.
+
+Agate fills in `{env:NAME}` only when it makes the request, and only when the URL's host matches the host listed for that name. A spec someone shares with you therefore can't send your key anywhere else, and a name you haven't listed is never read. Keyed map tiles are fetched by Agate and handed to the chart as local `blob:` images, so the key doesn't appear in the chart's markup, an SVG export or an error message. The same placeholder works in a `data.url` or a per-note data URL.
+
+Environment variables are read on desktop only. On mobile a keyed URL fails with an error that names the variable, so give the spec a keyless fallback (the hike dashboard's `basemap` select) if the note is used there too.
+
 ## 11. Experimental: big numbers as note text
 
 A row of headline numbers (books read, mean rating, pages) can be drawn by Vega as text marks, but SVG text does not wrap, cannot be selected and uses the chart font. Add one line to the spec instead:

@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { FakeApp, requestUrlCalls, requestUrlFailures } from "obsidian";
-import { createVaultLoader, fetchRemote } from "../../src/core/loader";
+import { createVaultLoader, fetchRemote, fillEnv, parseEnvHosts } from "../../src/core/loader";
 import type { DataSchemeProvider } from "../../src/core/types";
 
 const app = new FakeApp({
@@ -8,8 +8,8 @@ const app = new FakeApp({
   "Notes/local.json": "[1]",
 });
 
-function make(allowRemote = false, schemes = new Map<string, DataSchemeProvider>()) {
-  return createVaultLoader({ app, sourcePath: "Notes/x.md", allowRemote, schemes });
+function make(allowRemote = false, schemes = new Map<string, DataSchemeProvider>(), envHosts = new Map<string, string>()) {
+  return createVaultLoader({ app, sourcePath: "Notes/x.md", allowRemote, envHosts, schemes });
 }
 
 describe("vault loader (D5)", () => {
@@ -87,5 +87,38 @@ describe("vault loader (D5)", () => {
   it("holds image URLs (map tiles) to the remote setting too", async () => {
     await expect(make(false).sanitize("https://tiles.test/1/2/3.png", { context: "image" } as never)).rejects.toThrow(/Remote URL blocked/);
     await expect(make(true).sanitize("https://tiles.test/1/2/3.png", { context: "image" } as never)).resolves.toMatchObject({ href: "https://tiles.test/1/2/3.png" });
+  });
+
+  it("fills {env:NAME} only for the host it is allowed for, and keeps the key out of errors", async () => {
+    const hosts = parseEnvHosts("MAPTILER_KEY api.maptiler.com  # basemap\n\n# comment only\n");
+    expect([...hosts]).toEqual([["MAPTILER_KEY", "api.maptiler.com"]]);
+    const env = { MAPTILER_KEY: "s3cr/t" };
+    expect(fillEnv("https://api.maptiler.com/t/1/2/3.png?key={env:MAPTILER_KEY}", hosts, env)).toBe(
+      "https://api.maptiler.com/t/1/2/3.png?key=s3cr%2Ft",
+    );
+    expect(fillEnv("https://plain.test/x.csv", hosts, env)).toBe("https://plain.test/x.csv");
+    expect(() => fillEnv("https://evil.test/?k={env:MAPTILER_KEY}", hosts, env)).toThrow(/allowed for api.maptiler.com only/);
+    expect(() => fillEnv("https://api.maptiler.com@evil.test/?k={env:MAPTILER_KEY}", hosts, env)).toThrow(/not evil.test/);
+    expect(() => fillEnv("https://api.maptiler.com/?k={env:HOME}", hosts, env)).toThrow(/not allowed/);
+    expect(() => fillEnv("https://api.maptiler.com/?k={env:MAPTILER_KEY}", hosts, {})).toThrow(/not set/);
+
+    requestUrlFailures.push(401);
+    vi.stubGlobal("process", { env });
+    try {
+      const loader = make(true, undefined, hosts);
+      const err = await loader.load("https://api.maptiler.com/d.json?key={env:MAPTILER_KEY}").catch((e: Error) => e.message);
+      expect(err).toContain("{env:MAPTILER_KEY}");
+      expect(err).not.toContain("s3cr");
+      expect(requestUrlCalls.at(-1)).toBe("https://api.maptiler.com/d.json?key=s3cr%2Ft");
+
+      // Image marks get a blob: URL, so the key never reaches the DOM.
+      const out = (await loader.sanitize("https://api.maptiler.com/t.png?key={env:MAPTILER_KEY}", { context: "href" }));
+      expect(out.href).toMatch(/^blob:/);
+      await expect(make(false, undefined, hosts).sanitize("https://api.maptiler.com/t.png?key={env:MAPTILER_KEY}", { context: "href" })).rejects.toThrow(
+        /Remote URL blocked/,
+      );
+    } finally {
+      vi.unstubAllGlobals();
+    }
   });
 });

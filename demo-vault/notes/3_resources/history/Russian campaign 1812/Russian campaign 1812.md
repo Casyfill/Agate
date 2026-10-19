@@ -18,7 +18,7 @@ Charles Joseph Minard drew this map [[#^fig-1|(Fig. 1)]] in 1869: the band is th
 
 > [!figure] Fig. 1.
 > ![[Campaign 1812.base#Minard map]]
-> *Carte figurative des pertes successives en hommes de l'Armée Française dans la campagne de Russie, 1812–1813*, after Charles Joseph Minard (1869). Gold, the army marching east from the Niemen; black, the retreat; the line below, the temperature on the way back. Hover the band for the number of men, click a battle to open its note.
+> *Carte figurative des pertes successives en hommes de l'Armée Française dans la campagne de Russie, 1812–1813*, after Charles Joseph Minard (1869). Gold, the army marching east from the Niemen; black, the retreat; the line below, the temperature on the way back. Hover a battle for its note's properties, click it to open the note.
 >
 > Minard's scale was one millimetre of band for every 10,000 men. Here the band is fitted to the page, so it keeps his proportions rather than his millimetres.
 >

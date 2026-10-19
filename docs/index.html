@@ -111,33 +111,37 @@
   <section>
     <p class="eyebrow">more it can do</p>
     <h2>It reaches past the base.</h2>
-    <p class="sub">A chart isn't limited to the properties in the view. A spec can pull each note's own data, fetch from the web, render numbers as text, or draw on a real map. <a href="gallery.html">See the full gallery →</a></p>
+    <p class="sub">A chart isn't limited to the properties in the view. A spec can fetch from the web, load each note's own data, sum the base into headline counters, or draw on a real map. <a href="gallery.html">See the full gallery →</a></p>
     <div class="strip four">
       <figure>
-        <a class="shot" href="gallery.html"><img src="site/crops/pernote.jpg" alt="Stacked time-series panels drawn from one note's own track data" loading="lazy" width="620" height="465"></a>
-        <div class="label"><span class="tag">per-note data</span><h3>Each note's own data</h3></div>
-        <p class="desc">Point a note at a CSV or series and Agate loads it, one dataset per note.</p>
+        <a class="shot" href="https://github.com/Casyfill/Agate/blob/main/docs/guide.md#9-images-in-tooltips"><img src="site/crops/remote.jpg" alt="A board-game tooltip showing cover art fetched from a URL" loading="lazy" width="404" height="303"></a>
+        <div class="label"><span class="tag">remote</span><h3><a href="https://github.com/Casyfill/Agate/blob/main/docs/guide.md#9-images-in-tooltips">Fetched from the web</a></h3></div>
+        <p class="desc">A note can carry a URL: a cover for the tooltip, or a dataset. Remote data loads only once you allow it.</p>
+        <a class="more" href="https://github.com/Casyfill/Agate/blob/main/docs/guide.md#9-images-in-tooltips">How to →</a>
       </figure>
       <figure>
-        <a class="shot" href="gallery.html"><img src="site/crops/remote.jpg" alt="A board-game tooltip showing cover art fetched from a URL" loading="lazy" width="404" height="303"></a>
-        <div class="label"><span class="tag">remote</span><h3>Fetched from the web</h3></div>
-        <p class="desc">A note can carry a URL — a cover, a map tile, a dataset. Off until you allow it.</p>
+        <a class="shot" href="https://github.com/Casyfill/Agate/blob/main/docs/guide.md#6-per-note-external-data"><img src="site/crops/pernote.jpg" alt="Horizon chart of twelve market series, one strip per note, each loaded from that note's own CSV" loading="lazy" width="1000" height="800"></a>
+        <div class="label"><span class="tag">per-note data</span><h3><a href="https://github.com/Casyfill/Agate/blob/main/docs/guide.md#6-per-note-external-data">Each note's own data</a></h3></div>
+        <p class="desc">Point each note at a CSV or a URL; Agate loads one dataset per note. Here, twelve market notes, each with its own FRED series.</p>
+        <a class="more" href="https://github.com/Casyfill/Agate/blob/main/docs/guide.md#6-per-note-external-data">How to →</a>
       </figure>
       <figure>
-        <a class="shot" href="gallery.html"><img src="site/crops/stats.jpg" alt="A row of big headline numbers rendered as text" loading="lazy" width="600" height="450"></a>
-        <div class="label"><span class="tag">stats</span><h3>Numbers as text</h3></div>
-        <p class="desc">Vega aggregates; Agate renders the result as real, selectable text, not pixels.</p>
+        <a class="shot" href="https://github.com/Casyfill/Agate/blob/main/docs/guide.md#11-experimental-big-numbers-as-note-text"><img src="site/crops/stats.jpg" alt="Rows of big headline numbers from five notes: plays, trips, practice attempts, hike miles and Napoleon's army" loading="lazy" width="1000" height="800"></a>
+        <div class="label"><span class="tag">stats</span><h3><a href="https://github.com/Casyfill/Agate/blob/main/docs/guide.md#11-experimental-big-numbers-as-note-text">Aggregate counters</a></h3></div>
+        <p class="desc">Counts, sums and averages over the base as big headline numbers that update with every note. Vega does the maths.</p>
+        <a class="more" href="https://github.com/Casyfill/Agate/blob/main/docs/guide.md#11-experimental-big-numbers-as-note-text">How to →</a>
       </figure>
       <figure>
-        <a class="shot" href="gallery.html"><img src="site/crops/basemap.jpg" alt="An Appalachian Trail route over a hillshade basemap" loading="lazy" width="640" height="480"></a>
-        <div class="label"><span class="tag">basemaps</span><h3>Set the basemap</h3></div>
-        <p class="desc">Choose the tiles under your routes — keyless relief out of the box, or a private provider with your own key.</p>
+        <a class="shot" href="https://github.com/Casyfill/Agate/blob/main/docs/guide.md#basemaps-under-a-route"><img src="site/crops/basemap.jpg" alt="The Appalachian Trail route from Springer Mountain to Neel Gap over a colourful OpenTopoMap basemap" loading="lazy" width="595" height="476"></a>
+        <div class="label"><span class="tag">basemaps</span><h3><a href="https://github.com/Casyfill/Agate/blob/main/docs/guide.md#basemaps-under-a-route">Set the basemap</a></h3></div>
+        <p class="desc">Real map tiles under your routes: topo, hillshade or satellite, keyless out of the box. Keyed providers read their token from an environment variable.</p>
+        <a class="more" href="https://github.com/Casyfill/Agate/blob/main/docs/guide.md#basemaps-under-a-route">How to →</a>
       </figure>
     </div>
   </section>
 
   <footer>
-    Agate is MIT-licensed and made by <a href="https://github.com/Casyfill">Philipp Kats</a>. Vega and Vega-Lite are by the <a href="https://vega.github.io/">UW Interactive Data Lab</a>. Not affiliated with Obsidian.
+    Agate is MIT-licensed and made by <a href="https://github.com/Casyfill">Philipp Kats</a>. Vega and Vega-Lite are by the <a href="https://vega.github.io/">UW Interactive Data Lab</a>. Not affiliated with Obsidian. Basemap tile: © OpenStreetMap contributors, SRTM, <a href="https://opentopomap.org/">OpenTopoMap</a> (CC-BY-SA).
   </footer>
 
 </div>

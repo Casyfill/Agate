@@ -7,7 +7,7 @@ import { version as vegaEmbedVersion } from "vega-embed";
 import { AgateSettingTab, DEFAULT_SETTINGS, type AgateSettings } from "./settings";
 import { createLogger, errorMessage, type Logger } from "./util/log";
 import { builtinThemes, composeConfig, materialize, themeColors, themeFonts } from "./core/theme";
-import { createVaultLoader } from "./core/loader";
+import { createVaultLoader, parseEnvHosts } from "./core/loader";
 import { parseJsonOrYaml, resolveVaultFile } from "./core/spec";
 import { resolveChartOptions } from "./core/options";
 import { RowDataCache, expandRowData, rowDataDefs } from "./core/data/rowdata";
@@ -216,6 +216,7 @@ export default class AgatePlugin extends Plugin {
       app: this.app,
       sourcePath,
       allowRemote: this.settings.allowRemote,
+      envHosts: parseEnvHosts(this.settings.envHosts),
       schemes: this.schemes,
     });
   }

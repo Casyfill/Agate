@@ -1,0 +1,153 @@
+{
+  "$schema": "https://vega.github.io/schema/vega/v6.json",
+  "description": "After W. E. B. Du Bois, Plate 27 (Paris 1900): assessed value of household and kitchen furniture owned by Georgia's Black population, 1875–1899. A coiling ribbon; each year's segment length grows with the value, so the spiral winds outward as the sums rise. Static homage, hand-set data, no base.",
+  "width": 900,
+  "height": 640,
+  "padding": 10,
+  "background": "#e7dcc6",
+  "autosize": "none",
+  "signals": [
+    { "name": "cx", "update": "370" },
+    { "name": "cy", "update": "height/2 + 20" },
+    { "name": "agateDark", "value": false }
+  ],
+  "data": [
+    {
+      "name": "segments",
+      "values": [
+        { "year": 1875, "value": 21186, "startAngle": 0.0, "endAngle": 0.10912, "innerRadius": 44.0, "outerRadius": 96.0, "midAngle": 0.05456, "midRadius": 70.0, "color": "#c62f2f", "valLabel": "$21,186" },
+        { "year": 1880, "value": 498532, "startAngle": 0.10912, "endAngle": 2.63366, "innerRadius": 45.2, "outerRadius": 97.2, "midAngle": 1.37139, "midRadius": 71.2, "color": "#e4b43b", "valLabel": "$498,532" },
+        { "year": 1885, "value": 736170, "startAngle": 2.63366, "endAngle": 5.31557, "innerRadius": 72.97, "outerRadius": 124.97, "midAngle": 3.97461, "midRadius": 98.97, "color": "#44648f", "valLabel": "$736,170" },
+        { "year": 1890, "value": 1173624, "startAngle": 5.31557, "endAngle": 8.60934, "innerRadius": 102.47, "outerRadius": 154.47, "midAngle": 6.96245, "midRadius": 128.47, "color": "#cf8a74", "valLabel": "$1,173,624" },
+        { "year": 1895, "value": 1322694, "startAngle": 8.60934, "endAngle": 11.50488, "innerRadius": 138.7, "outerRadius": 190.7, "midAngle": 10.05711, "midRadius": 164.7, "color": "#6f8f5f", "valLabel": "$1,322,694" },
+        { "year": 1899, "value": 1434975, "startAngle": 11.50488, "endAngle": 14.13717, "innerRadius": 170.55, "outerRadius": 222.55, "midAngle": 12.82102, "midRadius": 196.55, "color": "#2f2a26", "valLabel": "$1,434,975" }
+      ],
+      "transform": [
+        { "type": "formula", "as": "mx", "expr": "cx + datum.midRadius * sin(datum.midAngle)" },
+        { "type": "formula", "as": "my", "expr": "cy - datum.midRadius * cos(datum.midAngle)" },
+        { "type": "formula", "as": "dark", "expr": "datum.color === '#44648f' || datum.color === '#2f2a26' || datum.color === '#c62f2f'" },
+        { "type": "formula", "as": "txtfill", "expr": "datum.dark ? '#efe7d6' : '#2f2a26'" },
+        { "type": "formula", "as": "halo", "expr": "datum.dark ? '#2f2a26' : '#efe7d6'" },
+        { "type": "window", "ops": ["row_number"], "as": ["idx"] },
+        { "type": "formula", "as": "ky", "expr": "150 + datum.idx * 34" }
+      ]
+    }
+  ],
+  "marks": [
+    {
+      "type": "arc",
+      "from": { "data": "segments" },
+      "encode": {
+        "enter": {
+          "x": { "signal": "cx" },
+          "y": { "signal": "cy" },
+          "startAngle": { "field": "startAngle" },
+          "endAngle": { "field": "endAngle" },
+          "innerRadius": { "field": "innerRadius" },
+          "outerRadius": { "field": "outerRadius" },
+          "fill": { "field": "color" },
+          "stroke": { "value": "#e7dcc6" },
+          "strokeWidth": { "value": 2.5 },
+          "tooltip": { "signal": "{'Year': datum.year, 'Value': datum.valLabel}" }
+        }
+      }
+    },
+    {
+      "type": "text",
+      "from": { "data": "segments" },
+      "encode": {
+        "enter": {
+          "x": { "field": "mx" },
+          "y": { "field": "my" },
+          "align": { "value": "center" },
+          "baseline": { "value": "middle" },
+          "fill": { "field": "txtfill" },
+          "stroke": { "field": "halo" },
+          "strokeWidth": { "value": 3 },
+          "strokeJoin": { "value": "round" },
+          "fontSize": { "value": 15 },
+          "fontWeight": { "value": "bold" },
+          "font": { "value": "Georgia, 'Times New Roman', serif" },
+          "text": { "field": "year" },
+          "tooltip": { "signal": "{'Year': datum.year, 'Assessed value': datum.valLabel}" }
+        }
+      }
+    },
+    {
+      "type": "text",
+      "from": { "data": "segments" },
+      "encode": {
+        "enter": {
+          "x": { "field": "mx" },
+          "y": { "field": "my" },
+          "align": { "value": "center" },
+          "baseline": { "value": "middle" },
+          "fill": { "field": "txtfill" },
+          "fontSize": { "value": 15 },
+          "fontWeight": { "value": "bold" },
+          "font": { "value": "Georgia, 'Times New Roman', serif" },
+          "text": { "field": "year" }
+        }
+      }
+    },
+    {
+      "type": "rect",
+      "from": { "data": "segments" },
+      "encode": {
+        "enter": {
+          "x": { "value": 700 },
+          "y": { "field": "ky" },
+          "width": { "value": 20 },
+          "height": { "value": 20 },
+          "cornerRadius": { "value": 2 },
+          "fill": { "field": "color" }
+        }
+      }
+    },
+    {
+      "type": "text",
+      "from": { "data": "segments" },
+      "encode": {
+        "enter": {
+          "x": { "value": 730 },
+          "y": { "signal": "datum.ky + 10" },
+          "align": { "value": "left" },
+          "baseline": { "value": "middle" },
+          "fill": { "value": "#2f2a26" },
+          "fontSize": { "value": 13.5 },
+          "font": { "value": "Georgia, 'Times New Roman', serif" },
+          "text": { "signal": "datum.year + '      ' + datum.valLabel" }
+        }
+      }
+    },
+    {
+      "type": "text",
+      "encode": {
+        "enter": {
+          "x": { "signal": "width/2" },
+          "y": { "value": 24 },
+          "align": { "value": "center" },
+          "fill": { "value": "#2f2a26" },
+          "fontSize": { "value": 15 },
+          "fontWeight": { "value": "bold" },
+          "font": { "value": "Georgia, 'Times New Roman', serif" },
+          "text": { "value": "ASSESSED VALUE OF HOUSEHOLD AND KITCHEN FURNITURE" }
+        }
+      }
+    },
+    {
+      "type": "text",
+      "encode": {
+        "enter": {
+          "x": { "signal": "width/2" },
+          "y": { "value": 44 },
+          "align": { "value": "center" },
+          "fill": { "value": "#6b6258" },
+          "fontSize": { "value": 12 },
+          "font": { "value": "Georgia, 'Times New Roman', serif" },
+          "text": { "value": "OWNED BY GEORGIA NEGROES  ·  1875–1899  ·  after W. E. B. Du Bois, 1900" }
+        }
+      }
+    }
+  ]
+}

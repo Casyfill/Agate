@@ -69,18 +69,9 @@
       "update": "agateDark ? '#ff6b6b' : '#c92a2a'"
     },
     {
-      "name": "hoverSeg",
-      "value": null,
-      "on": [
-        {
-          "events": "@armyPoint:mouseover",
-          "update": "datum.group + datum.direction"
-        },
-        {
-          "events": "@armyPoint:mouseout",
-          "update": "null"
-        }
-      ]
+      "name": "minBand",
+      "value": 2.5,
+      "description": "Thinnest band in pixels, so the small flank columns stay visible."
     },
     {
       "name": "battlePos",
@@ -470,47 +461,19 @@
                 "field": "y"
               },
               "size": {
-                "scale": "w",
-                "field": "survivors"
+                "signal": "max(minBand, scale('w', datum.survivors))"
               },
               "fill": {
                 "scale": "dir",
                 "field": "direction"
               },
               "fillOpacity": {
-                "signal": "hoverSeg === null || hoverSeg === datum.group + datum.direction ? 0.95 : 0.55"
+                "value": 0.95
               }
             }
           }
         }
       ]
-    },
-    {
-      "type": "symbol",
-      "name": "armyPoint",
-      "from": {
-        "data": "troops"
-      },
-      "zindex": 2,
-      "encode": {
-        "update": {
-          "x": {
-            "field": "x"
-          },
-          "y": {
-            "field": "y"
-          },
-          "size": {
-            "signal": "max(60, pow(scale('w', datum.survivors), 2))"
-          },
-          "fill": {
-            "value": "transparent"
-          },
-          "tooltip": {
-            "signal": "{title: format(datum.survivors, ',') + ' men', 'Direction': datum.direction === 'A' ? 'advancing' : 'retreating', 'Column': datum.group === 1 ? 'main army' : datum.group === 2 ? 'northern flank' : 'far northern flank'}"
-          }
-        }
-      }
     },
     {
       "type": "symbol",
