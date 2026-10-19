@@ -14,10 +14,12 @@ import r8 from "./link-arcs.json";
 import r9 from "./travel-globe.json";
 import r10 from "./sankey.json";
 import r11 from "./beeswarm.json";
+import r12 from "./stats.json";
 
 const RAW: Array<[string, unknown]> = [
   ["timeline", r0],
   ["bar-by-category", r1],
+  ["stats", r12],
   ["scatter", r2],
   ["histogram", r3],
   ["line-over-time", r4],
