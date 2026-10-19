@@ -1,0 +1,62 @@
+/* Demo vault: area notes. A [!stats] callout becomes a row of big numbers, and area notes get a
+   wider line so the charts have room. Works with any theme. */
+
+.callout[data-callout="stats"] {
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  padding: 0.25em 0 0.5em;
+  margin: 0.75em 0 1.25em;
+}
+.callout[data-callout="stats"] > .callout-title {
+  display: none;
+}
+.callout[data-callout="stats"] .callout-content > ul {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6em 2.4em;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.callout[data-callout="stats"] .callout-content > ul > li {
+  margin: 0;
+  padding: 0;
+  color: var(--text-muted);
+  font-size: var(--font-ui-small);
+  letter-spacing: 0.01em;
+}
+.callout[data-callout="stats"] .list-bullet,
+.callout[data-callout="stats"] .callout-content > ul > li::marker {
+  display: none;
+  content: "";
+}
+.callout[data-callout="stats"] li strong {
+  display: block;
+  color: var(--text-normal);
+  font-size: 2.1em;
+  font-weight: 700;
+  line-height: 1.1;
+  font-variant-numeric: tabular-nums lining-nums;
+}
+
+.agate-area {
+  --file-line-width: 860px;
+  --line-width: 860px;
+  --max-width: 92%;
+}
+/* The dek: the italic line under the title. */
+.agate-area .markdown-preview-section > div:nth-child(3) > p > em:only-child,
+.agate-area .cm-line:nth-child(2) .cm-em {
+  color: var(--text-muted);
+  font-size: 1.15em;
+}
+
+/* Tufte Suite figure callouts holding a chart: in the editor, drop the callout's inset so the
+   chart is as wide as the text, the way it is in Reading view. */
+.markdown-source-view.mod-cm6 .callout[data-callout|="figure"] {
+  padding-inline: 0;
+}
+.markdown-source-view.mod-cm6 .callout[data-callout|="figure"] > .callout-content {
+  padding-inline: 0;
+}

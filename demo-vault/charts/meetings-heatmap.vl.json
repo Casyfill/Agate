@@ -1,0 +1,168 @@
+{
+  "$schema": "https://vega.github.io/schema/vega-lite/v6.json",
+  "description": "Who I meet: people (from each meeting's attendees) by week, darker = more meetings; the bars are total hours in the period. Narrow the period with a Bases filter on date.",
+  "data": {
+    "name": "base"
+  },
+  "transform": [
+    {
+      "filter": "datum.note.type === 'meeting'"
+    },
+    {
+      "flatten": [
+        "note.attendees"
+      ],
+      "as": [
+        "who"
+      ]
+    },
+    {
+      "calculate": "replace(replace(replace(datum.who + '', regexp('^\\\\[\\\\[|\\\\]\\\\]$|\\\\|.*$', 'g'), ''), regexp('^.*/'), ''), regexp('\\\\.md$'), '')",
+      "as": "person"
+    },
+    {
+      "calculate": "toDate(datum.note.date)",
+      "as": "d"
+    },
+    {
+      "joinaggregate": [
+        {
+          "op": "sum",
+          "field": "note.duration",
+          "as": "minutes"
+        }
+      ],
+      "groupby": [
+        "person"
+      ]
+    }
+  ],
+  "hconcat": [
+    {
+      "width": 470,
+      "height": {
+        "step": 18
+      },
+      "mark": {
+        "type": "rect",
+        "cornerRadius": 3,
+        "tooltip": true,
+        "width": {
+          "band": 0.86
+        },
+        "height": {
+          "band": 0.82
+        }
+      },
+      "encoding": {
+        "x": {
+          "field": "d",
+          "timeUnit": "yearweek",
+          "type": "ordinal",
+          "title": null,
+          "axis": {
+            "labelExpr": "date(datum.value) <= 7 ? timeFormat(datum.value, '%b') : ''",
+            "ticks": false,
+            "domain": false,
+            "labelAngle": 0
+          }
+        },
+        "y": {
+          "field": "person",
+          "type": "nominal",
+          "sort": {
+            "field": "minutes",
+            "order": "descending"
+          },
+          "title": null,
+          "axis": {
+            "domain": false,
+            "ticks": false,
+            "labelPadding": 6
+          }
+        },
+        "color": {
+          "aggregate": "count",
+          "type": "quantitative",
+          "title": "Meetings",
+          "scale": {
+            "range": [
+              {
+                "expr": "agateDark ? '#45475a' : '#bcc0cc'"
+              },
+              {
+                "expr": "agateDark ? '#94e2d5' : '#179299'"
+              },
+              {
+                "expr": "agateDark ? '#74c7ec' : '#209fb5'"
+              },
+              {
+                "expr": "agateDark ? '#cba6f7' : '#8839ef'"
+              }
+            ],
+            "domainMin": 1
+          },
+          "legend": {
+            "format": "d",
+            "orient": "top",
+            "direction": "horizontal",
+            "gradientLength": 100,
+            "title": "Meetings a week"
+          }
+        }
+      }
+    },
+    {
+      "width": 140,
+      "height": {
+        "step": 18
+      },
+      "mark": {
+        "type": "bar",
+        "cornerRadiusEnd": 4,
+        "tooltip": true,
+        "color": {
+          "expr": "agateDark ? '#f5c2e7' : '#ea76cb'"
+        },
+        "height": {
+          "band": 0.7
+        }
+      },
+      "encoding": {
+        "y": {
+          "field": "person",
+          "type": "nominal",
+          "sort": {
+            "field": "minutes",
+            "order": "descending"
+          },
+          "title": null,
+          "axis": null
+        },
+        "x": {
+          "aggregate": "sum",
+          "field": "note.duration",
+          "type": "quantitative",
+          "title": "Hours",
+          "axis": {
+            "labelExpr": "format(datum.value / 60, '.0f')",
+            "tickCount": 3,
+            "domain": false,
+            "grid": false
+          }
+        }
+      }
+    }
+  ],
+  "params": [
+    {
+      "name": "agateDark",
+      "value": false
+    }
+  ],
+  "config": {
+    "view": {
+      "stroke": null
+    }
+  }
+}

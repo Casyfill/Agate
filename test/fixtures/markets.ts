@@ -5,11 +5,11 @@ import { parse } from "yaml";
 import type { Row } from "../../src/core/types";
 
 const root = fileURLToPath(new URL("../..", import.meta.url));
-const notesDir = join(root, "test-vault/Markets");
+const notesDir = join(root, "demo-vault/tests/Markets");
 export const marketsFixtureDir = join(root, "test/fixtures/markets");
 
 /**
- * Base rows for test-vault/Markets in the D4 shape, read from the notes' frontmatter.
+ * Base rows for tests/Markets in the D4 shape, read from the notes' frontmatter.
  * `formula.csv` points at the offline fixture instead of FRED, the way the base formula
  * would point at a URL.
  */
@@ -22,7 +22,7 @@ export function marketRows(): Row[] {
       const fm = parse(/^---\n([\s\S]*?)\n---/.exec(text)?.[1] ?? "{}") as Record<string, string>;
       const name = f.replace(/\.md$/, "");
       return {
-        file: { name, path: `Markets/${f}`, ext: "md", folder: "Markets" },
+        file: { name, path: `tests/Markets/${f}`, ext: "md", folder: "tests/Markets" },
         note: { fred: fm.fred, kind: fm.kind, region: fm.region, unit: fm.unit },
         formula: { csv: `markets/${fm.fred}.csv` },
       };

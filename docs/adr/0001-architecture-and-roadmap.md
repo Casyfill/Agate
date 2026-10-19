@@ -7,6 +7,7 @@
 | Amended | 2026-09-20, after first review: D3 (toolbar as filter UI), D7 (add-on hatch), D8 (testing), new D10 (interaction model), new D11 (vault-wide defaults). 2026-09-26, after M0 round 1: D3 (sort), D4 (property selection), D10 (Canvas result, isShown shim) |
 | Deciders | Philipp (maintainer) |
 | Supersedes | none |
+| Superseded in part by | [ADR-0002](0002-one-vault.md) (2026-10-12): `test-vault/` is now `demo-vault/tests/` |
 
 ## Context
 

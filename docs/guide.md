@@ -10,7 +10,7 @@ Agate needs Obsidian 1.13 or newer with the Bases core plugin turned on.
 
 Until Agate is in the community directory, install it with [BRAT](https://github.com/TfTHacker/obsidian42-brat): Settings → BRAT → Add beta plugin → `Casyfill/Agate`. Or download `main.js`, `manifest.json` and `styles.css` from a GitHub release into `<vault>/.obsidian/plugins/agate/` and enable Agate under Community plugins.
 
-To try everything in this guide without touching your own vault, open the repo's `test-vault/` as a vault and start with `Start here.md`.
+To try everything in this guide without touching your own vault, open the repo's `demo-vault/` as a vault and start with `Start here.md` (examples for every surface are in `tests/`).
 
 ## 2. Your first chart (five minutes)
 
@@ -19,7 +19,7 @@ The fastest way: open a base, add a view, set its layout to **Agate chart**. The
 - **Pick a recipe** lists ready-made charts (timeline, bars, scatter, histogram, line over time, calendar heatmap, folder sunburst, link graph, arc diagram, travel globe, sankey, beeswarm). Pick one and Agate asks which of the base's properties to use for each part ("When", "Colour by"), offering only properties of the right type, then writes the spec into your spec folder and points the view at it. The same picker is in the command palette: **New chart from recipe**.
 - **Copy prompt for an LLM** copies a description of this base (its properties and their types, three sample rows, how Agate passes data, the extras) to the clipboard. Paste it into any AI assistant, say what chart you want, and save the reply as a `.vl.json` file in your spec folder. If the chart errors, the error box has a **Copy error** button for the next round.
 
-Your own recipes: set **Recipe folder** in Settings → Agate, and any spec in it with a `usermeta.agate.recipe` block joins the picker. `test-vault/charts/recipes/count-by-decade.vl.json` is a small example; the format is described in the architecture doc (D13).
+Your own recipes: set **Recipe folder** in Settings → Agate, and any spec in it with a `usermeta.agate.recipe` block joins the picker. `demo-vault/tests/charts/recipes/count-by-decade.vl.json` is a small example; the format is described in the architecture doc (D13).
 
 By hand:
 
@@ -151,7 +151,7 @@ The format comes from the extension (`.csv`, `.tsv`, `.json`); otherwise Agate s
 - At most two requests run at once per site, with two retries on network errors and server errors.
 - One failing note leaves its row empty and logs a warning; the chart shows an error only when every row fails, and the message names the URL.
 
-The worked example is `test-vault/Markets`: twelve notes, one per FRED series, drawn as a table with a cubism-style horizon column (`charts/horizon-table.vg.json`).
+The worked example is `demo-vault/tests/Markets`: twelve notes, one per FRED series, drawn as a table with a cubism-style horizon column (`tests/charts/horizon-table.vg.json`).
 
 ## 7. A table with a chart column
 
@@ -160,8 +160,33 @@ Add `"cells": "cells"` next to `rowData` and Agate also hands the spec the view'
 ## 8. Theme, dark mode and colour
 
 - Theme `obsidian` derives fonts, text colours, gridlines and a category palette from your Obsidian theme, and redraws when you switch light/dark.
+- Theme `instrument` is `obsidian` redrawn as a monochrome readout, after the demo vault's hike dashboard: the theme's monospace font, ink-coloured marks and small filled dots, no axis lines or ticks, dotted grids, numeric y labels inside the plot, axis titles as small labels above each plot, and the accent for selections. It suits dense time series and small multiples; pick it per chart (the view's **Theme** option) or vault-wide.
 - The other themes are Vega's stock themes, most with a fixed white background.
 - A spec that declares a signal (Vega) or param (Vega-Lite) named `agateDark` with a plain `value` gets `true` in dark mode. The horizon examples use it to reverse their colour ramp so small changes stay close to the background. In the Vega editor the spec's own default applies.
+- A spec that declares `agateColors` (a plain `value` object, used as the defaults outside Obsidian) gets the active theme's colours by role: `text`, `muted`, `faint`, `background`, `border`, `accent`, and the named colours `red`, `orange`, `yellow`, `green`, `cyan`, `blue`, `purple`, `pink`. Use them in expressions, e.g. `"color": {"expr": "agateColors.yellow"}` or a halo in `agateColors.background`. Charts re-render when the theme changes. The hike dashboard in `demo-vault/charts/` uses no other colours.
+
+### Textures: hatching and dots (SVG only)
+
+Vega fills with colours and gradients. For hatching, crosshatch or dots, declare textures under `usermeta.agate.textures` and use `url(#name)` wherever a colour goes, including a scale's `range`, so the legend shows them too:
+
+```json
+"usermeta": { "agate": { "textures": {
+  "hatch": { "orientation": "diagonal", "size": 6, "strokeWidth": 1.1, "stroke": "#b43a2c", "background": "#efcdc3" },
+  "cross": { "orientation": ["diagonal", "6/8"], "size": 6, "stroke": "#b43a2c" },
+  "dots":  { "type": "circles", "size": 6, "radius": 1.2, "fill": "#4a7fa0", "complement": true }
+} } },
+"encoding": { "color": { "field": "grade", "scale": { "domain": ["C", "D"], "range": ["url(#hatch)", "url(#cross)"] } } }
+```
+
+The options follow [textures.js](https://riccardoscalco.it/textures/) for its three kinds (`type`), without the library:
+
+- `lines` (the default): `orientation` is `"vertical"`, `"horizontal"`, `"diagonal"` or textures.js's `"0/8"` to `"7/8"`; an array draws several, so `["diagonal", "6/8"]` is a crosshatch. Also `size` (tile, px), `strokeWidth`, `stroke`, `background`.
+- `circles`: `radius`, `fill`, `background`, `size`, and `complement: true` for a staggered, denser grid.
+- `paths`: `d` is one of textures.js's shapes, `"squares"`, `"nylon"`, `"waves"`, `"woven"`, `"crosses"`, `"caps"` or `"hexagons"`, or your own SVG path for one tile, with `{s}` for the tile size (`"M 0,{s} L {s},0"`). Also `stroke`, `strokeWidth`, `fill`, `background`, `size`.
+
+Two more options work on every kind. `shapeRendering` is SVG's (`"crispEdges"` for sharp hairlines). `rough`, Agate's own, wobbles the pattern by up to that many pixels with SVG turbulence, for a hand-drawn, printed look; 1 to 2 is plenty.
+
+Textures work with the SVG renderer only. With the canvas renderer each one falls back to its `background` (or its stroke or fill colour), and the export menu's SVG and PNG don't include the patterns. Outside Agate, in the Vega editor, `url(#…)` fills come out empty. `demo-vault/charts/redlining-brooklyn.vl.json` draws the 1938 sheet's look this way: a street grid under each grade's colour, and ungraded land in crosshatch.
 
 ## 9. Images in tooltips
 
@@ -175,11 +200,11 @@ A tooltip field titled `image` is drawn as a picture, and one titled `title` bec
 ]
 ```
 
-`test-vault` builds `formula.cover` from each book's ISBN with Open Library's covers service (`Surfaces/11 Tooltip images`). Images load the way any remote image in a note does; **Load remote data** governs chart data only.
+The repo vault's `tests/Library/Books.base` builds `formula.cover` from each book's ISBN with Open Library's covers service (`tests/Surfaces/11 Tooltip images`). Images load the way any remote image in a note does; **Load remote data** governs chart data only.
 
 ## 10. Gallery: structure, maps, flows
 
-These examples use Vega layouts that other Obsidian chart plugins do not have. Each is a spec in `test-vault/charts/` with notes to match; open `Surfaces/12 Gallery` in the test vault to see them all.
+These examples use Vega layouts that other Obsidian chart plugins do not have. Each is a spec in `demo-vault/tests/charts/` with notes to match; open `tests/Surfaces/12 Gallery` in that vault to see them all.
 
 | Example | Spec | Data it needs | Agate extras |
 |---|---|---|---|
@@ -197,7 +222,54 @@ The extras, all declared under `usermeta.agate` in the spec:
 - `"tree": "tree"` adds the folder hierarchy: one node per folder (root `/`) and per note, with `parent`, `depth`, `ancestors`, and `size` and `count` totals. Feed it to Vega's `stratify` and then `partition`, `treemap` or `tree`.
 - `"open": "click"` opens the note behind a mark when it is clicked (Cmd/Ctrl for a new tab). It works for any mark whose data carries `file.path`, which base rows and every Agate dataset do.
 
-## 11. Troubleshooting
+### Basemaps under a route
+
+A spec can draw map tiles under its own marks, without Leaflet or a tile plugin. The hike dashboard (`demo-vault/charts/hike-dashboard.vl.json`) does it like this:
+
+1. From the extent of the data, compute which XYZ tiles cover it at a fixed zoom (the `tz` signal).
+2. For each tile, compute its corner longitudes and latitudes, and build its URL in a `calculate` (`{z}/{y}/{x}` for Esri and USGS, `{z}/{x}/{y}` for OpenTopoMap).
+3. Draw the tiles as `image` marks placed by those corners, in the same Web Mercator projection as the route, so the route sits exactly on the terrain.
+
+To reuse it, copy the tile layer and the `basemap`, `bm` and `tz` signals into your spec, and change which dataset gives the extent. A `basemap` select lets the reader switch sources. The keyless sources the demo uses are Esri World Hillshade (with a `_Dark` variant chosen by `agateDark`), Esri World Imagery, USGS Topo, USGS 3DEP hillshade (US only, one image for the whole frame) and OpenTopoMap. Keep an attribution line in the chart; the terms of every source require one.
+
+Tiles are remote images, so they load only when **Load remote data** is on.
+
+#### Providers that need an API key
+
+Don't write a key into a spec: it would travel with every copy of the spec. Keep it in an environment variable instead, and put a placeholder in the URL:
+
+```json
+{ "calculate": "'https://api.maptiler.com/maps/outdoor-v2/256/' + tz + '/' + datum.x + '/' + datum.y + '.png?key={env:MAPTILER_KEY}'", "as": "url" }
+```
+
+1. Set the variable where Obsidian can see it, e.g. `export MAPTILER_KEY=…` in your shell profile. On macOS, Obsidian started from the Dock does not read the shell profile: run `launchctl setenv MAPTILER_KEY …` once (and again after a restart), or start Obsidian from a terminal.
+2. In **Settings → Agate → Environment variables in URLs**, allow it for the one host it may be sent to, one pair per line:
+
+   ```text
+   MAPTILER_KEY api.maptiler.com
+   ```
+
+3. Turn on **Load remote data**.
+
+Agate fills in `{env:NAME}` only when it makes the request, and only when the URL's host matches the host listed for that name. A spec someone shares with you therefore can't send your key anywhere else, and a name you haven't listed is never read. Keyed map tiles are fetched by Agate and handed to the chart as local `blob:` images, so the key doesn't appear in the chart's markup, an SVG export or an error message. The same placeholder works in a `data.url` or a per-note data URL.
+
+Environment variables are read on desktop only. On mobile a keyed URL fails with an error that names the variable, so give the spec a keyless fallback (the hike dashboard's `basemap` select) if the note is used there too.
+
+## 11. Experimental: big numbers as note text
+
+A row of headline numbers (books read, mean rating, pages) can be drawn by Vega as text marks, but SVG text does not wrap, cannot be selected and uses the chart font. Add one line to the spec instead:
+
+```json
+"usermeta": {"agate": {"output": "stats"}}
+```
+
+Agate then runs the spec without drawing it and shows the rows behind its first mark as HTML: each row's `value` large, its `label` small under it, and an optional `note`. Vega still does all the work (filters, aggregates, formatting), the numbers follow the base like any chart, and they wrap and select like note text in the note's own fonts. Outside Agate the spec draws its own marks, so give it a simple text layer as a fallback. `demo-vault/tests/Surfaces/13 Stats.md` shows both approaches side by side; the specs are `tests/charts/stats-row-vega.vl.json` and `stats-row-html.vl.json`.
+
+Rows can also carry a secondary value. A numeric `change` is shown with an arrow for its direction (▲ 0.4, ▼ −3), in the theme's green when it is good news and red when not; up is good unless the row says `better: "down"` (for time, cost, errors). A text `change` such as "+12%" gives its direction by its sign. Put what it is compared against in `note`.
+
+Two things to know. In Vega-Lite's `aggregate`, a field written `note.rating` is read as one flat name, so copy nested fields out with a `calculate` first. And the format may still change: this is experimental.
+
+## 12. Troubleshooting
 
 | You see | Likely cause |
 |---|---|
@@ -209,7 +281,7 @@ The extras, all declared under `usermeta.agate` in the spec:
 | White box in dark mode | The vault theme is a stock Vega theme; switch to `obsidian`. |
 | Chart did not pick up a spec edit | Inline specs are not watched; move it to a file, or reopen the note. |
 
-## 12. Further reading
+## 13. Further reading
 
 - `README.md`: overview, settings, limits, API for plugin authors.
 - `docs/adr/0001-architecture-and-roadmap.md`: how it works and why (D3 surfaces, D4 rows, D7 API, D11 settings, D12 per-row data).

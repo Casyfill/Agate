@@ -1,0 +1,15 @@
+filters:
+  and:
+    - type == "hike-day"
+views:
+  - type: agate
+    name: Dashboard
+    order: [file.name, day, date, from, to]
+    sort:
+      - property: day
+        direction: ASC
+    specFile: charts/hike-dashboard.vl.json
+    theme: instrument
+  - type: table
+    name: Days
+    order: [day, date, from, to, weather, track]

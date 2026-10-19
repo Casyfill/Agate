@@ -1,0 +1,357 @@
+{
+  "$schema": "https://vega.github.io/schema/vega/v6.json",
+  "description": "Hierarchical edge bundling over the vault: every note that links or is linked (meetings, people and projects; plays and games; trips and places) sits on the circle, grouped by folder, and each link is drawn as a curve bundled through the folder tree. Agate supplies both halves: the folder hierarchy (usermeta.agate.tree) and the links between the base's notes (usermeta.agate.edges). Vega-Lite has no tree layout or bundled lines, so this one is pure Vega. Hover a note to light up its links; click to open it.",
+  "usermeta": {
+    "agate": {
+      "tree": "tree",
+      "edges": "edges",
+      "open": "click"
+    }
+  },
+  "width": 620,
+  "height": 620,
+  "padding": 6,
+  "autosize": "none",
+  "signals": [
+    {
+      "name": "agateDark",
+      "value": false
+    },
+    {
+      "name": "tension",
+      "value": 0.85,
+      "bind": {
+        "input": "range",
+        "min": 0,
+        "max": 1,
+        "step": 0.01,
+        "name": "Bundle tension "
+      }
+    },
+    {
+      "name": "radius",
+      "value": 205
+    },
+    {
+      "name": "originX",
+      "update": "width / 2"
+    },
+    {
+      "name": "originY",
+      "update": "height / 2"
+    },
+    {
+      "name": "active",
+      "value": null,
+      "on": [
+        {
+          "events": "@leaf:mouseover",
+          "update": "datum.id"
+        },
+        {
+          "events": "@leaf:mouseout",
+          "update": "null"
+        }
+      ]
+    }
+  ],
+  "data": [
+    {
+      "name": "tree",
+      "transform": [
+        {
+          "type": "stratify",
+          "key": "id",
+          "parentKey": "parent"
+        },
+        {
+          "type": "tree",
+          "method": "cluster",
+          "size": [
+            1,
+            1
+          ],
+          "as": [
+            "alpha",
+            "beta",
+            "layoutDepth",
+            "children"
+          ]
+        },
+        {
+          "type": "formula",
+          "as": "angle",
+          "expr": "(360 * datum.alpha + 270) % 360"
+        },
+        {
+          "type": "formula",
+          "as": "leftside",
+          "expr": "inrange(datum.angle, [90, 270])"
+        },
+        {
+          "type": "formula",
+          "as": "x",
+          "expr": "originX + radius * datum.beta * cos(PI * datum.angle / 180)"
+        },
+        {
+          "type": "formula",
+          "as": "y",
+          "expr": "originY + radius * datum.beta * sin(PI * datum.angle / 180)"
+        },
+        {
+          "type": "formula",
+          "as": "group",
+          "expr": "datum.kind === 'file' ? datum.parent : datum.id"
+        }
+      ]
+    },
+    {
+      "name": "leaves",
+      "source": "tree",
+      "transform": [
+        {
+          "type": "filter",
+          "expr": "datum.kind === 'file'"
+        }
+      ]
+    },
+    {
+      "name": "groups",
+      "source": "leaves",
+      "transform": [
+        {
+          "type": "aggregate",
+          "groupby": [
+            "group"
+          ],
+          "ops": [
+            "min",
+            "max",
+            "count"
+          ],
+          "fields": [
+            "alpha",
+            "alpha",
+            "alpha"
+          ],
+          "as": [
+            "a0",
+            "a1",
+            "n"
+          ]
+        },
+        {
+          "type": "formula",
+          "as": "name",
+          "expr": "replace(peek(split(datum.group, '/')), /^\\d+_/, '')"
+        },
+        {
+          "type": "formula",
+          "as": "angle",
+          "expr": "(360 * (datum.a0 + datum.a1) / 2 + 270) % 360"
+        },
+        {
+          "type": "formula",
+          "as": "leftside",
+          "expr": "inrange(datum.angle, [90, 270])"
+        }
+      ]
+    },
+    {
+      "name": "edges",
+      "transform": [
+        {
+          "type": "formula",
+          "as": "treepath",
+          "expr": "treePath('tree', datum.sourcePath, datum.targetPath)",
+          "initonly": true
+        },
+        {
+          "type": "lookup",
+          "from": "tree",
+          "key": "id",
+          "fields": [
+            "sourcePath"
+          ],
+          "values": [
+            "group"
+          ],
+          "as": [
+            "group"
+          ]
+        }
+      ]
+    }
+  ],
+  "scales": [
+    {
+      "name": "color",
+      "type": "ordinal",
+      "domain": {
+        "data": "groups",
+        "field": "group"
+      },
+      "range": {
+        "scheme": "tableau10"
+      }
+    }
+  ],
+  "marks": [
+    {
+      "type": "group",
+      "from": {
+        "facet": {
+          "name": "path",
+          "data": "edges",
+          "field": "treepath"
+        }
+      },
+      "marks": [
+        {
+          "type": "line",
+          "interactive": false,
+          "from": {
+            "data": "path"
+          },
+          "encode": {
+            "enter": {
+              "interpolate": {
+                "value": "bundle"
+              },
+              "strokeWidth": {
+                "value": 1
+              }
+            },
+            "update": {
+              "x": {
+                "field": "x"
+              },
+              "y": {
+                "field": "y"
+              },
+              "tension": {
+                "signal": "tension"
+              },
+              "stroke": {
+                "signal": "scale('color', parent.group)"
+              },
+              "strokeOpacity": {
+                "signal": "active === null ? 0.28 : (active === parent.sourcePath || active === parent.targetPath ? 0.95 : 0.04)"
+              },
+              "strokeWidth": {
+                "signal": "active !== null && (active === parent.sourcePath || active === parent.targetPath) ? 1.8 : 1"
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "type": "symbol",
+      "name": "leaf",
+      "from": {
+        "data": "leaves"
+      },
+      "encode": {
+        "enter": {
+          "x": {
+            "field": "x"
+          },
+          "y": {
+            "field": "y"
+          },
+          "size": {
+            "value": 14
+          },
+          "fill": {
+            "scale": "color",
+            "field": "group"
+          },
+          "tooltip": {
+            "signal": "datum.name"
+          },
+          "cursor": {
+            "value": "pointer"
+          }
+        },
+        "update": {
+          "size": {
+            "signal": "active === datum.id ? 70 : 14"
+          }
+        }
+      }
+    },
+    {
+      "type": "arc",
+      "from": {
+        "data": "groups"
+      },
+      "interactive": false,
+      "encode": {
+        "enter": {
+          "x": {
+            "signal": "originX"
+          },
+          "y": {
+            "signal": "originY"
+          },
+          "startAngle": {
+            "signal": "2 * PI * datum.a0 - 0.006"
+          },
+          "endAngle": {
+            "signal": "2 * PI * datum.a1 + 0.006"
+          },
+          "innerRadius": {
+            "signal": "radius + 8"
+          },
+          "outerRadius": {
+            "signal": "radius + 13"
+          },
+          "fill": {
+            "scale": "color",
+            "field": "group"
+          }
+        }
+      }
+    },
+    {
+      "type": "text",
+      "from": {
+        "data": "groups"
+      },
+      "interactive": false,
+      "encode": {
+        "enter": {
+          "x": {
+            "signal": "originX + (radius + 22) * cos(PI * datum.angle / 180)"
+          },
+          "y": {
+            "signal": "originY + (radius + 22) * sin(PI * datum.angle / 180)"
+          },
+          "angle": {
+            "signal": "datum.leftside ? datum.angle - 180 : datum.angle"
+          },
+          "align": {
+            "signal": "datum.leftside ? 'right' : 'left'"
+          },
+          "baseline": {
+            "value": "middle"
+          },
+          "fontSize": {
+            "value": 12
+          },
+          "fontWeight": {
+            "value": "bold"
+          },
+          "fill": {
+            "scale": "color",
+            "field": "group"
+          },
+          "text": {
+            "signal": "datum.name + '  ' + datum.n"
+          }
+        }
+      }
+    }
+  ]
+}

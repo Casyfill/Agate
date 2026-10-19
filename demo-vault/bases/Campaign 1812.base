@@ -1,0 +1,14 @@
+filters:
+  and:
+    - type == "battle"
+views:
+  - type: agate
+    name: Minard map
+    order: [file.name, date, outcome, phase]
+    specFile: charts/campaign-1812.vg.json
+  - type: table
+    name: Battles
+    order: [file.name, date, end, outcome, phase]
+    sort:
+      - property: date
+        direction: ASC

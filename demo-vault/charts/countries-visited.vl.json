@@ -1,0 +1,124 @@
+{
+  "$schema": "https://vega.github.io/schema/vega-lite/v6.json",
+  "description": "Countries with at least one place note, shaded by how many places you have notes for. Place notes carry country_id (ISO 3166 numeric, as in world-atlas).",
+  "width": 640,
+  "height": 330,
+  "projection": {
+    "type": "equalEarth"
+  },
+  "layer": [
+    {
+      "data": {
+        "url": "attachments/geo/world-110m.json",
+        "format": {
+          "type": "topojson",
+          "feature": "countries"
+        }
+      },
+      "mark": {
+        "type": "geoshape",
+        "fill": {
+          "expr": "agateDark ? '#18293a' : '#e3e8ec'"
+        },
+        "stroke": {
+          "expr": "agateDark ? '#0b1724' : '#ffffff'"
+        },
+        "strokeWidth": 0.5
+      }
+    },
+    {
+      "data": {
+        "name": "base"
+      },
+      "transform": [
+        {
+          "filter": "datum.note.type === 'place' && isValid(datum.note.country_id)"
+        },
+        {
+          "calculate": "datum.note.country_id + ''",
+          "as": "cid"
+        },
+        {
+          "calculate": "datum.note.country",
+          "as": "country"
+        },
+        {
+          "aggregate": [
+            {
+              "op": "count",
+              "as": "places"
+            }
+          ],
+          "groupby": [
+            "cid",
+            "country"
+          ]
+        },
+        {
+          "lookup": "cid",
+          "from": {
+            "data": {
+              "url": "attachments/geo/world-110m.json",
+              "format": {
+                "type": "topojson",
+                "feature": "countries"
+              }
+            },
+            "key": "id"
+          },
+          "as": "geo"
+        }
+      ],
+      "mark": {
+        "type": "geoshape",
+        "stroke": {
+          "expr": "agateDark ? '#0b1724' : '#ffffff'"
+        },
+        "strokeWidth": 0.5
+      },
+      "encoding": {
+        "shape": {
+          "field": "geo",
+          "type": "geojson"
+        },
+        "color": {
+          "field": "places",
+          "type": "quantitative",
+          "title": "Places",
+          "scale": {
+            "scheme": {
+              "expr": "agateDark ? 'goldorange' : 'teals'"
+            },
+            "domainMin": 0,
+            "domainMax": 4
+          },
+          "legend": {
+            "orient": "bottom-left",
+            "direction": "horizontal",
+            "gradientLength": 120,
+            "titleOrient": "left"
+          }
+        },
+        "tooltip": [
+          {
+            "field": "country",
+            "title": "title"
+          },
+          {
+            "field": "places",
+            "title": "Places with notes"
+          }
+        ]
+      }
+    }
+  ],
+  "params": [
+    {
+      "name": "agateDark",
+      "value": false
+    }
+  ],
+  "view": {
+    "stroke": null
+  }
+}

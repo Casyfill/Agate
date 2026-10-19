@@ -1,0 +1,1008 @@
+{
+  "$schema": "https://vega.github.io/schema/vega/v6.json",
+  "description": "Two views of the reading notes. Timeline: one bar per book from started to finished (or abandoned, or today), coloured by genre; × marks a book put down. Flow: a sankey from genre to outcome to time taken, one unit per book, with each strand keeping its genre colour. Switch with the View control; hover a genre anywhere to follow it; click a bar to open the book.",
+  "usermeta": {
+    "agate": {
+      "open": "click"
+    }
+  },
+  "autosize": {
+    "type": "fit-x",
+    "contains": "padding"
+  },
+  "padding": {
+    "top": 4,
+    "left": 4,
+    "right": 8,
+    "bottom": 4
+  },
+  "signals": [
+    {
+      "name": "width",
+      "init": "isFinite(containerSize()[0]) && containerSize()[0] > 0 ? containerSize()[0] : 720",
+      "on": [
+        {
+          "events": "window:resize",
+          "update": "isFinite(containerSize()[0]) && containerSize()[0] > 0 ? containerSize()[0] : 720"
+        }
+      ]
+    },
+    {
+      "name": "agateDark",
+      "value": false,
+      "description": "Set by Agate in dark mode."
+    },
+    {
+      "name": "view",
+      "value": "Timeline",
+      "bind": {
+        "input": "radio",
+        "options": [
+          "Timeline",
+          "Flow"
+        ],
+        "name": "View "
+      }
+    },
+    {
+      "name": "today",
+      "init": "now()"
+    },
+    {
+      "name": "rowH",
+      "value": 18
+    },
+    {
+      "name": "head",
+      "value": 34,
+      "description": "Room above the plot for the legend and the axis."
+    },
+    {
+      "name": "nBooks",
+      "update": "max(1, length(data('books')))"
+    },
+    {
+      "name": "plotH",
+      "update": "view === 'Timeline' ? nBooks * rowH : 380"
+    },
+    {
+      "name": "height",
+      "update": "head + plotH + (view === 'Timeline' ? 16 : 0)"
+    },
+    {
+      "name": "ink",
+      "update": "agateDark ? '#e8e2d6' : '#1f1d1a'"
+    },
+    {
+      "name": "muted",
+      "update": "agateDark ? '#9b9488' : '#857d72'"
+    },
+    {
+      "name": "hoverGenre",
+      "value": null,
+      "on": [
+        {
+          "events": "@bar:mouseover, @link:mouseover, @node:mouseover",
+          "update": "datum.genre || null"
+        },
+        {
+          "events": "@bar:mouseout, @link:mouseout, @node:mouseout",
+          "update": "null"
+        }
+      ]
+    },
+    {
+      "name": "nodeW",
+      "value": 10
+    },
+    {
+      "name": "gap",
+      "value": 12
+    },
+    {
+      "name": "labelW",
+      "update": "width < 520 ? 70 : 92"
+    },
+    {
+      "name": "maxNodes",
+      "update": "max(1, length(data('n0')), length(data('n1')), length(data('n2')))"
+    },
+    {
+      "name": "k",
+      "update": "(380 - 22 - (maxNodes - 1) * gap) / nBooks"
+    },
+    {
+      "name": "stageX",
+      "update": "[labelW, (width - nodeW) / 2, width - nodeW - (width < 520 ? 92 : 118)]"
+    },
+    {
+      "name": "stageTitles",
+      "value": [
+        "Genre",
+        "Outcome",
+        "Time to finish"
+      ]
+    }
+  ],
+  "data": [
+    {
+      "name": "base"
+    },
+    {
+      "name": "books",
+      "source": "base",
+      "transform": [
+        {
+          "type": "filter",
+          "expr": "isValid(datum.note.started)"
+        },
+        {
+          "type": "formula",
+          "as": "title",
+          "expr": "datum.file.name"
+        },
+        {
+          "type": "formula",
+          "as": "genre",
+          "expr": "datum.note.genre || 'other'"
+        },
+        {
+          "type": "formula",
+          "as": "outcome",
+          "expr": "datum.note.status === 'abandoned' ? 'Abandoned' : datum.note.status === 'reading' ? 'Still reading' : 'Finished'"
+        },
+        {
+          "type": "formula",
+          "as": "s",
+          "expr": "toDate(datum.note.started)"
+        },
+        {
+          "type": "formula",
+          "as": "e",
+          "expr": "datum.outcome === 'Finished' && isValid(datum.note.finished) ? toDate(datum.note.finished) : datum.outcome === 'Abandoned' && isValid(datum.note.abandoned) ? toDate(datum.note.abandoned) : today"
+        },
+        {
+          "type": "formula",
+          "as": "days",
+          "expr": "max(1, round((datum.e - datum.s) / 864e5))"
+        },
+        {
+          "type": "formula",
+          "as": "pace",
+          "expr": "datum.outcome !== 'Finished' ? null : datum.days <= 7 ? 'Under a week' : datum.days <= 21 ? '1–3 weeks' : 'Over 3 weeks'"
+        }
+      ]
+    },
+    {
+      "name": "modeTimeline",
+      "values": [
+        {}
+      ],
+      "transform": [
+        {
+          "type": "filter",
+          "expr": "view === 'Timeline'"
+        }
+      ]
+    },
+    {
+      "name": "modeFlow",
+      "values": [
+        {}
+      ],
+      "transform": [
+        {
+          "type": "filter",
+          "expr": "view === 'Flow'"
+        }
+      ]
+    },
+    {
+      "name": "n0",
+      "source": "books",
+      "transform": [
+        {
+          "type": "aggregate",
+          "groupby": [
+            "genre"
+          ],
+          "as": [
+            "value"
+          ]
+        },
+        {
+          "type": "formula",
+          "as": "label",
+          "expr": "datum.genre"
+        },
+        {
+          "type": "formula",
+          "as": "stage",
+          "expr": "0"
+        }
+      ]
+    },
+    {
+      "name": "n1",
+      "source": "books",
+      "transform": [
+        {
+          "type": "aggregate",
+          "groupby": [
+            "outcome"
+          ],
+          "as": [
+            "value"
+          ]
+        },
+        {
+          "type": "formula",
+          "as": "label",
+          "expr": "datum.outcome"
+        },
+        {
+          "type": "formula",
+          "as": "stage",
+          "expr": "1"
+        },
+        {
+          "type": "formula",
+          "as": "genre",
+          "expr": "null"
+        }
+      ]
+    },
+    {
+      "name": "n2",
+      "source": "books",
+      "transform": [
+        {
+          "type": "filter",
+          "expr": "isValid(datum.pace)"
+        },
+        {
+          "type": "aggregate",
+          "groupby": [
+            "pace"
+          ],
+          "as": [
+            "value"
+          ]
+        },
+        {
+          "type": "formula",
+          "as": "label",
+          "expr": "datum.pace"
+        },
+        {
+          "type": "formula",
+          "as": "stage",
+          "expr": "2"
+        },
+        {
+          "type": "formula",
+          "as": "genre",
+          "expr": "null"
+        }
+      ]
+    },
+    {
+      "name": "nodes",
+      "source": [
+        "n0",
+        "n1",
+        "n2"
+      ],
+      "transform": [
+        {
+          "type": "formula",
+          "as": "id",
+          "expr": "datum.stage + ':' + datum.label"
+        },
+        {
+          "type": "formula",
+          "as": "order",
+          "expr": "datum.stage === 2 ? indexof(['Under a week', '1–3 weeks', 'Over 3 weeks'], datum.label) : datum.stage === 1 ? indexof(['Finished', 'Still reading', 'Abandoned'], datum.label) : -datum.value"
+        },
+        {
+          "type": "window",
+          "groupby": [
+            "stage"
+          ],
+          "sort": {
+            "field": [
+              "order",
+              "label"
+            ]
+          },
+          "ops": [
+            "row_number",
+            "sum"
+          ],
+          "fields": [
+            null,
+            "value"
+          ],
+          "as": [
+            "rank",
+            "cum"
+          ]
+        },
+        {
+          "type": "formula",
+          "as": "y0",
+          "expr": "22 + (datum.cum - datum.value) * k + (datum.rank - 1) * gap"
+        },
+        {
+          "type": "formula",
+          "as": "y1",
+          "expr": "datum.y0 + datum.value * k"
+        },
+        {
+          "type": "formula",
+          "as": "x",
+          "expr": "stageX[datum.stage]"
+        }
+      ]
+    },
+    {
+      "name": "l01",
+      "source": "books",
+      "transform": [
+        {
+          "type": "aggregate",
+          "groupby": [
+            "genre",
+            "outcome"
+          ],
+          "as": [
+            "value"
+          ]
+        },
+        {
+          "type": "formula",
+          "as": "src",
+          "expr": "'0:' + datum.genre"
+        },
+        {
+          "type": "formula",
+          "as": "dst",
+          "expr": "'1:' + datum.outcome"
+        }
+      ]
+    },
+    {
+      "name": "l12",
+      "source": "books",
+      "transform": [
+        {
+          "type": "filter",
+          "expr": "isValid(datum.pace)"
+        },
+        {
+          "type": "aggregate",
+          "groupby": [
+            "genre",
+            "outcome",
+            "pace"
+          ],
+          "as": [
+            "value"
+          ]
+        },
+        {
+          "type": "formula",
+          "as": "src",
+          "expr": "'1:' + datum.outcome"
+        },
+        {
+          "type": "formula",
+          "as": "dst",
+          "expr": "'2:' + datum.pace"
+        }
+      ]
+    },
+    {
+      "name": "links",
+      "source": [
+        "l01",
+        "l12"
+      ],
+      "transform": [
+        {
+          "type": "formula",
+          "as": "key",
+          "expr": "datum.src + '>' + datum.dst + '>' + datum.genre"
+        },
+        {
+          "type": "formula",
+          "as": "gid",
+          "expr": "'0:' + datum.genre"
+        },
+        {
+          "type": "lookup",
+          "from": "nodes",
+          "key": "id",
+          "fields": [
+            "src",
+            "dst",
+            "gid"
+          ],
+          "as": [
+            "a",
+            "b",
+            "g"
+          ]
+        },
+        {
+          "type": "formula",
+          "as": "aY",
+          "expr": "datum.a.y0"
+        },
+        {
+          "type": "formula",
+          "as": "bY",
+          "expr": "datum.b.y0"
+        },
+        {
+          "type": "formula",
+          "as": "gY",
+          "expr": "datum.g.y0"
+        },
+        {
+          "type": "window",
+          "groupby": [
+            "src"
+          ],
+          "sort": {
+            "field": [
+              "bY",
+              "gY"
+            ]
+          },
+          "ops": [
+            "sum"
+          ],
+          "fields": [
+            "value"
+          ],
+          "as": [
+            "outCum"
+          ]
+        },
+        {
+          "type": "window",
+          "groupby": [
+            "dst"
+          ],
+          "sort": {
+            "field": [
+              "aY",
+              "gY"
+            ]
+          },
+          "ops": [
+            "sum"
+          ],
+          "fields": [
+            "value"
+          ],
+          "as": [
+            "inCum"
+          ]
+        },
+        {
+          "type": "formula",
+          "as": "sy",
+          "expr": "datum.a.y0 + (datum.outCum - datum.value / 2) * k"
+        },
+        {
+          "type": "formula",
+          "as": "ty",
+          "expr": "datum.b.y0 + (datum.inCum - datum.value / 2) * k"
+        },
+        {
+          "type": "formula",
+          "as": "sx",
+          "expr": "datum.a.x + nodeW"
+        },
+        {
+          "type": "formula",
+          "as": "tx",
+          "expr": "datum.b.x"
+        },
+        {
+          "type": "linkpath",
+          "sourceX": "sx",
+          "sourceY": "sy",
+          "targetX": "tx",
+          "targetY": "ty",
+          "shape": "diagonal",
+          "orient": "horizontal"
+        }
+      ]
+    },
+    {
+      "name": "stages",
+      "values": [
+        {
+          "i": 0
+        },
+        {
+          "i": 1
+        },
+        {
+          "i": 2
+        }
+      ]
+    }
+  ],
+  "scales": [
+    {
+      "name": "genre",
+      "type": "ordinal",
+      "domain": [
+        "fiction",
+        "sci-fi",
+        "fantasy",
+        "non-fiction",
+        "history",
+        "thriller"
+      ],
+      "range": {
+        "signal": "agateDark ? ['#e07a85', '#7fa8d1', '#b591c4', '#8fbf94', '#e0b45a', '#ec8b62'] : ['#9b2335', '#1f4e79', '#6b3f7a', '#4f7a55', '#b07d1a', '#c0532b']"
+      }
+    },
+    {
+      "name": "x",
+      "type": "time",
+      "domain": {
+        "data": "books",
+        "fields": [
+          "s",
+          "e"
+        ]
+      },
+      "range": [
+        0,
+        {
+          "signal": "width"
+        }
+      ],
+      "nice": "month"
+    },
+    {
+      "name": "y",
+      "type": "band",
+      "domain": {
+        "data": "books",
+        "field": "title",
+        "sort": {
+          "field": "s",
+          "op": "min"
+        }
+      },
+      "range": [
+        0,
+        {
+          "signal": "nBooks * rowH"
+        }
+      ],
+      "padding": 0.32
+    }
+  ],
+  "legends": [
+    {
+      "fill": "genre",
+      "orient": "none",
+      "legendX": 0,
+      "legendY": -2,
+      "direction": "horizontal",
+      "symbolType": "circle",
+      "symbolSize": 70,
+      "labelFontSize": 11,
+      "columnPadding": 12,
+      "encode": {
+        "labels": {
+          "update": {
+            "fill": {
+              "signal": "muted"
+            }
+          }
+        }
+      }
+    }
+  ],
+  "marks": [
+    {
+      "type": "group",
+      "name": "timeline",
+      "from": {
+        "data": "modeTimeline"
+      },
+      "encode": {
+        "update": {
+          "y": {
+            "signal": "head"
+          },
+          "width": {
+            "signal": "width"
+          },
+          "height": {
+            "signal": "plotH"
+          }
+        }
+      },
+      "axes": [
+        {
+          "scale": "x",
+          "orient": "top",
+          "grid": true,
+          "gridOpacity": 0.35,
+          "domain": false,
+          "ticks": false,
+          "labelPadding": 4,
+          "tickCount": {
+            "signal": "width < 520 ? 4 : 8"
+          },
+          "format": "%b %Y",
+          "labelFontSize": 10,
+          "zindex": 0
+        }
+      ],
+      "marks": [
+        {
+          "type": "rule",
+          "interactive": false,
+          "encode": {
+            "update": {
+              "x": {
+                "scale": "x",
+                "signal": "today"
+              },
+              "y": {
+                "value": -4
+              },
+              "y2": {
+                "signal": "plotH + 2"
+              },
+              "stroke": {
+                "signal": "muted"
+              },
+              "strokeDash": {
+                "value": [
+                  2,
+                  3
+                ]
+              }
+            }
+          }
+        },
+        {
+          "type": "rect",
+          "name": "bar",
+          "from": {
+            "data": "books"
+          },
+          "encode": {
+            "enter": {
+              "cursor": {
+                "value": "pointer"
+              },
+              "cornerRadius": {
+                "value": 1.5
+              }
+            },
+            "update": {
+              "x": {
+                "scale": "x",
+                "field": "s"
+              },
+              "x2": {
+                "signal": "max(scale('x', datum.e), scale('x', datum.s) + 3)"
+              },
+              "y": {
+                "scale": "y",
+                "field": "title"
+              },
+              "height": {
+                "scale": "y",
+                "band": 1
+              },
+              "fill": {
+                "scale": "genre",
+                "field": "genre"
+              },
+              "fillOpacity": {
+                "signal": "(hoverGenre === null || hoverGenre === datum.genre ? 1 : 0.15) * (datum.outcome === 'Abandoned' ? 0.4 : datum.outcome === 'Still reading' ? 0.65 : 1)"
+              },
+              "tooltip": {
+                "signal": "{title: datum.title, 'Author': datum.note.author, 'Genre': datum.genre, 'Pages': datum.note.pages, 'Started': timeFormat(datum.s, '%b %d, %Y'), 'Outcome': datum.outcome === 'Still reading' ? 'still reading, ' + datum.days + ' days in' : datum.outcome + ' after ' + datum.days + ' days', 'Rating': isValid(datum.note.rating) ? datum.note.rating + ' / 5' : '—'}"
+              }
+            }
+          }
+        },
+        {
+          "type": "text",
+          "from": {
+            "data": "books"
+          },
+          "interactive": false,
+          "encode": {
+            "update": {
+              "x": {
+                "scale": "x",
+                "field": "e",
+                "offset": 3
+              },
+              "y": {
+                "signal": "scale('y', datum.title) + bandwidth('y') / 2"
+              },
+              "align": {
+                "value": "center"
+              },
+              "baseline": {
+                "value": "middle"
+              },
+              "fontSize": {
+                "value": 11
+              },
+              "fontWeight": {
+                "value": "bold"
+              },
+              "fill": {
+                "signal": "muted"
+              },
+              "text": {
+                "signal": "datum.outcome === 'Abandoned' ? '×' : ''"
+              }
+            }
+          }
+        },
+        {
+          "type": "text",
+          "from": {
+            "data": "books"
+          },
+          "interactive": false,
+          "encode": {
+            "update": {
+              "x": {
+                "signal": "scale('x', datum.e) > width * 0.74 ? scale('x', datum.s) - 5 : scale('x', datum.e) + (datum.outcome === 'Abandoned' ? 11 : 5)"
+              },
+              "y": {
+                "signal": "scale('y', datum.title) + bandwidth('y') / 2"
+              },
+              "align": {
+                "signal": "scale('x', datum.e) > width * 0.74 ? 'right' : 'left'"
+              },
+              "baseline": {
+                "value": "middle"
+              },
+              "fontSize": {
+                "value": 11.5
+              },
+              "fill": {
+                "signal": "ink"
+              },
+              "fillOpacity": {
+                "signal": "hoverGenre === null || hoverGenre === datum.genre ? 0.85 : 0.25"
+              },
+              "text": {
+                "signal": "datum.title + (datum.outcome === 'Still reading' ? '  · reading' : '')"
+              },
+              "fontStyle": {
+                "value": "italic"
+              }
+            }
+          }
+        },
+        {
+          "type": "text",
+          "interactive": false,
+          "encode": {
+            "update": {
+              "x": {
+                "scale": "x",
+                "signal": "today"
+              },
+              "y": {
+                "signal": "plotH + 12"
+              },
+              "align": {
+                "value": "center"
+              },
+              "fontSize": {
+                "value": 10
+              },
+              "fontStyle": {
+                "value": "italic"
+              },
+              "fill": {
+                "signal": "muted"
+              },
+              "text": {
+                "value": "today"
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "type": "group",
+      "name": "flow",
+      "from": {
+        "data": "modeFlow"
+      },
+      "encode": {
+        "update": {
+          "y": {
+            "signal": "head"
+          },
+          "width": {
+            "signal": "width"
+          },
+          "height": {
+            "signal": "plotH"
+          }
+        }
+      },
+      "marks": [
+        {
+          "type": "text",
+          "from": {
+            "data": "stages"
+          },
+          "interactive": false,
+          "encode": {
+            "update": {
+              "x": {
+                "signal": "stageX[datum.i] + (datum.i === 0 ? nodeW : 0)"
+              },
+              "y": {
+                "value": 10
+              },
+              "align": {
+                "signal": "datum.i === 0 ? 'right' : 'left'"
+              },
+              "fontSize": {
+                "value": 10
+              },
+              "fontWeight": {
+                "value": "bold"
+              },
+              "fill": {
+                "signal": "muted"
+              },
+              "text": {
+                "signal": "upper(stageTitles[datum.i])"
+              }
+            }
+          }
+        },
+        {
+          "type": "path",
+          "name": "link",
+          "from": {
+            "data": "links"
+          },
+          "encode": {
+            "update": {
+              "path": {
+                "field": "path"
+              },
+              "stroke": {
+                "scale": "genre",
+                "field": "genre"
+              },
+              "strokeWidth": {
+                "signal": "max(1, datum.value * k - 0.5)"
+              },
+              "strokeOpacity": {
+                "signal": "hoverGenre === null ? 0.5 : hoverGenre === datum.genre ? 0.85 : 0.08"
+              },
+              "tooltip": {
+                "signal": "{title: datum.a.label + ' → ' + datum.b.label, 'Genre': datum.genre, 'Books': datum.value}"
+              }
+            }
+          }
+        },
+        {
+          "type": "rect",
+          "name": "node",
+          "from": {
+            "data": "nodes"
+          },
+          "encode": {
+            "update": {
+              "x": {
+                "field": "x"
+              },
+              "width": {
+                "signal": "nodeW"
+              },
+              "y": {
+                "field": "y0"
+              },
+              "y2": {
+                "field": "y1"
+              },
+              "cornerRadius": {
+                "value": 2
+              },
+              "fill": {
+                "signal": "datum.stage === 0 ? scale('genre', datum.label) : ink"
+              },
+              "fillOpacity": {
+                "signal": "datum.stage === 0 ? 1 : 0.75"
+              },
+              "tooltip": {
+                "signal": "{title: datum.label, 'Books': datum.value}"
+              }
+            }
+          }
+        },
+        {
+          "type": "text",
+          "from": {
+            "data": "nodes"
+          },
+          "interactive": false,
+          "encode": {
+            "update": {
+              "x": {
+                "signal": "datum.stage === 0 ? datum.x - 6 : datum.x + nodeW + 6"
+              },
+              "y": {
+                "signal": "(datum.y0 + datum.y1) / 2"
+              },
+              "align": {
+                "signal": "datum.stage === 0 ? 'right' : 'left'"
+              },
+              "baseline": {
+                "value": "middle"
+              },
+              "fontSize": {
+                "value": 11
+              },
+              "fill": {
+                "signal": "ink"
+              },
+              "text": {
+                "signal": "datum.label + '  ' + datum.value"
+              }
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "config": {
+    "text": {
+      "font": "'Iowan Old Style', Charter, 'Source Serif 4', 'Source Serif Pro', Georgia, serif"
+    },
+    "title": {
+      "font": "'Iowan Old Style', Charter, 'Source Serif 4', 'Source Serif Pro', Georgia, serif"
+    },
+    "axis": {
+      "labelFont": "'Iowan Old Style', Charter, 'Source Serif 4', 'Source Serif Pro', Georgia, serif",
+      "titleFont": "'Iowan Old Style', Charter, 'Source Serif 4', 'Source Serif Pro', Georgia, serif"
+    },
+    "legend": {
+      "labelFont": "'Iowan Old Style', Charter, 'Source Serif 4', 'Source Serif Pro', Georgia, serif",
+      "titleFont": "'Iowan Old Style', Charter, 'Source Serif 4', 'Source Serif Pro', Georgia, serif"
+    },
+    "style": {
+      "guide-label": {
+        "font": "'Iowan Old Style', Charter, 'Source Serif 4', 'Source Serif Pro', Georgia, serif"
+      },
+      "guide-title": {
+        "font": "'Iowan Old Style', Charter, 'Source Serif 4', 'Source Serif Pro', Georgia, serif"
+      },
+      "text": {
+        "font": "'Iowan Old Style', Charter, 'Source Serif 4', 'Source Serif Pro', Georgia, serif"
+      }
+    }
+  }
+}

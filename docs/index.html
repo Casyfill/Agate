@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Agate for Obsidian</title>
+<meta name="description" content="Agate draws your Obsidian Bases as live visualisations — maps, networks, timelines, dashboards and headline numbers — with the Vega and Vega-Lite grammar.">
+<link rel="icon" href="images/agate-icon.svg" type="image/svg+xml">
+<script>try { var t = localStorage.getItem("theme"); if (t) document.documentElement.dataset.theme = t; } catch (e) {}</script>
+<link rel="stylesheet" href="site.css">
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <img src="images/agate-icon.svg" alt="">
+    <span class="name"><a href="index.html">Agate</a></span>
+    <nav>
+      <a class="wide" href="#why">Why</a>
+      <a class="wide" href="gallery.html">Gallery</a>
+      <a class="wide" href="quickstart.html">Quickstart</a>
+      <a href="https://github.com/Casyfill/Agate/blob/main/docs/guide.md">Guide</a>
+      <a href="https://github.com/Casyfill/Agate">GitHub</a>
+      <button class="mode" type="button" aria-label="Switch light or dark mode">◐</button>
+    </nav>
+  </header>
+
+  <div class="hero">
+    <span class="badge">Obsidian plugin · pre-release · free &amp; open source</span>
+    <h1>Your Obsidian bases, <span class="hl">visualised.</span></h1>
+    <p class="lede">A base already gathers your notes and their properties. Agate draws that base as a live chart — maps, networks, timelines, dashboards, headline numbers — and redraws it the moment you edit a note. Under the hood it's Vega and Vega-Lite, a mature grammar with a huge public gallery, so you never run out of chart types.</p>
+    <div class="cta">
+      <a class="btn primary" href="quickstart.html">Make your first chart</a>
+      <a class="btn" href="gallery.html">See the gallery</a>
+    </div>
+    <ul class="chips" aria-label="What you can draw">
+      <li>maps &amp; globes</li><li>networks</li><li>timelines</li><li>headline numbers</li><li>flows</li><li>hierarchies</li><li>habit grids</li><li>linked dashboards</li>
+    </ul>
+  </div>
+
+  <figure class="hero-shot">
+    <a class="shot" href="site/minard.jpg"><img src="site/hero.jpg" alt="Left: a base listing battle notes with date, outcome and phase columns, the Battle of Smolensk row highlighted. An arrow points to the matching mark on Minard's 1812 map on the right, where a tooltip shows that note's properties." width="1336" height="400"></a>
+    <figcaption>Left, battle notes in a base. Right, the same notes drawn as Minard's map of 1812. Each mark is a note: hover for its properties, click to open it. (<a href="site/minard.jpg">full note</a>)</figcaption>
+  </figure>
+
+  <section>
+    <p class="eyebrow">how it works</p>
+    <div class="flow">
+      <div class="item"><span class="n">01</span><b>Notes with properties</b><span>You already keep them: trips, books, battles. A base gathers and filters them; the properties are the data.</span></div>
+      <div class="item"><span class="n">02</span><b>A spec draws them</b><span>Pick a built-in recipe, or hit <b>Copy prompt for an LLM</b> and paste the spec back. No chart library to learn.</span></div>
+      <div class="item"><span class="n">03</span><b>Live in your vault</b><span>As a base view, embedded in a note, in Canvas or the sidebar. Edit a note and it redraws.</span></div>
+    </div>
+  </section>
+
+  <section id="why">
+    <p class="eyebrow">why agate</p>
+    <h2>A real visualisation grammar, not a short menu of charts.</h2>
+    <div class="split">
+      <p class="sub">Agate's charts are Vega and Vega-Lite specs. Vega is a <i>visualisation grammar</i> — a declarative JSON language for describing a chart, built at the University of Washington's Interactive Data Lab. You state what the data is and how it maps to marks, scales and axes, and the grammar draws it. So one language spans a bar chart and a force-directed network alike, every chart is a plain file you can read, version and reuse, and a decade of public examples is yours to borrow. You can hand-write a static spec, adapt a gallery example, or have Agate generate one — it's the same JSON either way.</p>
+      <figure class="codefig">
+        <pre><code>{
+  <span class="k">"mark"</span>: <span class="s">"bar"</span>,
+  <span class="k">"data"</span>: { <span class="k">"name"</span>: <span class="s">"books_base"</span> },
+  <span class="k">"encoding"</span>: {
+    <span class="k">"x"</span>: { <span class="k">"field"</span>: <span class="s">"note.genre"</span> },
+    <span class="k">"y"</span>: {
+      <span class="k">"aggregate"</span>: <span class="s">"mean"</span>,
+      <span class="k">"field"</span>: <span class="s">"note.rating"</span>
+    }
+  }
+}</code></pre>
+        <figcaption>A whole Vega-Lite chart — average rating by genre. <span class="cap-k">books_base</span> is your Books base; <span class="cap-k">note.*</span> are its properties.</figcaption>
+      </figure>
+    </div>
+    <div class="cards">
+      <div class="card">
+        <span class="k">mature</span>
+        <h3>Built on Vega &amp; Vega-Lite</h3>
+        <p>A decade-old visualisation grammar from the UW Interactive Data Lab, with a large public example gallery and an online editor. Battle-tested, documented, and still growing — you inherit all of it.</p>
+      </div>
+      <div class="card">
+        <span class="k">expressive</span>
+        <h3>One language, any chart</h3>
+        <p>Statistical charts, maps and globes, force-directed networks, hierarchies, sankeys, custom layouts — all the same declarative JSON. If you can describe it, the grammar can draw it.</p>
+      </div>
+      <div class="card">
+        <span class="k">portable</span>
+        <h3>Plain JSON, exportable</h3>
+        <p>Specs are ordinary Vega. Export SVG or PNG, prototype in the online editor, reuse the same file across bases and vaults, and share with people who have never opened Obsidian.</p>
+      </div>
+      <div class="card">
+        <span class="k">interactive</span>
+        <h3>Charts you can use</h3>
+        <p>Tooltips with images, brushing, linked views, and click any mark to open the note behind it. A chart becomes a way to move around your vault, not just a picture of it.</p>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <p class="eyebrow">simple to make</p>
+    <div class="panel">
+      <h2>You don't have to write the JSON.</h2>
+      <p>Open a base, add an Agate view, and <b>Pick a recipe</b> — Agate asks which property goes where and writes the spec. Or hit <b>Copy prompt for an LLM</b>: it packs your base's properties and sample rows with the rules Agate needs, so you describe the chart in words and paste back a working spec. Prefer to author it yourself? Every spec is a plain file you can edit by hand.</p>
+      <div class="lead-links">
+        <a href="quickstart.html">Five-minute quickstart</a>
+        <a href="gallery.html">Browse every example</a>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <p class="eyebrow">more it can do</p>
+    <h2>It reaches past the base.</h2>
+    <p class="sub">A chart isn't limited to the properties in the view. A spec can fetch from the web, load each note's own data, sum the base into headline counters, or draw on a real map. <a href="gallery.html">See the full gallery →</a></p>
+    <div class="strip four">
+      <figure>
+        <a class="shot" href="https://github.com/Casyfill/Agate/blob/main/docs/guide.md#9-images-in-tooltips"><img src="site/crops/remote.jpg" alt="A board-game tooltip showing cover art fetched from a URL" loading="lazy" width="404" height="303"></a>
+        <div class="label"><span class="tag">remote</span><h3><a href="https://github.com/Casyfill/Agate/blob/main/docs/guide.md#9-images-in-tooltips">Fetched from the web</a></h3></div>
+        <p class="desc">A note can carry a URL: a cover for the tooltip, or a dataset. Remote data loads only once you allow it.</p>
+        <a class="more" href="https://github.com/Casyfill/Agate/blob/main/docs/guide.md#9-images-in-tooltips">How to →</a>
+      </figure>
+      <figure>
+        <a class="shot" href="https://github.com/Casyfill/Agate/blob/main/docs/guide.md#6-per-note-external-data"><img src="site/crops/pernote.jpg" alt="Horizon chart of twelve market series, one strip per note, each loaded from that note's own CSV" loading="lazy" width="1000" height="800"></a>
+        <div class="label"><span class="tag">per-note data</span><h3><a href="https://github.com/Casyfill/Agate/blob/main/docs/guide.md#6-per-note-external-data">Each note's own data</a></h3></div>
+        <p class="desc">Point each note at a CSV or a URL; Agate loads one dataset per note. Here, twelve market notes, each with its own FRED series.</p>
+        <a class="more" href="https://github.com/Casyfill/Agate/blob/main/docs/guide.md#6-per-note-external-data">How to →</a>
+      </figure>
+      <figure>
+        <a class="shot" href="https://github.com/Casyfill/Agate/blob/main/docs/guide.md#11-experimental-big-numbers-as-note-text"><img src="site/crops/stats.jpg" alt="Rows of big headline numbers from five notes: plays, trips, practice attempts, hike miles and Napoleon's army" loading="lazy" width="1000" height="800"></a>
+        <div class="label"><span class="tag">stats</span><h3><a href="https://github.com/Casyfill/Agate/blob/main/docs/guide.md#11-experimental-big-numbers-as-note-text">Aggregate counters</a></h3></div>
+        <p class="desc">Counts, sums and averages over the base as big headline numbers that update with every note. Vega does the maths.</p>
+        <a class="more" href="https://github.com/Casyfill/Agate/blob/main/docs/guide.md#11-experimental-big-numbers-as-note-text">How to →</a>
+      </figure>
+      <figure>
+        <a class="shot" href="https://github.com/Casyfill/Agate/blob/main/docs/guide.md#basemaps-under-a-route"><img src="site/crops/basemap.jpg" alt="The Appalachian Trail route from Springer Mountain to Neel Gap over a colourful OpenTopoMap basemap" loading="lazy" width="595" height="476"></a>
+        <div class="label"><span class="tag">basemaps</span><h3><a href="https://github.com/Casyfill/Agate/blob/main/docs/guide.md#basemaps-under-a-route">Set the basemap</a></h3></div>
+        <p class="desc">Real map tiles under your routes: topo, hillshade or satellite, keyless out of the box. Keyed providers read their token from an environment variable.</p>
+        <a class="more" href="https://github.com/Casyfill/Agate/blob/main/docs/guide.md#basemaps-under-a-route">How to →</a>
+      </figure>
+    </div>
+  </section>
+
+  <footer>
+    Agate is MIT-licensed and made by <a href="https://github.com/Casyfill">Philipp Kats</a>. Vega and Vega-Lite are by the <a href="https://vega.github.io/">UW Interactive Data Lab</a>. Not affiliated with Obsidian. Basemap tile: © OpenStreetMap contributors, SRTM, <a href="https://opentopomap.org/">OpenTopoMap</a> (CC-BY-SA).
+  </footer>
+
+</div>
+<script>
+  document.querySelector(".mode").onclick = function () {
+    var root = document.documentElement;
+    var dark = root.dataset.theme ? root.dataset.theme === "dark" : matchMedia("(prefers-color-scheme: dark)").matches;
+    root.dataset.theme = dark ? "light" : "dark";
+    try { localStorage.setItem("theme", root.dataset.theme); } catch (e) {}
+  };
+</script>
+</body>
+</html>

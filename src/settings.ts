@@ -21,6 +21,8 @@ export interface AgateSettings {
   interactive: boolean;
   datasetName: string;
   allowRemote: boolean;
+  /** `NAME host` lines: which OS environment variables `{env:NAME}` in a URL may use, and for which host. */
+  envHosts: string;
   /** Also claim the ```vega and ```vega-lite block languages. Needs a reload; clashes with obsidian-vega. */
   codeBlockAliases: boolean;
   debug: boolean;
@@ -38,6 +40,7 @@ export const DEFAULT_SETTINGS: AgateSettings = {
   interactive: true,
   datasetName: "base",
   allowRemote: false,
+  envHosts: "",
   codeBlockAliases: false,
   debug: false,
 };
@@ -84,6 +87,13 @@ export class AgateSettingTab extends PluginSettingTab {
         name: "Theme file",
         desc: "Optional vault path to a JSON/YAML Vega config, applied after the overrides above.",
         control: { type: "file", key: "themeFile", placeholder: "agate/theme.json" },
+      },
+      {
+        name: "Generate a theme with an LLM",
+        desc: "Copies a prompt describing your current Obsidian theme and overrides. Paste it into any assistant, describe the look you want, and save the reply to the Theme file above.",
+        render: (setting) => {
+          setting.addButton((b) => b.setButtonText("Copy theme prompt").onClick(() => void this.plugin.copyThemePrompt()));
+        },
       },
       {
         type: "group",
@@ -142,6 +152,12 @@ export class AgateSettingTab extends PluginSettingTab {
             desc: "Allow data.url values that start with http(s). Off by default: charts make no network requests.",
             aliases: ["network", "urls"],
             control: { type: "toggle", key: "allowRemote", defaultValue: DEFAULT_SETTINGS.allowRemote },
+          },
+          {
+            name: "Environment variables in URLs",
+            desc: "For API keys, e.g. a basemap token. A URL in a spec can contain {env:NAME}; Agate fills it from the OS environment when it fetches, desktop only. List each allowed variable with the one host it may be sent to, one per line: MAPTILER_KEY api.maptiler.com",
+            aliases: ["api key", "token", "secret", "basemap"],
+            control: { type: "textarea", key: "envHosts", placeholder: "MAPTILER_KEY api.maptiler.com", rows: 3 },
           },
         ],
       },

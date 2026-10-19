@@ -1,0 +1,125 @@
+{
+  "$schema": "https://vega.github.io/schema/vega-lite/v6.json",
+  "description": "The same stats as stats-row-vega.vl.json, with one line more: usermeta.agate.output: \"stats\". In Agate (experimental) the rows are shown as HTML numbers in note text; anywhere else the spec draws them itself.",
+  "usermeta": {
+    "agate": {
+      "output": "stats"
+    }
+  },
+  "data": {
+    "name": "base"
+  },
+  "width": "container",
+  "height": 52,
+  "transform": [
+    {
+      "calculate": "isValid(datum.note.rating) && datum.note.rating !== '' ? toNumber(datum.note.rating) : null",
+      "as": "rating"
+    },
+    {
+      "calculate": "isValid(datum.note.pages) && datum.note.pages !== '' ? toNumber(datum.note.pages) : null",
+      "as": "pages"
+    },
+    {
+      "calculate": "isValid(datum.note.published) && datum.note.published !== '' ? year(toDate(datum.note.published)) : null",
+      "as": "year"
+    },
+    {
+      "aggregate": [
+        {
+          "op": "count",
+          "as": "books"
+        },
+        {
+          "op": "mean",
+          "field": "rating",
+          "as": "avg"
+        },
+        {
+          "op": "sum",
+          "field": "pages",
+          "as": "pages"
+        },
+        {
+          "op": "max",
+          "field": "year",
+          "as": "newest"
+        }
+      ]
+    },
+    {
+      "fold": [
+        "books",
+        "avg",
+        "pages",
+        "newest"
+      ],
+      "as": [
+        "key",
+        "raw"
+      ]
+    },
+    {
+      "calculate": "datum.key === 'books' ? 'books' : datum.key === 'avg' ? 'mean rating' : datum.key === 'pages' ? 'pages' : 'newest'",
+      "as": "label"
+    },
+    {
+      "calculate": "datum.key === 'avg' ? format(datum.raw, '.1f') : datum.key === 'newest' ? '' + datum.raw : format(datum.raw, ',d')",
+      "as": "value"
+    },
+    {
+      "calculate": "indexof(['books', 'avg', 'pages', 'newest'], datum.key)",
+      "as": "i"
+    }
+  ],
+  "encoding": {
+    "x": {
+      "field": "i",
+      "type": "ordinal",
+      "axis": null,
+      "bandPosition": 0,
+      "scale": {
+        "type": "band",
+        "paddingInner": 0,
+        "paddingOuter": 0
+      }
+    }
+  },
+  "layer": [
+    {
+      "mark": {
+        "type": "text",
+        "align": "left",
+        "baseline": "alphabetic",
+        "fontSize": 28,
+        "fontWeight": 700,
+        "y": 30
+      },
+      "encoding": {
+        "text": {
+          "field": "value"
+        }
+      }
+    },
+    {
+      "mark": {
+        "type": "text",
+        "align": "left",
+        "baseline": "alphabetic",
+        "fontSize": 11,
+        "opacity": 0.7,
+        "y": 48
+      },
+      "encoding": {
+        "text": {
+          "field": "label"
+        }
+      }
+    }
+  ],
+  "config": {
+    "view": {
+      "stroke": null
+    }
+  }
+}

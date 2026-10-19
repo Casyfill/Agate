@@ -1,0 +1,235 @@
+{
+  "$schema": "https://vega.github.io/schema/vega-lite/v6.json",
+  "description": "Interview prep headline numbers (experimental stats output): attempts and how many in the last 4 weeks, distinct problems and how many reached 4+, mean cold grade and its change over the last 4 weeks, cold re-tests. Re-tests count from `retestFrom`.",
+  "usermeta": {
+    "agate": {
+      "output": "stats"
+    }
+  },
+  "params": [
+    {
+      "name": "retestFrom",
+      "value": "2026-08-09"
+    }
+  ],
+  "data": {
+    "name": "base"
+  },
+  "width": "container",
+  "height": 52,
+  "transform": [
+    {
+      "filter": "isValid(datum.note.initial) && datum.note.initial !== ''"
+    },
+    {
+      "calculate": "toDate(datum.note.date)",
+      "as": "d"
+    },
+    {
+      "calculate": "toNumber(datum.note.initial)",
+      "as": "ini"
+    },
+    {
+      "calculate": "isValid(datum.note.final) && datum.note.final !== '' && datum.d >= toDate(retestFrom) ? toNumber(datum.note.final) : 0",
+      "as": "fin"
+    },
+    {
+      "calculate": "max(datum.ini, datum.fin)",
+      "as": "best"
+    },
+    {
+      "calculate": "replace(datum.note.question_id, /(R\\d?|-QS)$/, '')",
+      "as": "pid"
+    },
+    {
+      "calculate": "test(/R\\d?$/, datum.note.question_id) ? 1 : 0",
+      "as": "retest"
+    },
+    {
+      "joinaggregate": [
+        {
+          "op": "max",
+          "field": "d",
+          "as": "last"
+        }
+      ]
+    },
+    {
+      "calculate": "time(datum.d) > time(datum.last) - 28 * 864e5",
+      "as": "recent"
+    },
+    {
+      "joinaggregate": [
+        {
+          "op": "max",
+          "field": "best",
+          "as": "pbest"
+        }
+      ],
+      "groupby": [
+        "pid"
+      ]
+    },
+    {
+      "window": [
+        {
+          "op": "row_number",
+          "as": "k"
+        }
+      ],
+      "groupby": [
+        "pid"
+      ],
+      "sort": [
+        {
+          "field": "d"
+        }
+      ]
+    },
+    {
+      "calculate": "datum.k === 1 ? 1 : 0",
+      "as": "first"
+    },
+    {
+      "calculate": "datum.k === 1 && datum.pbest >= 4 ? 1 : 0",
+      "as": "solved"
+    },
+    {
+      "calculate": "datum.recent ? 1 : 0",
+      "as": "rn"
+    },
+    {
+      "calculate": "datum.recent ? datum.ini : null",
+      "as": "iniRecent"
+    },
+    {
+      "calculate": "datum.recent ? null : datum.ini",
+      "as": "iniBefore"
+    },
+    {
+      "aggregate": [
+        {
+          "op": "count",
+          "as": "attempts"
+        },
+        {
+          "op": "sum",
+          "field": "first",
+          "as": "problems"
+        },
+        {
+          "op": "sum",
+          "field": "solved",
+          "as": "solved"
+        },
+        {
+          "op": "mean",
+          "field": "ini",
+          "as": "grade"
+        },
+        {
+          "op": "mean",
+          "field": "iniRecent",
+          "as": "ra"
+        },
+        {
+          "op": "mean",
+          "field": "iniBefore",
+          "as": "rb"
+        },
+        {
+          "op": "sum",
+          "field": "rn",
+          "as": "rn"
+        },
+        {
+          "op": "sum",
+          "field": "retest",
+          "as": "retests"
+        }
+      ]
+    },
+    {
+      "fold": [
+        "attempts",
+        "problems",
+        "grade",
+        "retests"
+      ],
+      "as": [
+        "key",
+        "raw"
+      ]
+    },
+    {
+      "calculate": "datum.key === 'grade' ? format(datum.raw, '.1f') : format(datum.raw, 'd')",
+      "as": "value"
+    },
+    {
+      "calculate": "{attempts: 'attempts', problems: 'problems', grade: 'mean cold grade', retests: 'cold re-tests'}[datum.key]",
+      "as": "label"
+    },
+    {
+      "calculate": "datum.key === 'attempts' ? datum.rn : datum.key === 'grade' ? round((datum.ra - datum.rb) * 10) / 10 : null",
+      "as": "change"
+    },
+    {
+      "calculate": "datum.key === 'attempts' ? 'in the last 4 weeks' : datum.key === 'problems' ? datum.solved + ' reached 4+' : datum.key === 'grade' ? 'last 4 weeks vs before' : 'a problem again, cold'",
+      "as": "note"
+    },
+    {
+      "calculate": "indexof(['attempts', 'problems', 'grade', 'retests'], datum.key)",
+      "as": "i"
+    }
+  ],
+  "encoding": {
+    "x": {
+      "field": "i",
+      "type": "ordinal",
+      "axis": null,
+      "bandPosition": 0,
+      "scale": {
+        "type": "band",
+        "paddingInner": 0,
+        "paddingOuter": 0
+      }
+    }
+  },
+  "layer": [
+    {
+      "mark": {
+        "type": "text",
+        "align": "left",
+        "baseline": "alphabetic",
+        "fontSize": 28,
+        "fontWeight": 700,
+        "y": 30
+      },
+      "encoding": {
+        "text": {
+          "field": "value"
+        }
+      }
+    },
+    {
+      "mark": {
+        "type": "text",
+        "align": "left",
+        "baseline": "alphabetic",
+        "fontSize": 11,
+        "opacity": 0.7,
+        "y": 48
+      },
+      "encoding": {
+        "text": {
+          "field": "label"
+        }
+      }
+    }
+  ],
+  "config": {
+    "view": {
+      "stroke": null
+    }
+  }
+}

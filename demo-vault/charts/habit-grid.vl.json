@@ -1,0 +1,197 @@
+{
+  "$schema": "https://vega.github.io/schema/vega-lite/v6.json",
+  "description": "Habits from daily notes (the habits list): one row per habit in its own colour, one square per week, brighter = more days that week. Below, the weekly mood average.",
+  "data": {
+    "name": "base"
+  },
+  "transform": [
+    {
+      "calculate": "toDate(datum.note.date)",
+      "as": "d"
+    }
+  ],
+  "vconcat": [
+    {
+      "width": 620,
+      "height": {
+        "step": 24
+      },
+      "transform": [
+        {
+          "flatten": [
+            "note.habits"
+          ],
+          "as": [
+            "habit"
+          ]
+        },
+        {
+          "filter": "isValid(datum.habit)"
+        }
+      ],
+      "mark": {
+        "type": "rect",
+        "cornerRadius": 4,
+        "tooltip": true,
+        "width": {
+          "band": 0.86
+        },
+        "height": {
+          "band": 0.8
+        }
+      },
+      "encoding": {
+        "x": {
+          "field": "d",
+          "timeUnit": "yearweek",
+          "type": "ordinal",
+          "title": null,
+          "axis": {
+            "labelExpr": "date(datum.value) <= 7 ? timeFormat(datum.value, '%b') : ''",
+            "ticks": false,
+            "domain": false,
+            "labelAngle": 0
+          }
+        },
+        "y": {
+          "field": "habit",
+          "type": "nominal",
+          "title": null,
+          "sort": [
+            "gym",
+            "walk",
+            "read",
+            "meditate"
+          ],
+          "axis": {
+            "domain": false,
+            "ticks": false,
+            "labelFontSize": 12,
+            "labelPadding": 8
+          }
+        },
+        "color": {
+          "field": "habit",
+          "type": "nominal",
+          "legend": null,
+          "scale": {
+            "domain": [
+              "gym",
+              "walk",
+              "read",
+              "meditate"
+            ],
+            "range": [
+              "#ff7ac6",
+              "#5ce1e6",
+              "#ffb454",
+              "#a78bfa"
+            ]
+          }
+        },
+        "opacity": {
+          "aggregate": "count",
+          "type": "quantitative",
+          "title": "Days a week",
+          "scale": {
+            "domain": [
+              0,
+              7
+            ],
+            "range": [
+              0.12,
+              1
+            ]
+          },
+          "legend": null
+        }
+      }
+    },
+    {
+      "width": 620,
+      "height": 80,
+      "encoding": {
+        "x": {
+          "field": "d",
+          "timeUnit": "yearweek",
+          "type": "ordinal",
+          "title": null,
+          "axis": null
+        },
+        "y": {
+          "aggregate": "mean",
+          "field": "note.mood",
+          "type": "quantitative",
+          "title": "Mood",
+          "scale": {
+            "domain": [
+              1,
+              5
+            ]
+          },
+          "axis": {
+            "domain": false,
+            "ticks": false,
+            "grid": true,
+            "gridOpacity": 0.15,
+            "tickCount": 3
+          }
+        }
+      },
+      "layer": [
+        {
+          "mark": {
+            "type": "area",
+            "interpolate": "monotone",
+            "color": {
+              "x1": 1,
+              "y1": 1,
+              "x2": 1,
+              "y2": 0,
+              "gradient": "linear",
+              "stops": [
+                {
+                  "offset": 0,
+                  "color": "rgba(167,139,250,0)"
+                },
+                {
+                  "offset": 1,
+                  "color": "rgba(167,139,250,0.55)"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "mark": {
+            "type": "line",
+            "interpolate": "monotone",
+            "color": "#a78bfa",
+            "strokeWidth": 2.2
+          }
+        },
+        {
+          "mark": {
+            "type": "point",
+            "filled": true,
+            "color": "#a78bfa",
+            "size": 22,
+            "tooltip": true
+          }
+        }
+      ]
+    }
+  ],
+  "params": [
+    {
+      "name": "agateDark",
+      "value": false
+    }
+  ],
+  "spacing": 10,
+  "config": {
+    "view": {
+      "stroke": null
+    }
+  }
+}

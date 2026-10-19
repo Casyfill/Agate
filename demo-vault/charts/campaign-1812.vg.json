@@ -1,0 +1,1157 @@
+{
+  "$schema": "https://vega.github.io/schema/vega/v6.json",
+  "description": "After Charles Joseph Minard's 1869 map of Napoleon's Russian campaign. The band is the army on a Mercator map, its width the number of men (gold on the way to Moscow, dark on the way back); below, the temperature on the retreat, joined to the army where it was measured. Army, towns and temperatures come from CSV attachments (HistData's Minard tables); the battles are the base's notes, so a new battle note shows up on the map. Click a battle to open its note.",
+  "usermeta": {
+    "agate": {
+      "open": "click"
+    }
+  },
+  "autosize": {
+    "type": "fit-x",
+    "contains": "padding"
+  },
+  "padding": {
+    "top": 4,
+    "left": 4,
+    "right": 4,
+    "bottom": 4
+  },
+  "signals": [
+    {
+      "name": "width",
+      "init": "isFinite(containerSize()[0]) && containerSize()[0] > 0 ? containerSize()[0] : 720",
+      "on": [
+        {
+          "events": "window:resize",
+          "update": "isFinite(containerSize()[0]) && containerSize()[0] > 0 ? containerSize()[0] : 720"
+        }
+      ]
+    },
+    {
+      "name": "agateDark",
+      "value": false,
+      "description": "Set by Agate in dark mode."
+    },
+    {
+      "name": "mapH",
+      "update": "round(width / 2.9)"
+    },
+    {
+      "name": "gapT",
+      "value": 40
+    },
+    {
+      "name": "tempH",
+      "value": 110
+    },
+    {
+      "name": "height",
+      "update": "mapH + gapT + tempH + 44"
+    },
+    {
+      "name": "land",
+      "update": "agateDark ? '#2e2b26' : '#f2ebdc'"
+    },
+    {
+      "name": "border",
+      "update": "agateDark ? '#48423a' : '#dccfb8'"
+    },
+    {
+      "name": "ink",
+      "update": "agateDark ? '#e6e1d8' : '#2b2722'"
+    },
+    {
+      "name": "muted",
+      "update": "agateDark ? '#9a938a' : '#7d756a'"
+    },
+    {
+      "name": "red",
+      "update": "agateDark ? '#ff6b6b' : '#c92a2a'"
+    },
+    {
+      "name": "minBand",
+      "value": 2.5,
+      "description": "Thinnest band in pixels, so the small flank columns stay visible."
+    },
+    {
+      "name": "battlePos",
+      "value": {
+        "Battle of Tarutino": "t",
+        "Second Battle of Polotsk": "l",
+        "Battle of Smolensk": "b",
+        "Battle of Borodino": "t"
+      },
+      "description": "Label placement overrides (t, b, l, r) where the default (advance above, retreat below) collides."
+    }
+  ],
+  "projections": [
+    {
+      "name": "proj",
+      "type": "mercator",
+      "fit": {
+        "signal": "{type: 'MultiPoint', coordinates: [[23.4, 53.45], [38.4, 56.35]]}"
+      },
+      "extent": {
+        "signal": "[[0, 0], [width, mapH]]"
+      },
+      "clipExtent": {
+        "signal": "[[0, 0], [width, mapH]]"
+      }
+    }
+  ],
+  "data": [
+    {
+      "name": "base"
+    },
+    {
+      "name": "countries",
+      "url": "attachments/geo/world-110m.json",
+      "format": {
+        "type": "topojson",
+        "feature": "countries"
+      },
+      "transform": [
+        {
+          "type": "geopath",
+          "projection": "proj"
+        },
+        {
+          "type": "filter",
+          "expr": "isString(datum.path) && length(datum.path) > 0"
+        }
+      ]
+    },
+    {
+      "name": "troops",
+      "url": "attachments/history/minard-troops.csv",
+      "format": {
+        "type": "csv",
+        "parse": "auto"
+      },
+      "transform": [
+        {
+          "type": "geopoint",
+          "projection": "proj",
+          "fields": [
+            "lon",
+            "lat"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "towns",
+      "url": "attachments/history/minard-cities.csv",
+      "format": {
+        "type": "csv",
+        "parse": "auto"
+      },
+      "transform": [
+        {
+          "type": "geopoint",
+          "projection": "proj",
+          "fields": [
+            "lon",
+            "lat"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "temps",
+      "url": "attachments/history/minard-temps.csv",
+      "format": {
+        "type": "csv",
+        "parse": {
+          "lon": "number",
+          "lat": "number",
+          "temp_r": "number",
+          "date": "string"
+        }
+      },
+      "transform": [
+        {
+          "type": "geopoint",
+          "projection": "proj",
+          "fields": [
+            "lon",
+            "lat"
+          ]
+        },
+        {
+          "type": "formula",
+          "as": "c",
+          "expr": "datum.temp_r * 1.25"
+        }
+      ]
+    },
+    {
+      "name": "battles",
+      "source": "base",
+      "transform": [
+        {
+          "type": "filter",
+          "expr": "isValid(datum.note.lat) && isValid(datum.note.lon)"
+        },
+        {
+          "type": "formula",
+          "as": "lon",
+          "expr": "toNumber(datum.note.lon)"
+        },
+        {
+          "type": "formula",
+          "as": "lat",
+          "expr": "toNumber(datum.note.lat)"
+        },
+        {
+          "type": "formula",
+          "as": "short",
+          "expr": "replace(replace(datum.file.name, regexp('^Battle of (the )?'), ''), regexp('^(First|Second) Battle of (.*)$'), '$2 ($1)')"
+        },
+        {
+          "type": "formula",
+          "as": "when",
+          "expr": "toDate(datum.note.date)"
+        },
+        {
+          "type": "geopoint",
+          "projection": "proj",
+          "fields": [
+            "lon",
+            "lat"
+          ]
+        },
+        {
+          "type": "formula",
+          "as": "pos",
+          "expr": "battlePos[datum.file.name] || (datum.note.phase === 'retreat' ? 'b' : 't')"
+        }
+      ]
+    },
+    {
+      "name": "callouts",
+      "values": [
+        {
+          "lon": 23.55,
+          "lat": 56.25,
+          "align": "left",
+          "head": "422,000 men",
+          "sub": "cross the Niemen, June 24"
+        },
+        {
+          "lon": 38.3,
+          "lat": 56.28,
+          "align": "right",
+          "head": "100,000 reach Moscow",
+          "sub": "September 14; they leave on October 19"
+        },
+        {
+          "lon": 23.55,
+          "lat": 53.98,
+          "align": "left",
+          "head": "10,000 come back",
+          "sub": "December"
+        }
+      ],
+      "transform": [
+        {
+          "type": "geopoint",
+          "projection": "proj",
+          "fields": [
+            "lon",
+            "lat"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "tempTicks",
+      "values": [
+        {
+          "c": 0
+        },
+        {
+          "c": -10
+        },
+        {
+          "c": -20
+        },
+        {
+          "c": -30
+        }
+      ]
+    },
+    {
+      "name": "key",
+      "values": [
+        {
+          "d": "A",
+          "label": "Advance"
+        },
+        {
+          "d": "R",
+          "label": "Retreat"
+        }
+      ]
+    }
+  ],
+  "scales": [
+    {
+      "name": "w",
+      "type": "linear",
+      "domain": [
+        0,
+        340000
+      ],
+      "range": [
+        0,
+        {
+          "signal": "width * 0.055"
+        }
+      ]
+    },
+    {
+      "name": "dir",
+      "type": "ordinal",
+      "domain": [
+        "A",
+        "R"
+      ],
+      "range": {
+        "signal": "agateDark ? ['#e2b46c', '#d2d2d2'] : ['#d6a052', '#26221e']"
+      }
+    },
+    {
+      "name": "temp",
+      "type": "linear",
+      "domain": [
+        -40,
+        0
+      ],
+      "range": [
+        {
+          "signal": "mapH + gapT + tempH"
+        },
+        {
+          "signal": "mapH + gapT"
+        }
+      ]
+    }
+  ],
+  "marks": [
+    {
+      "type": "path",
+      "from": {
+        "data": "countries"
+      },
+      "interactive": false,
+      "encode": {
+        "update": {
+          "path": {
+            "field": "path"
+          },
+          "fill": {
+            "signal": "land"
+          },
+          "stroke": {
+            "signal": "border"
+          },
+          "strokeWidth": {
+            "value": 0.8
+          },
+          "strokeDash": {
+            "value": [
+              3,
+              2
+            ]
+          }
+        }
+      }
+    },
+    {
+      "type": "rect",
+      "interactive": false,
+      "encode": {
+        "update": {
+          "x": {
+            "value": 0
+          },
+          "y": {
+            "value": 0
+          },
+          "width": {
+            "signal": "width"
+          },
+          "height": {
+            "signal": "mapH"
+          },
+          "fill": {
+            "value": null
+          },
+          "stroke": {
+            "signal": "border"
+          }
+        }
+      }
+    },
+    {
+      "type": "rule",
+      "from": {
+        "data": "temps"
+      },
+      "interactive": false,
+      "encode": {
+        "update": {
+          "x": {
+            "field": "x"
+          },
+          "y": {
+            "field": "y"
+          },
+          "y2": {
+            "scale": "temp",
+            "field": "c"
+          },
+          "stroke": {
+            "signal": "muted"
+          },
+          "strokeWidth": {
+            "value": 0.7
+          },
+          "strokeOpacity": {
+            "value": 0.7
+          }
+        }
+      }
+    },
+    {
+      "type": "group",
+      "name": "army",
+      "from": {
+        "facet": {
+          "data": "troops",
+          "name": "seg",
+          "groupby": [
+            "group",
+            "direction"
+          ]
+        }
+      },
+      "encode": {
+        "update": {
+          "zindex": {
+            "signal": "datum.direction === 'R' ? 1 : 0"
+          }
+        }
+      },
+      "marks": [
+        {
+          "type": "trail",
+          "name": "armyTrail",
+          "from": {
+            "data": "seg"
+          },
+          "interactive": false,
+          "encode": {
+            "update": {
+              "x": {
+                "field": "x"
+              },
+              "y": {
+                "field": "y"
+              },
+              "size": {
+                "signal": "max(minBand, scale('w', datum.survivors))"
+              },
+              "fill": {
+                "scale": "dir",
+                "field": "direction"
+              },
+              "fillOpacity": {
+                "value": 0.95
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "type": "symbol",
+      "name": "townDot",
+      "from": {
+        "data": "towns"
+      },
+      "interactive": false,
+      "zindex": 3,
+      "encode": {
+        "update": {
+          "x": {
+            "field": "x"
+          },
+          "y": {
+            "field": "y"
+          },
+          "size": {
+            "value": 10
+          },
+          "fill": {
+            "signal": "ink"
+          },
+          "stroke": {
+            "signal": "land"
+          },
+          "strokeWidth": {
+            "value": 0.8
+          }
+        }
+      }
+    },
+    {
+      "type": "symbol",
+      "name": "battleDot",
+      "from": {
+        "data": "battles"
+      },
+      "zindex": 4,
+      "encode": {
+        "enter": {
+          "cursor": {
+            "value": "pointer"
+          },
+          "shape": {
+            "value": "cross"
+          },
+          "angle": {
+            "value": 45
+          }
+        },
+        "update": {
+          "x": {
+            "field": "x"
+          },
+          "y": {
+            "field": "y"
+          },
+          "size": {
+            "value": 120
+          },
+          "fill": {
+            "signal": "red"
+          },
+          "stroke": {
+            "signal": "land"
+          },
+          "strokeWidth": {
+            "value": 1
+          },
+          "tooltip": {
+            "signal": "{title: datum.file.name, 'Date': timeFormat(datum.when, '%B %d, 1812'), 'Outcome': datum.note.outcome, 'Phase': datum.note.phase === 'retreat' ? 'the retreat' : 'the advance'}"
+          }
+        }
+      }
+    },
+    {
+      "type": "text",
+      "name": "battleHalo",
+      "from": {
+        "data": "battles"
+      },
+      "interactive": false,
+      "zindex": 5,
+      "encode": {
+        "update": {
+          "x": {
+            "signal": "datum.x + (datum.pos === 'r' ? 7 : datum.pos === 'l' ? -7 : 0)"
+          },
+          "y": {
+            "signal": "datum.y + (datum.pos === 't' ? -7 : datum.pos === 'b' ? 7 : 0)"
+          },
+          "align": {
+            "signal": "datum.pos === 'r' ? 'left' : datum.pos === 'l' ? 'right' : 'center'"
+          },
+          "baseline": {
+            "signal": "datum.pos === 't' ? 'alphabetic' : datum.pos === 'b' ? 'top' : 'middle'"
+          },
+          "fontSize": {
+            "value": 10.5
+          },
+          "text": {
+            "signal": "datum.short + ', ' + timeFormat(datum.when, '%b %-d')"
+          },
+          "fill": {
+            "signal": "land"
+          },
+          "fontWeight": {
+            "value": "bold"
+          },
+          "stroke": {
+            "signal": "land"
+          },
+          "strokeWidth": {
+            "value": 3
+          },
+          "strokeJoin": {
+            "value": "round"
+          },
+          "strokeOpacity": {
+            "value": 0.9
+          }
+        }
+      }
+    },
+    {
+      "type": "text",
+      "name": "battleLabel",
+      "from": {
+        "data": "battles"
+      },
+      "interactive": false,
+      "zindex": 6,
+      "encode": {
+        "update": {
+          "x": {
+            "signal": "datum.x + (datum.pos === 'r' ? 7 : datum.pos === 'l' ? -7 : 0)"
+          },
+          "y": {
+            "signal": "datum.y + (datum.pos === 't' ? -7 : datum.pos === 'b' ? 7 : 0)"
+          },
+          "align": {
+            "signal": "datum.pos === 'r' ? 'left' : datum.pos === 'l' ? 'right' : 'center'"
+          },
+          "baseline": {
+            "signal": "datum.pos === 't' ? 'alphabetic' : datum.pos === 'b' ? 'top' : 'middle'"
+          },
+          "fontSize": {
+            "value": 10.5
+          },
+          "text": {
+            "signal": "datum.short + ', ' + timeFormat(datum.when, '%b %-d')"
+          },
+          "fill": {
+            "signal": "red"
+          },
+          "fontWeight": {
+            "value": "bold"
+          }
+        }
+      }
+    },
+    {
+      "type": "text",
+      "name": "townHalo",
+      "from": {
+        "data": "towns"
+      },
+      "interactive": false,
+      "zindex": 3,
+      "encode": {
+        "update": {
+          "x": {
+            "signal": "datum.x + (datum.pos === 'r' ? 4 : datum.pos === 'l' ? -4 : 0)"
+          },
+          "y": {
+            "signal": "datum.y + (datum.pos === 't' ? -4 : datum.pos === 'b' ? 4 : 0)"
+          },
+          "align": {
+            "signal": "datum.pos === 'r' ? 'left' : datum.pos === 'l' ? 'right' : 'center'"
+          },
+          "baseline": {
+            "signal": "datum.pos === 't' ? 'alphabetic' : datum.pos === 'b' ? 'top' : 'middle'"
+          },
+          "fontSize": {
+            "value": 9.5
+          },
+          "text": {
+            "signal": "datum.pos === '-' ? '' : datum.city"
+          },
+          "fill": {
+            "signal": "land"
+          },
+          "fontStyle": {
+            "value": "italic"
+          },
+          "stroke": {
+            "signal": "land"
+          },
+          "strokeWidth": {
+            "value": 3
+          },
+          "strokeJoin": {
+            "value": "round"
+          },
+          "strokeOpacity": {
+            "value": 0.9
+          }
+        }
+      }
+    },
+    {
+      "type": "text",
+      "name": "townLabel",
+      "from": {
+        "data": "towns"
+      },
+      "interactive": false,
+      "zindex": 3,
+      "encode": {
+        "update": {
+          "x": {
+            "signal": "datum.x + (datum.pos === 'r' ? 4 : datum.pos === 'l' ? -4 : 0)"
+          },
+          "y": {
+            "signal": "datum.y + (datum.pos === 't' ? -4 : datum.pos === 'b' ? 4 : 0)"
+          },
+          "align": {
+            "signal": "datum.pos === 'r' ? 'left' : datum.pos === 'l' ? 'right' : 'center'"
+          },
+          "baseline": {
+            "signal": "datum.pos === 't' ? 'alphabetic' : datum.pos === 'b' ? 'top' : 'middle'"
+          },
+          "fontSize": {
+            "value": 9.5
+          },
+          "text": {
+            "signal": "datum.pos === '-' ? '' : datum.city"
+          },
+          "fill": {
+            "signal": "ink"
+          },
+          "fontStyle": {
+            "value": "italic"
+          }
+        }
+      }
+    },
+    {
+      "type": "text",
+      "from": {
+        "data": "callouts"
+      },
+      "interactive": false,
+      "zindex": 7,
+      "encode": {
+        "update": {
+          "x": {
+            "field": "x"
+          },
+          "y": {
+            "field": "y"
+          },
+          "align": {
+            "field": "align"
+          },
+          "baseline": {
+            "value": "bottom"
+          },
+          "fontSize": {
+            "value": 13
+          },
+          "fontWeight": {
+            "value": "bold"
+          },
+          "fill": {
+            "signal": "ink"
+          },
+          "text": {
+            "field": "head"
+          }
+        }
+      }
+    },
+    {
+      "type": "text",
+      "from": {
+        "data": "callouts"
+      },
+      "interactive": false,
+      "zindex": 7,
+      "encode": {
+        "update": {
+          "x": {
+            "field": "x"
+          },
+          "y": {
+            "field": "y",
+            "offset": 2
+          },
+          "align": {
+            "field": "align"
+          },
+          "baseline": {
+            "value": "top"
+          },
+          "fontSize": {
+            "value": 10.5
+          },
+          "fill": {
+            "signal": "muted"
+          },
+          "text": {
+            "field": "sub"
+          }
+        }
+      }
+    },
+    {
+      "type": "group",
+      "name": "legend",
+      "zindex": 7,
+      "encode": {
+        "update": {
+          "x": {
+            "signal": "width - 172"
+          },
+          "y": {
+            "signal": "mapH - 58"
+          },
+          "width": {
+            "value": 164
+          },
+          "height": {
+            "value": 50
+          }
+        }
+      },
+      "marks": [
+        {
+          "type": "rect",
+          "from": {
+            "data": "key"
+          },
+          "interactive": false,
+          "encode": {
+            "update": {
+              "x": {
+                "value": 0
+              },
+              "y": {
+                "signal": "datum.d === 'A' ? 4 : 20"
+              },
+              "width": {
+                "value": 26
+              },
+              "height": {
+                "value": 9
+              },
+              "cornerRadius": {
+                "value": 2
+              },
+              "fill": {
+                "scale": "dir",
+                "field": "d"
+              }
+            }
+          }
+        },
+        {
+          "type": "text",
+          "from": {
+            "data": "key"
+          },
+          "interactive": false,
+          "encode": {
+            "update": {
+              "x": {
+                "value": 32
+              },
+              "y": {
+                "signal": "datum.d === 'A' ? 9 : 25"
+              },
+              "baseline": {
+                "value": "middle"
+              },
+              "fontSize": {
+                "value": 10.5
+              },
+              "fill": {
+                "signal": "ink"
+              },
+              "text": {
+                "field": "label"
+              }
+            }
+          }
+        },
+        {
+          "type": "rect",
+          "interactive": false,
+          "encode": {
+            "update": {
+              "x": {
+                "value": 0
+              },
+              "y": {
+                "signal": "44 - scale('w', 100000)"
+              },
+              "width": {
+                "value": 26
+              },
+              "height": {
+                "signal": "scale('w', 100000)"
+              },
+              "fill": {
+                "value": null
+              },
+              "stroke": {
+                "signal": "muted"
+              }
+            }
+          }
+        },
+        {
+          "type": "text",
+          "interactive": false,
+          "encode": {
+            "update": {
+              "x": {
+                "value": 32
+              },
+              "y": {
+                "signal": "44 - scale('w', 100000) / 2"
+              },
+              "baseline": {
+                "value": "middle"
+              },
+              "fontSize": {
+                "value": 10.5
+              },
+              "fill": {
+                "signal": "muted"
+              },
+              "text": {
+                "value": "band width: 100,000 men"
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "type": "text",
+      "interactive": false,
+      "encode": {
+        "update": {
+          "x": {
+            "value": 0
+          },
+          "y": {
+            "signal": "mapH + gapT - 16"
+          },
+          "fontSize": {
+            "value": 10
+          },
+          "fontWeight": {
+            "value": "bold"
+          },
+          "fill": {
+            "signal": "muted"
+          },
+          "text": {
+            "value": "TEMPERATURE ON THE RETREAT, °C"
+          }
+        }
+      }
+    },
+    {
+      "type": "rule",
+      "from": {
+        "data": "tempTicks"
+      },
+      "interactive": false,
+      "encode": {
+        "update": {
+          "x": {
+            "value": 0
+          },
+          "x2": {
+            "signal": "width"
+          },
+          "y": {
+            "scale": "temp",
+            "field": "c"
+          },
+          "stroke": {
+            "signal": "border"
+          },
+          "strokeWidth": {
+            "value": 0.8
+          }
+        }
+      }
+    },
+    {
+      "type": "text",
+      "from": {
+        "data": "tempTicks"
+      },
+      "interactive": false,
+      "encode": {
+        "update": {
+          "x": {
+            "value": 0
+          },
+          "y": {
+            "scale": "temp",
+            "field": "c",
+            "offset": -3
+          },
+          "align": {
+            "value": "left"
+          },
+          "fontSize": {
+            "value": 9.5
+          },
+          "fill": {
+            "signal": "muted"
+          },
+          "text": {
+            "signal": "(datum.c < 0 ? '−' + abs(datum.c) : datum.c) + '°'"
+          }
+        }
+      }
+    },
+    {
+      "type": "line",
+      "from": {
+        "data": "temps"
+      },
+      "interactive": false,
+      "encode": {
+        "update": {
+          "x": {
+            "field": "x"
+          },
+          "y": {
+            "scale": "temp",
+            "field": "c"
+          },
+          "stroke": {
+            "signal": "ink"
+          },
+          "strokeWidth": {
+            "value": 1.6
+          },
+          "interpolate": {
+            "value": "linear"
+          }
+        }
+      }
+    },
+    {
+      "type": "symbol",
+      "from": {
+        "data": "temps"
+      },
+      "encode": {
+        "update": {
+          "x": {
+            "field": "x"
+          },
+          "y": {
+            "scale": "temp",
+            "field": "c"
+          },
+          "size": {
+            "value": 26
+          },
+          "fill": {
+            "signal": "ink"
+          },
+          "tooltip": {
+            "signal": "{title: datum.date + ', 1812', '°C': format(datum.c, '.1f'), '°Réaumur (Minard)': datum.temp_r}"
+          }
+        }
+      }
+    },
+    {
+      "type": "text",
+      "from": {
+        "data": "temps"
+      },
+      "interactive": false,
+      "encode": {
+        "update": {
+          "x": {
+            "field": "x"
+          },
+          "y": {
+            "scale": "temp",
+            "field": "c",
+            "offset": 6
+          },
+          "align": {
+            "value": "center"
+          },
+          "baseline": {
+            "value": "top"
+          },
+          "fontSize": {
+            "value": 9.5
+          },
+          "fill": {
+            "signal": "ink"
+          },
+          "text": {
+            "signal": "[(datum.c < 0 ? '−' + format(abs(datum.c), '.0f') : '0') + '°', datum.date]"
+          }
+        }
+      }
+    },
+    {
+      "type": "text",
+      "interactive": false,
+      "encode": {
+        "update": {
+          "x": {
+            "value": 0
+          },
+          "y": {
+            "signal": "height - 14"
+          },
+          "fontSize": {
+            "value": 9
+          },
+          "fill": {
+            "signal": "muted"
+          },
+          "text": {
+            "value": [
+              "After C. J. Minard, 1869. Data: HistData's Minard tables; °C = Minard's °Réaumur × 1.25.",
+              "Battles are the vault's notes. Modern borders for orientation."
+            ]
+          },
+          "limit": {
+            "signal": "width"
+          }
+        }
+      }
+    }
+  ],
+  "config": {
+    "text": {
+      "font": "'Iowan Old Style', Charter, 'Source Serif 4', 'Source Serif Pro', Georgia, serif"
+    },
+    "title": {
+      "font": "'Iowan Old Style', Charter, 'Source Serif 4', 'Source Serif Pro', Georgia, serif"
+    },
+    "axis": {
+      "labelFont": "'Iowan Old Style', Charter, 'Source Serif 4', 'Source Serif Pro', Georgia, serif",
+      "titleFont": "'Iowan Old Style', Charter, 'Source Serif 4', 'Source Serif Pro', Georgia, serif"
+    },
+    "legend": {
+      "labelFont": "'Iowan Old Style', Charter, 'Source Serif 4', 'Source Serif Pro', Georgia, serif",
+      "titleFont": "'Iowan Old Style', Charter, 'Source Serif 4', 'Source Serif Pro', Georgia, serif"
+    },
+    "style": {
+      "guide-label": {
+        "font": "'Iowan Old Style', Charter, 'Source Serif 4', 'Source Serif Pro', Georgia, serif"
+      },
+      "guide-title": {
+        "font": "'Iowan Old Style', Charter, 'Source Serif 4', 'Source Serif Pro', Georgia, serif"
+      },
+      "text": {
+        "font": "'Iowan Old Style', Charter, 'Source Serif 4', 'Source Serif Pro', Georgia, serif"
+      }
+    }
+  }
+}

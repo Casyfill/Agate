@@ -1,0 +1,45 @@
+{
+  "$schema": "https://vega.github.io/schema/vega-lite/v6.json",
+  "usermeta": {
+    "agate": {
+      "open": "click",
+      "fromRecipe": {
+        "id": "bars",
+        "roles": {
+          "category": "note.genre",
+          "colour": "note.status"
+        }
+      }
+    }
+  },
+  "data": {
+    "name": "base"
+  },
+  "mark": {
+    "type": "bar",
+    "tooltip": true,
+    "cornerRadiusEnd": 3
+  },
+  "encoding": {
+    "y": {
+      "field": "note.genre",
+      "type": "nominal",
+      "sort": "-x",
+      "title": "genre"
+    },
+    "x": {
+      "aggregate": "count",
+      "title": "Notes"
+    },
+    "color": {
+      "field": "note.status",
+      "type": "nominal",
+      "title": "status"
+    }
+  },
+  "transform": [
+    {
+      "filter": "isValid(datum[\"note\"][\"genre\"]) && datum[\"note\"][\"genre\"] !== ''"
+    }
+  ]
+}

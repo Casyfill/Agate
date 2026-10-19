@@ -1,0 +1,2655 @@
+{
+  "$schema": "https://vega.github.io/schema/vega-lite/v6.json",
+  "description": "Multi-day hike dashboard, drawn like an instrument readout: every logged point is a dot. Each day note links its GPS track (CSV: time, lat, lon, ele_m, hr, temp_c, cloud_pct, precip_mm; the watch keeps logging overnight at camp) in `track`; Agate loads them all (rowData). Distance, speed and climb are computed here from the raw points, the sun's altitude from each point's position and time. All panels share local time (`utcOffset`, hours from UTC); camps are the dotted blocks on the speed panel. Hover the route or any panel for a reading; drag across the elevation panel to zoom the others. Click the route to open that day's note. Colours come from the Obsidian theme (`agateColors`: text for data, accent for hover and selection). The chart is as wide as the note. Route and heights: OpenStreetMap, Copernicus DEM. Basemap: USGS 3DEP multidirectional hillshade by default (keyless, US only; one image for the map frame, multiplied into the background in light mode and drawn faintly in dark mode), or static keyless tiles; needs Load remote data.",
+  "usermeta": {
+    "agate": {
+      "rowData": {
+        "name": "track",
+        "from": "note.track"
+      },
+      "open": "click"
+    }
+  },
+  "data": {
+    "name": "track"
+  },
+  "transform": [
+    {
+      "calculate": "toDate(datum.time)",
+      "as": "t"
+    },
+    {
+      "calculate": "datum.note.day",
+      "as": "day"
+    },
+    {
+      "calculate": "'Day ' + datum.note.day + ': ' + datum.note.from + ' → ' + datum.note.to",
+      "as": "stage"
+    },
+    {
+      "window": [
+        {
+          "op": "lag",
+          "field": "lat",
+          "as": "lat0"
+        },
+        {
+          "op": "lag",
+          "field": "lon",
+          "as": "lon0"
+        },
+        {
+          "op": "lag",
+          "field": "t",
+          "as": "t0"
+        },
+        {
+          "op": "lag",
+          "field": "ele_m",
+          "as": "ele0"
+        }
+      ],
+      "groupby": [
+        "day"
+      ],
+      "sort": [
+        {
+          "field": "t"
+        }
+      ]
+    },
+    {
+      "calculate": "isValid(datum.lat0) ? 2 * 6371000 * asin(sqrt(pow(sin((datum.lat - datum.lat0) * PI / 360), 2) + cos(datum.lat0 * PI / 180) * cos(datum.lat * PI / 180) * pow(sin((datum.lon - datum.lon0) * PI / 360), 2))) : 0",
+      "as": "seg_m"
+    },
+    {
+      "calculate": "isValid(datum.t0) ? (datum.t - datum.t0) / 3600000 : 0",
+      "as": "dt_h"
+    },
+    {
+      "calculate": "isValid(datum.ele0) ? max(0, datum.ele_m - datum.ele0) * 3.28084 : 0",
+      "as": "climb_ft"
+    },
+    {
+      "calculate": "datum.dt_h > 0 ? datum.seg_m / 1609.34 / datum.dt_h : 0",
+      "as": "mph_raw"
+    },
+    {
+      "window": [
+        {
+          "op": "sum",
+          "field": "seg_m",
+          "as": "cum_m"
+        }
+      ],
+      "sort": [
+        {
+          "field": "t"
+        }
+      ],
+      "frame": [
+        null,
+        0
+      ]
+    },
+    {
+      "calculate": "datum.cum_m / 1609.34",
+      "as": "mi"
+    },
+    {
+      "calculate": "datum.ele_m * 3.28084",
+      "as": "ele_ft"
+    },
+    {
+      "calculate": "time(datum.t) + utcOffset * 3600000",
+      "as": "tl"
+    },
+    {
+      "calculate": "datum.mph_raw > 0.3",
+      "as": "moving"
+    },
+    {
+      "window": [
+        {
+          "op": "mean",
+          "field": "mph_raw",
+          "as": "mph"
+        }
+      ],
+      "groupby": [
+        "day"
+      ],
+      "sort": [
+        {
+          "field": "t"
+        }
+      ],
+      "frame": [
+        -6,
+        6
+      ]
+    },
+    {
+      "calculate": "datum.moving ? datum.mph : 0",
+      "as": "mph"
+    },
+    {
+      "calculate": "datum.mph > 0.4 ? datum.dt_h : 0",
+      "as": "moving_h"
+    }
+  ],
+  "config": {
+    "font": "ui-monospace, SFMono-Regular, Menlo, Consolas, monospace",
+    "view": {
+      "stroke": null
+    },
+    "axis": {
+      "gridColor": {
+        "expr": "agateColors.border"
+      },
+      "gridOpacity": 0.7
+    }
+  },
+  "spacing": 10,
+  "vconcat": [
+    {
+      "width": "container",
+      "height": 18,
+      "transform": [
+        {
+          "aggregate": [
+            {
+              "op": "max",
+              "field": "mi",
+              "as": "mi"
+            },
+            {
+              "op": "sum",
+              "field": "climb_ft",
+              "as": "climb"
+            },
+            {
+              "op": "max",
+              "field": "ele_ft",
+              "as": "top"
+            },
+            {
+              "op": "sum",
+              "field": "moving_h",
+              "as": "moving"
+            },
+            {
+              "op": "distinct",
+              "field": "day",
+              "as": "days"
+            }
+          ]
+        },
+        {
+          "calculate": "upper(format(datum.mi, '.1f') + ' mi · ' + format(datum.climb, ',.0f') + ' ft climbed · high ' + format(datum.top, ',.0f') + ' ft · ' + format(datum.moving, '.1f') + ' h moving · ' + datum.days + ' days')",
+          "as": "label"
+        }
+      ],
+      "mark": {
+        "type": "text",
+        "align": "left",
+        "baseline": "middle",
+        "font": "ui-monospace, SFMono-Regular, Menlo, Consolas, monospace",
+        "fontSize": 11,
+        "fontWeight": 600,
+        "color": {
+          "expr": "agateColors.text"
+        },
+        "limit": {
+          "expr": "width"
+        }
+      },
+      "encoding": {
+        "x": {
+          "value": 0
+        },
+        "y": {
+          "value": 9
+        },
+        "text": {
+          "field": "label"
+        }
+      }
+    },
+    {
+      "width": "container",
+      "height": 340,
+      "projection": {
+        "type": "mercator",
+        "scale": {
+          "expr": "mapScale"
+        },
+        "center": {
+          "expr": "mapCenter"
+        },
+        "translate": {
+          "expr": "[width / 2, 340 / 2]"
+        }
+      },
+      "layer": [
+        {
+          "transform": [
+            {
+              "filter": "bm !== '3dep'"
+            },
+            {
+              "calculate": "mapCenter[0] - width / 2 / mapScale * 180 / PI",
+              "as": "vlon0"
+            },
+            {
+              "calculate": "mapCenter[0] + width / 2 / mapScale * 180 / PI",
+              "as": "vlon1"
+            },
+            {
+              "calculate": "(mercY[0] + mercY[1]) / 2 + 340 / 2 / mapScale",
+              "as": "vy1"
+            },
+            {
+              "calculate": "(mercY[0] + mercY[1]) / 2 - 340 / 2 / mapScale",
+              "as": "vy0"
+            },
+            {
+              "calculate": "floor((datum.vlon0 + 180) / 360 * pow(2, tz))",
+              "as": "x0"
+            },
+            {
+              "calculate": "floor((datum.vlon1 + 180) / 360 * pow(2, tz))",
+              "as": "x1"
+            },
+            {
+              "calculate": "floor((1 - datum.vy1 / PI) / 2 * pow(2, tz))",
+              "as": "y0"
+            },
+            {
+              "calculate": "floor((1 - datum.vy0 / PI) / 2 * pow(2, tz))",
+              "as": "y1"
+            },
+            {
+              "calculate": "sequence(datum.x0, datum.x1 + 1)",
+              "as": "x"
+            },
+            {
+              "flatten": [
+                "x"
+              ]
+            },
+            {
+              "calculate": "sequence(datum.y0, datum.y1 + 1)",
+              "as": "y"
+            },
+            {
+              "flatten": [
+                "y"
+              ]
+            },
+            {
+              "calculate": "datum.x / pow(2, tz) * 360 - 180",
+              "as": "lon0"
+            },
+            {
+              "calculate": "(datum.x + 1) / pow(2, tz) * 360 - 180",
+              "as": "lon1"
+            },
+            {
+              "calculate": "atan((exp(PI * (1 - 2 * (datum.y) / pow(2, tz))) - exp(-PI * (1 - 2 * (datum.y) / pow(2, tz)))) / 2) * 180 / PI",
+              "as": "lat0"
+            },
+            {
+              "calculate": "atan((exp(PI * (1 - 2 * (datum.y + 1) / pow(2, tz))) - exp(-PI * (1 - 2 * (datum.y + 1) / pow(2, tz)))) / 2) * 180 / PI",
+              "as": "lat1"
+            },
+            {
+              "calculate": "bm === 'satellite' ? 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/' + tz + '/' + datum.y + '/' + datum.x : bm === 'usgs' ? 'https://basemap.nationalmap.gov/arcgis/rest/services/USGSTopo/MapServer/tile/' + tz + '/' + datum.y + '/' + datum.x : bm === 'hillshade' ? 'https://server.arcgisonline.com/ArcGIS/rest/services/Elevation/World_Hillshade' + (agateDark ? '_Dark' : '') + '/MapServer/tile/' + tz + '/' + datum.y + '/' + datum.x : 'https://tile.opentopomap.org/' + tz + '/' + datum.x + '/' + datum.y + '.png'",
+              "as": "url"
+            }
+          ],
+          "mark": {
+            "type": "image",
+            "aspect": false,
+            "opacity": 0.9,
+            "clip": true
+          },
+          "encoding": {
+            "longitude": {
+              "field": "lon0",
+              "type": "quantitative"
+            },
+            "latitude": {
+              "field": "lat0",
+              "type": "quantitative"
+            },
+            "longitude2": {
+              "field": "lon1"
+            },
+            "latitude2": {
+              "field": "lat1"
+            },
+            "url": {
+              "field": "url",
+              "type": "nominal"
+            }
+          },
+          "data": {
+            "values": [
+              {}
+            ]
+          }
+        },
+        {
+          "data": {
+            "values": [
+              {}
+            ]
+          },
+          "transform": [
+            {
+              "filter": "bm === '3dep'"
+            },
+            {
+              "calculate": "mapCenter[0] - width / 2 / mapScale * 180 / PI",
+              "as": "lon0"
+            },
+            {
+              "calculate": "mapCenter[0] + width / 2 / mapScale * 180 / PI",
+              "as": "lon1"
+            },
+            {
+              "calculate": "(mercY[0] + mercY[1]) / 2 + 340 / 2 / mapScale",
+              "as": "y1"
+            },
+            {
+              "calculate": "(mercY[0] + mercY[1]) / 2 - 340 / 2 / mapScale",
+              "as": "y0"
+            },
+            {
+              "calculate": "(2 * atan(exp(datum.y1)) - PI / 2) * 180 / PI",
+              "as": "lat1"
+            },
+            {
+              "calculate": "(2 * atan(exp(datum.y0)) - PI / 2) * 180 / PI",
+              "as": "lat0"
+            },
+            {
+              "calculate": "'https://elevation.nationalmap.gov/arcgis/rest/services/3DEPElevation/ImageServer/exportImage?bboxSR=3857&imageSR=3857&format=png&f=image&bbox=' + round(datum.lon0 * 20037508.34 / 180) + ',' + round(datum.y0 * 6378137) + ',' + round(datum.lon1 * 20037508.34 / 180) + ',' + round(datum.y1 * 6378137) + '&size=' + round(width * 2) + ',' + 680 + '&renderingRule=%7B%22rasterFunction%22%3A%22Hillshade%20Multidirectional%22%7D'",
+              "as": "url"
+            }
+          ],
+          "mark": {
+            "type": "image",
+            "aspect": false,
+            "clip": true,
+            "blend": {
+              "expr": "agateDark ? 'normal' : 'multiply'"
+            },
+            "opacity": {
+              "expr": "agateDark ? 0.22 : 1"
+            }
+          },
+          "encoding": {
+            "longitude": {
+              "field": "lon0",
+              "type": "quantitative"
+            },
+            "latitude": {
+              "field": "lat1",
+              "type": "quantitative"
+            },
+            "longitude2": {
+              "field": "lon1"
+            },
+            "latitude2": {
+              "field": "lat0"
+            },
+            "url": {
+              "field": "url",
+              "type": "nominal"
+            }
+          }
+        },
+        {
+          "mark": {
+            "type": "line",
+            "strokeWidth": 0.8,
+            "color": {
+              "expr": "agateColors.text"
+            },
+            "opacity": 0.25
+          },
+          "encoding": {
+            "longitude": {
+              "field": "lon",
+              "type": "quantitative"
+            },
+            "latitude": {
+              "field": "lat",
+              "type": "quantitative"
+            },
+            "order": {
+              "field": "t",
+              "type": "temporal"
+            },
+            "detail": {
+              "field": "day"
+            }
+          }
+        },
+        {
+          "mark": {
+            "type": "point",
+            "filled": true,
+            "size": 3,
+            "color": {
+              "expr": "agateColors.text"
+            },
+            "opacity": 0.95,
+            "strokeWidth": 0,
+            "cursor": "pointer"
+          },
+          "encoding": {
+            "longitude": {
+              "field": "lon",
+              "type": "quantitative"
+            },
+            "latitude": {
+              "field": "lat",
+              "type": "quantitative"
+            }
+          }
+        },
+        {
+          "transform": [
+            {
+              "filter": {
+                "param": "span",
+                "empty": false
+              }
+            }
+          ],
+          "mark": {
+            "type": "point",
+            "filled": true,
+            "size": 10,
+            "color": {
+              "expr": "agateColors.accent"
+            },
+            "strokeWidth": 0
+          },
+          "encoding": {
+            "longitude": {
+              "field": "lon",
+              "type": "quantitative"
+            },
+            "latitude": {
+              "field": "lat",
+              "type": "quantitative"
+            }
+          }
+        },
+        {
+          "transform": [
+            {
+              "window": [
+                {
+                  "op": "row_number",
+                  "as": "k"
+                }
+              ],
+              "groupby": [
+                "day"
+              ],
+              "sort": [
+                {
+                  "field": "t"
+                }
+              ]
+            },
+            {
+              "joinaggregate": [
+                {
+                  "op": "max",
+                  "field": "k",
+                  "as": "n"
+                }
+              ],
+              "groupby": [
+                "day"
+              ]
+            },
+            {
+              "filter": "(datum.day === 1 && datum.k === 1) || datum.k === datum.n"
+            },
+            {
+              "calculate": "datum.k === 1 ? upper(datum.note.from) : upper(datum.note.to)",
+              "as": "place"
+            }
+          ],
+          "mark": {
+            "type": "point",
+            "shape": "circle",
+            "filled": false,
+            "size": 90,
+            "strokeWidth": 1.5,
+            "color": {
+              "expr": "agateColors.text"
+            }
+          },
+          "encoding": {
+            "longitude": {
+              "field": "lon",
+              "type": "quantitative"
+            },
+            "latitude": {
+              "field": "lat",
+              "type": "quantitative"
+            },
+            "tooltip": [
+              {
+                "field": "place",
+                "title": "title"
+              },
+              {
+                "field": "stage",
+                "title": "Stage"
+              }
+            ]
+          }
+        },
+        {
+          "transform": [
+            {
+              "window": [
+                {
+                  "op": "row_number",
+                  "as": "k"
+                }
+              ],
+              "groupby": [
+                "day"
+              ],
+              "sort": [
+                {
+                  "field": "t"
+                }
+              ]
+            },
+            {
+              "joinaggregate": [
+                {
+                  "op": "max",
+                  "field": "k",
+                  "as": "n"
+                }
+              ],
+              "groupby": [
+                "day"
+              ]
+            },
+            {
+              "filter": "(datum.day === 1 && datum.k === 1) || datum.k === datum.n"
+            },
+            {
+              "calculate": "datum.k === 1 ? upper(datum.note.from) : upper(datum.note.to)",
+              "as": "place"
+            },
+            {
+              "filter": "(datum.lon > lonX[1] - 0.3 * (lonX[1] - lonX[0]))"
+            }
+          ],
+          "mark": {
+            "type": "text",
+            "align": "right",
+            "dx": -9,
+            "dy": -7,
+            "font": "ui-monospace, SFMono-Regular, Menlo, Consolas, monospace",
+            "fontSize": 9,
+            "fontWeight": 600,
+            "stroke": {
+              "expr": "agateColors.background"
+            },
+            "strokeWidth": 3,
+            "strokeOpacity": 0.8,
+            "strokeJoin": "round",
+            "fill": "transparent"
+          },
+          "encoding": {
+            "longitude": {
+              "field": "lon",
+              "type": "quantitative"
+            },
+            "latitude": {
+              "field": "lat",
+              "type": "quantitative"
+            },
+            "text": {
+              "field": "place"
+            }
+          }
+        },
+        {
+          "transform": [
+            {
+              "window": [
+                {
+                  "op": "row_number",
+                  "as": "k"
+                }
+              ],
+              "groupby": [
+                "day"
+              ],
+              "sort": [
+                {
+                  "field": "t"
+                }
+              ]
+            },
+            {
+              "joinaggregate": [
+                {
+                  "op": "max",
+                  "field": "k",
+                  "as": "n"
+                }
+              ],
+              "groupby": [
+                "day"
+              ]
+            },
+            {
+              "filter": "(datum.day === 1 && datum.k === 1) || datum.k === datum.n"
+            },
+            {
+              "calculate": "datum.k === 1 ? upper(datum.note.from) : upper(datum.note.to)",
+              "as": "place"
+            },
+            {
+              "filter": "(datum.lon > lonX[1] - 0.3 * (lonX[1] - lonX[0]))"
+            }
+          ],
+          "mark": {
+            "type": "text",
+            "align": "right",
+            "dx": -9,
+            "dy": -7,
+            "font": "ui-monospace, SFMono-Regular, Menlo, Consolas, monospace",
+            "fontSize": 9,
+            "fontWeight": 600,
+            "fill": {
+              "expr": "agateColors.text"
+            }
+          },
+          "encoding": {
+            "longitude": {
+              "field": "lon",
+              "type": "quantitative"
+            },
+            "latitude": {
+              "field": "lat",
+              "type": "quantitative"
+            },
+            "text": {
+              "field": "place"
+            }
+          }
+        },
+        {
+          "transform": [
+            {
+              "window": [
+                {
+                  "op": "row_number",
+                  "as": "k"
+                }
+              ],
+              "groupby": [
+                "day"
+              ],
+              "sort": [
+                {
+                  "field": "t"
+                }
+              ]
+            },
+            {
+              "joinaggregate": [
+                {
+                  "op": "max",
+                  "field": "k",
+                  "as": "n"
+                }
+              ],
+              "groupby": [
+                "day"
+              ]
+            },
+            {
+              "filter": "(datum.day === 1 && datum.k === 1) || datum.k === datum.n"
+            },
+            {
+              "calculate": "datum.k === 1 ? upper(datum.note.from) : upper(datum.note.to)",
+              "as": "place"
+            },
+            {
+              "filter": "!(datum.lon > lonX[1] - 0.3 * (lonX[1] - lonX[0]))"
+            }
+          ],
+          "mark": {
+            "type": "text",
+            "align": "left",
+            "dx": 9,
+            "dy": -7,
+            "font": "ui-monospace, SFMono-Regular, Menlo, Consolas, monospace",
+            "fontSize": 9,
+            "fontWeight": 600,
+            "stroke": {
+              "expr": "agateColors.background"
+            },
+            "strokeWidth": 3,
+            "strokeOpacity": 0.8,
+            "strokeJoin": "round",
+            "fill": "transparent"
+          },
+          "encoding": {
+            "longitude": {
+              "field": "lon",
+              "type": "quantitative"
+            },
+            "latitude": {
+              "field": "lat",
+              "type": "quantitative"
+            },
+            "text": {
+              "field": "place"
+            }
+          }
+        },
+        {
+          "transform": [
+            {
+              "window": [
+                {
+                  "op": "row_number",
+                  "as": "k"
+                }
+              ],
+              "groupby": [
+                "day"
+              ],
+              "sort": [
+                {
+                  "field": "t"
+                }
+              ]
+            },
+            {
+              "joinaggregate": [
+                {
+                  "op": "max",
+                  "field": "k",
+                  "as": "n"
+                }
+              ],
+              "groupby": [
+                "day"
+              ]
+            },
+            {
+              "filter": "(datum.day === 1 && datum.k === 1) || datum.k === datum.n"
+            },
+            {
+              "calculate": "datum.k === 1 ? upper(datum.note.from) : upper(datum.note.to)",
+              "as": "place"
+            },
+            {
+              "filter": "!(datum.lon > lonX[1] - 0.3 * (lonX[1] - lonX[0]))"
+            }
+          ],
+          "mark": {
+            "type": "text",
+            "align": "left",
+            "dx": 9,
+            "dy": -7,
+            "font": "ui-monospace, SFMono-Regular, Menlo, Consolas, monospace",
+            "fontSize": 9,
+            "fontWeight": 600,
+            "fill": {
+              "expr": "agateColors.text"
+            }
+          },
+          "encoding": {
+            "longitude": {
+              "field": "lon",
+              "type": "quantitative"
+            },
+            "latitude": {
+              "field": "lat",
+              "type": "quantitative"
+            },
+            "text": {
+              "field": "place"
+            }
+          }
+        },
+        {
+          "params": [
+            {
+              "name": "hoverMap",
+              "select": {
+                "type": "point",
+                "on": "pointermove",
+                "nearest": true,
+                "fields": [
+                  "tl"
+                ],
+                "clear": "pointerout"
+              }
+            }
+          ],
+          "mark": {
+            "type": "point",
+            "opacity": 0,
+            "size": 40
+          },
+          "encoding": {
+            "longitude": {
+              "field": "lon",
+              "type": "quantitative"
+            },
+            "latitude": {
+              "field": "lat",
+              "type": "quantitative"
+            }
+          }
+        },
+        {
+          "mark": {
+            "type": "point",
+            "filled": true,
+            "size": 70,
+            "color": {
+              "expr": "agateColors.accent"
+            },
+            "stroke": {
+              "expr": "agateColors.background"
+            },
+            "strokeWidth": 1
+          },
+          "encoding": {
+            "longitude": {
+              "field": "lon",
+              "type": "quantitative"
+            },
+            "latitude": {
+              "field": "lat",
+              "type": "quantitative"
+            },
+            "opacity": {
+              "condition": {
+                "test": {
+                  "or": [
+                    {
+                      "param": "hoverMap",
+                      "empty": false
+                    },
+                    {
+                      "param": "hoverProfile",
+                      "empty": false
+                    }
+                  ]
+                },
+                "value": 1
+              },
+              "value": 0
+            }
+          }
+        }
+      ]
+    },
+    {
+      "spacing": 8,
+      "vconcat": [
+        {
+          "width": "container",
+          "height": 110,
+          "layer": [
+            {
+              "mark": {
+                "type": "area",
+                "color": {
+                  "expr": "agateColors.text"
+                },
+                "opacity": 0.08
+              },
+              "encoding": {
+                "x": {
+                  "field": "tl",
+                  "type": "temporal",
+                  "title": null,
+                  "scale": {
+                    "type": "utc",
+                    "nice": false
+                  },
+                  "axis": {
+                    "labels": false,
+                    "ticks": false,
+                    "domain": false,
+                    "grid": true,
+                    "gridDash": [
+                      1,
+                      3
+                    ],
+                    "tickCount": {
+                      "interval": "hours",
+                      "step": 6
+                    }
+                  }
+                },
+                "y": {
+                  "field": "ele_ft",
+                  "type": "quantitative",
+                  "title": null,
+                  "scale": {
+                    "zero": false,
+                    "nice": false,
+                    "padding": 12
+                  },
+                  "axis": {
+                    "orient": "left",
+                    "labelAlign": "left",
+                    "labelBaseline": "bottom",
+                    "labelPadding": -2,
+                    "labelOffset": 0,
+                    "ticks": false,
+                    "domain": false,
+                    "gridDash": [
+                      1,
+                      3
+                    ],
+                    "labelFont": "ui-monospace, SFMono-Regular, Menlo, Consolas, monospace",
+                    "labelFontSize": 9,
+                    "labelColor": {
+                      "expr": "agateColors.muted"
+                    },
+                    "tickCount": 3
+                  },
+                  "stack": null
+                },
+                "detail": {
+                  "field": "day"
+                }
+              }
+            },
+            {
+              "mark": {
+                "type": "point",
+                "filled": true,
+                "size": 3,
+                "opacity": 0.85,
+                "color": {
+                  "expr": "agateColors.text"
+                },
+                "strokeWidth": 0
+              },
+              "encoding": {
+                "x": {
+                  "field": "tl",
+                  "type": "temporal"
+                },
+                "y": {
+                  "field": "ele_ft",
+                  "type": "quantitative"
+                }
+              },
+              "params": [
+                {
+                  "name": "span",
+                  "select": {
+                    "type": "interval",
+                    "encodings": [
+                      "x"
+                    ],
+                    "mark": {
+                      "fill": {
+                        "expr": "agateColors.accent"
+                      },
+                      "fillOpacity": 0.12,
+                      "stroke": {
+                        "expr": "agateColors.accent"
+                      },
+                      "strokeOpacity": 0.6
+                    }
+                  }
+                },
+                {
+                  "name": "hoverProfile",
+                  "select": {
+                    "type": "point",
+                    "on": "pointermove",
+                    "nearest": true,
+                    "fields": [
+                      "tl"
+                    ],
+                    "clear": "pointerout"
+                  }
+                }
+              ]
+            },
+            {
+              "data": {
+                "values": [
+                  {}
+                ]
+              },
+              "mark": {
+                "type": "text",
+                "align": "right",
+                "baseline": "top",
+                "font": "ui-monospace, SFMono-Regular, Menlo, Consolas, monospace",
+                "fontSize": 9,
+                "fontWeight": 600,
+                "color": {
+                  "expr": "agateColors.text"
+                },
+                "dy": 2
+              },
+              "encoding": {
+                "x": {
+                  "value": {
+                    "expr": "width - 2"
+                  }
+                },
+                "y": {
+                  "value": 0
+                },
+                "text": {
+                  "value": "ELEVATION ft · drag to zoom"
+                }
+              }
+            },
+            {
+              "mark": {
+                "type": "rule",
+                "strokeWidth": 1,
+                "color": {
+                  "expr": "agateColors.accent"
+                }
+              },
+              "encoding": {
+                "x": {
+                  "field": "tl",
+                  "type": "temporal"
+                },
+                "opacity": {
+                  "condition": {
+                    "test": {
+                      "or": [
+                        {
+                          "param": "hoverMap",
+                          "empty": false
+                        },
+                        {
+                          "param": "hoverProfile",
+                          "empty": false
+                        }
+                      ]
+                    },
+                    "value": 1
+                  },
+                  "value": 0
+                }
+              }
+            },
+            {
+              "mark": {
+                "type": "point",
+                "filled": true,
+                "size": 36,
+                "color": {
+                  "expr": "agateColors.accent"
+                }
+              },
+              "encoding": {
+                "x": {
+                  "field": "tl",
+                  "type": "temporal"
+                },
+                "y": {
+                  "field": "ele_ft",
+                  "type": "quantitative"
+                },
+                "opacity": {
+                  "condition": {
+                    "test": {
+                      "or": [
+                        {
+                          "param": "hoverMap",
+                          "empty": false
+                        },
+                        {
+                          "param": "hoverProfile",
+                          "empty": false
+                        }
+                      ]
+                    },
+                    "value": 1
+                  },
+                  "value": 0
+                }
+              }
+            },
+            {
+              "transform": [
+                {
+                  "calculate": "format(datum.ele_ft, ',.0f') + ' ft · ' + lower(utcFormat(datum.tl, '%a %-I:%M%p'))",
+                  "as": "lab"
+                }
+              ],
+              "mark": {
+                "type": "text",
+                "align": "left",
+                "dx": 6,
+                "dy": -8,
+                "font": "ui-monospace, SFMono-Regular, Menlo, Consolas, monospace",
+                "fontSize": 10,
+                "fontWeight": 600,
+                "color": {
+                  "expr": "agateColors.accent"
+                }
+              },
+              "encoding": {
+                "x": {
+                  "field": "tl",
+                  "type": "temporal"
+                },
+                "y": {
+                  "field": "ele_ft",
+                  "type": "quantitative"
+                },
+                "text": {
+                  "condition": {
+                    "test": {
+                      "or": [
+                        {
+                          "param": "hoverMap",
+                          "empty": false
+                        },
+                        {
+                          "param": "hoverProfile",
+                          "empty": false
+                        }
+                      ]
+                    },
+                    "field": "lab"
+                  },
+                  "value": ""
+                }
+              }
+            }
+          ]
+        },
+        {
+          "width": "container",
+          "height": 80,
+          "layer": [
+            {
+              "transform": [
+                {
+                  "filter": "datum.moving"
+                },
+                {
+                  "calculate": "upper('camp · ' + datum.note.to)",
+                  "as": "camp"
+                },
+                {
+                  "aggregate": [
+                    {
+                      "op": "min",
+                      "field": "tl",
+                      "as": "start"
+                    },
+                    {
+                      "op": "max",
+                      "field": "tl",
+                      "as": "end"
+                    }
+                  ],
+                  "groupby": [
+                    "day",
+                    "camp"
+                  ]
+                },
+                {
+                  "window": [
+                    {
+                      "op": "lead",
+                      "field": "start",
+                      "as": "next"
+                    }
+                  ],
+                  "sort": [
+                    {
+                      "field": "day"
+                    }
+                  ]
+                },
+                {
+                  "filter": "isValid(datum.next)"
+                }
+              ],
+              "mark": {
+                "type": "rect",
+                "color": {
+                  "expr": "agateColors.text"
+                },
+                "opacity": 0.06,
+                "stroke": {
+                  "expr": "agateColors.muted"
+                },
+                "strokeDash": [
+                  1,
+                  3
+                ],
+                "strokeWidth": 1,
+                "strokeOpacity": 0.8
+              },
+              "encoding": {
+                "x": {
+                  "field": "end",
+                  "type": "temporal",
+                  "scale": {
+                    "type": "utc",
+                    "nice": false,
+                    "domain": {
+                      "param": "span"
+                    }
+                  }
+                },
+                "x2": {
+                  "field": "next"
+                }
+              }
+            },
+            {
+              "transform": [
+                {
+                  "filter": "datum.moving"
+                },
+                {
+                  "calculate": "upper('camp · ' + datum.note.to)",
+                  "as": "camp"
+                },
+                {
+                  "aggregate": [
+                    {
+                      "op": "min",
+                      "field": "tl",
+                      "as": "start"
+                    },
+                    {
+                      "op": "max",
+                      "field": "tl",
+                      "as": "end"
+                    }
+                  ],
+                  "groupby": [
+                    "day",
+                    "camp"
+                  ]
+                },
+                {
+                  "window": [
+                    {
+                      "op": "lead",
+                      "field": "start",
+                      "as": "next"
+                    }
+                  ],
+                  "sort": [
+                    {
+                      "field": "day"
+                    }
+                  ]
+                },
+                {
+                  "filter": "isValid(datum.next)"
+                }
+              ],
+              "mark": {
+                "type": "text",
+                "align": "left",
+                "baseline": "top",
+                "dx": 4,
+                "dy": 14,
+                "font": "ui-monospace, SFMono-Regular, Menlo, Consolas, monospace",
+                "fontSize": 8,
+                "color": {
+                  "expr": "agateColors.muted"
+                }
+              },
+              "encoding": {
+                "x": {
+                  "field": "end",
+                  "type": "temporal",
+                  "scale": {
+                    "type": "utc",
+                    "nice": false,
+                    "domain": {
+                      "param": "span"
+                    }
+                  }
+                },
+                "y": {
+                  "value": 0
+                },
+                "text": {
+                  "field": "camp"
+                }
+              }
+            },
+            {
+              "mark": {
+                "type": "point",
+                "filled": true,
+                "size": 3,
+                "opacity": 0.85,
+                "color": {
+                  "expr": "agateColors.text"
+                },
+                "strokeWidth": 0
+              },
+              "encoding": {
+                "x": {
+                  "field": "tl",
+                  "type": "temporal",
+                  "title": null,
+                  "scale": {
+                    "type": "utc",
+                    "nice": false,
+                    "domain": {
+                      "param": "span"
+                    }
+                  },
+                  "axis": {
+                    "labels": false,
+                    "ticks": false,
+                    "domain": false,
+                    "grid": true,
+                    "gridDash": [
+                      1,
+                      3
+                    ],
+                    "tickCount": {
+                      "interval": "hours",
+                      "step": 6
+                    }
+                  }
+                },
+                "y": {
+                  "field": "mph",
+                  "type": "quantitative",
+                  "title": null,
+                  "scale": {
+                    "zero": true,
+                    "nice": false,
+                    "padding": 12
+                  },
+                  "axis": {
+                    "orient": "left",
+                    "labelAlign": "left",
+                    "labelBaseline": "bottom",
+                    "labelPadding": -2,
+                    "labelOffset": 0,
+                    "ticks": false,
+                    "domain": false,
+                    "gridDash": [
+                      1,
+                      3
+                    ],
+                    "labelFont": "ui-monospace, SFMono-Regular, Menlo, Consolas, monospace",
+                    "labelFontSize": 9,
+                    "labelColor": {
+                      "expr": "agateColors.muted"
+                    },
+                    "tickCount": 3
+                  }
+                }
+              }
+            },
+            {
+              "data": {
+                "values": [
+                  {}
+                ]
+              },
+              "mark": {
+                "type": "text",
+                "align": "right",
+                "baseline": "top",
+                "font": "ui-monospace, SFMono-Regular, Menlo, Consolas, monospace",
+                "fontSize": 9,
+                "fontWeight": 600,
+                "color": {
+                  "expr": "agateColors.text"
+                },
+                "dy": 2
+              },
+              "encoding": {
+                "x": {
+                  "value": {
+                    "expr": "width - 2"
+                  }
+                },
+                "y": {
+                  "value": 0
+                },
+                "text": {
+                  "value": "SPEED mph"
+                }
+              }
+            },
+            {
+              "mark": {
+                "type": "rule",
+                "strokeWidth": 1,
+                "color": {
+                  "expr": "agateColors.accent"
+                }
+              },
+              "encoding": {
+                "x": {
+                  "field": "tl",
+                  "type": "temporal",
+                  "scale": {
+                    "type": "utc",
+                    "nice": false,
+                    "domain": {
+                      "param": "span"
+                    }
+                  }
+                },
+                "opacity": {
+                  "condition": {
+                    "test": {
+                      "or": [
+                        {
+                          "param": "hoverMap",
+                          "empty": false
+                        },
+                        {
+                          "param": "hoverProfile",
+                          "empty": false
+                        }
+                      ]
+                    },
+                    "value": 1
+                  },
+                  "value": 0
+                }
+              }
+            },
+            {
+              "mark": {
+                "type": "point",
+                "filled": true,
+                "size": 36,
+                "color": {
+                  "expr": "agateColors.accent"
+                }
+              },
+              "encoding": {
+                "x": {
+                  "field": "tl",
+                  "type": "temporal",
+                  "scale": {
+                    "type": "utc",
+                    "nice": false,
+                    "domain": {
+                      "param": "span"
+                    }
+                  }
+                },
+                "y": {
+                  "field": "mph",
+                  "type": "quantitative"
+                },
+                "opacity": {
+                  "condition": {
+                    "test": {
+                      "or": [
+                        {
+                          "param": "hoverMap",
+                          "empty": false
+                        },
+                        {
+                          "param": "hoverProfile",
+                          "empty": false
+                        }
+                      ]
+                    },
+                    "value": 1
+                  },
+                  "value": 0
+                }
+              }
+            },
+            {
+              "transform": [
+                {
+                  "calculate": "format(datum.mph, '.1f') + ' mph · ' + lower(utcFormat(datum.tl, '%a %-I:%M%p'))",
+                  "as": "lab"
+                }
+              ],
+              "mark": {
+                "type": "text",
+                "align": "left",
+                "dx": 6,
+                "dy": -8,
+                "font": "ui-monospace, SFMono-Regular, Menlo, Consolas, monospace",
+                "fontSize": 10,
+                "fontWeight": 600,
+                "color": {
+                  "expr": "agateColors.accent"
+                }
+              },
+              "encoding": {
+                "x": {
+                  "field": "tl",
+                  "type": "temporal",
+                  "scale": {
+                    "type": "utc",
+                    "nice": false,
+                    "domain": {
+                      "param": "span"
+                    }
+                  }
+                },
+                "y": {
+                  "field": "mph",
+                  "type": "quantitative"
+                },
+                "text": {
+                  "condition": {
+                    "test": {
+                      "or": [
+                        {
+                          "param": "hoverMap",
+                          "empty": false
+                        },
+                        {
+                          "param": "hoverProfile",
+                          "empty": false
+                        }
+                      ]
+                    },
+                    "field": "lab"
+                  },
+                  "value": ""
+                }
+              }
+            }
+          ]
+        },
+        {
+          "width": "container",
+          "height": 80,
+          "layer": [
+            {
+              "mark": {
+                "type": "point",
+                "filled": true,
+                "size": 3,
+                "opacity": 0.85,
+                "color": {
+                  "expr": "agateColors.text"
+                },
+                "strokeWidth": 0
+              },
+              "encoding": {
+                "x": {
+                  "field": "tl",
+                  "type": "temporal",
+                  "title": null,
+                  "scale": {
+                    "type": "utc",
+                    "nice": false,
+                    "domain": {
+                      "param": "span"
+                    }
+                  },
+                  "axis": {
+                    "labels": false,
+                    "ticks": false,
+                    "domain": false,
+                    "grid": true,
+                    "gridDash": [
+                      1,
+                      3
+                    ],
+                    "tickCount": {
+                      "interval": "hours",
+                      "step": 6
+                    }
+                  }
+                },
+                "y": {
+                  "field": "hr",
+                  "type": "quantitative",
+                  "title": null,
+                  "scale": {
+                    "zero": false,
+                    "nice": false,
+                    "padding": 12
+                  },
+                  "axis": {
+                    "orient": "left",
+                    "labelAlign": "left",
+                    "labelBaseline": "bottom",
+                    "labelPadding": -2,
+                    "labelOffset": 0,
+                    "ticks": false,
+                    "domain": false,
+                    "gridDash": [
+                      1,
+                      3
+                    ],
+                    "labelFont": "ui-monospace, SFMono-Regular, Menlo, Consolas, monospace",
+                    "labelFontSize": 9,
+                    "labelColor": {
+                      "expr": "agateColors.muted"
+                    },
+                    "tickCount": 3
+                  }
+                }
+              }
+            },
+            {
+              "data": {
+                "values": [
+                  {}
+                ]
+              },
+              "mark": {
+                "type": "text",
+                "align": "right",
+                "baseline": "top",
+                "font": "ui-monospace, SFMono-Regular, Menlo, Consolas, monospace",
+                "fontSize": 9,
+                "fontWeight": 600,
+                "color": {
+                  "expr": "agateColors.text"
+                },
+                "dy": 2
+              },
+              "encoding": {
+                "x": {
+                  "value": {
+                    "expr": "width - 2"
+                  }
+                },
+                "y": {
+                  "value": 0
+                },
+                "text": {
+                  "value": "HEART RATE bpm"
+                }
+              }
+            },
+            {
+              "mark": {
+                "type": "rule",
+                "strokeWidth": 1,
+                "color": {
+                  "expr": "agateColors.accent"
+                }
+              },
+              "encoding": {
+                "x": {
+                  "field": "tl",
+                  "type": "temporal",
+                  "scale": {
+                    "type": "utc",
+                    "nice": false,
+                    "domain": {
+                      "param": "span"
+                    }
+                  }
+                },
+                "opacity": {
+                  "condition": {
+                    "test": {
+                      "or": [
+                        {
+                          "param": "hoverMap",
+                          "empty": false
+                        },
+                        {
+                          "param": "hoverProfile",
+                          "empty": false
+                        }
+                      ]
+                    },
+                    "value": 1
+                  },
+                  "value": 0
+                }
+              }
+            },
+            {
+              "mark": {
+                "type": "point",
+                "filled": true,
+                "size": 36,
+                "color": {
+                  "expr": "agateColors.accent"
+                }
+              },
+              "encoding": {
+                "x": {
+                  "field": "tl",
+                  "type": "temporal",
+                  "scale": {
+                    "type": "utc",
+                    "nice": false,
+                    "domain": {
+                      "param": "span"
+                    }
+                  }
+                },
+                "y": {
+                  "field": "hr",
+                  "type": "quantitative"
+                },
+                "opacity": {
+                  "condition": {
+                    "test": {
+                      "or": [
+                        {
+                          "param": "hoverMap",
+                          "empty": false
+                        },
+                        {
+                          "param": "hoverProfile",
+                          "empty": false
+                        }
+                      ]
+                    },
+                    "value": 1
+                  },
+                  "value": 0
+                }
+              }
+            },
+            {
+              "transform": [
+                {
+                  "calculate": "format(datum.hr, '.0f') + ' bpm · ' + lower(utcFormat(datum.tl, '%a %-I:%M%p'))",
+                  "as": "lab"
+                }
+              ],
+              "mark": {
+                "type": "text",
+                "align": "left",
+                "dx": 6,
+                "dy": -8,
+                "font": "ui-monospace, SFMono-Regular, Menlo, Consolas, monospace",
+                "fontSize": 10,
+                "fontWeight": 600,
+                "color": {
+                  "expr": "agateColors.accent"
+                }
+              },
+              "encoding": {
+                "x": {
+                  "field": "tl",
+                  "type": "temporal",
+                  "scale": {
+                    "type": "utc",
+                    "nice": false,
+                    "domain": {
+                      "param": "span"
+                    }
+                  }
+                },
+                "y": {
+                  "field": "hr",
+                  "type": "quantitative"
+                },
+                "text": {
+                  "condition": {
+                    "test": {
+                      "or": [
+                        {
+                          "param": "hoverMap",
+                          "empty": false
+                        },
+                        {
+                          "param": "hoverProfile",
+                          "empty": false
+                        }
+                      ]
+                    },
+                    "field": "lab"
+                  },
+                  "value": ""
+                }
+              }
+            }
+          ]
+        },
+        {
+          "width": "container",
+          "height": 80,
+          "transform": [
+            {
+              "calculate": "(time(datum.t) - 946728000000) / 86400000",
+              "as": "jd"
+            },
+            {
+              "calculate": "(357.529 + 0.98560028 * datum.jd) * PI / 180",
+              "as": "sg"
+            },
+            {
+              "calculate": "(280.459 + 0.98564736 * datum.jd + 1.915 * sin(datum.sg) + 0.02 * sin(2 * datum.sg)) * PI / 180",
+              "as": "sl"
+            },
+            {
+              "calculate": "(23.439 - 0.00000036 * datum.jd) * PI / 180",
+              "as": "se"
+            },
+            {
+              "calculate": "atan2(cos(datum.se) * sin(datum.sl), cos(datum.sl))",
+              "as": "sra"
+            },
+            {
+              "calculate": "asin(sin(datum.se) * sin(datum.sl))",
+              "as": "sdec"
+            },
+            {
+              "calculate": "((18.697374558 + 24.06570982441908 * datum.jd) * 15 + datum.lon) * PI / 180 - datum.sra",
+              "as": "sha"
+            },
+            {
+              "calculate": "asin(sin(datum.lat * PI / 180) * sin(datum.sdec) + cos(datum.lat * PI / 180) * cos(datum.sdec) * cos(datum.sha)) * 180 / PI",
+              "as": "sun"
+            },
+            {
+              "calculate": "datum.sun * (1 - 0.8 * datum.cloud_pct / 100)",
+              "as": "sunlit"
+            },
+            {
+              "calculate": "max(0, datum.sunlit)",
+              "as": "lit"
+            }
+          ],
+          "layer": [
+            {
+              "mark": {
+                "type": "area",
+                "color": {
+                  "expr": "agateColors.text"
+                },
+                "opacity": 0.14,
+                "interpolate": "monotone"
+              },
+              "encoding": {
+                "x": {
+                  "field": "tl",
+                  "type": "temporal",
+                  "title": null,
+                  "scale": {
+                    "type": "utc",
+                    "nice": false,
+                    "domain": {
+                      "param": "span"
+                    }
+                  },
+                  "axis": {
+                    "labels": false,
+                    "ticks": false,
+                    "domain": false,
+                    "grid": true,
+                    "gridDash": [
+                      1,
+                      3
+                    ],
+                    "tickCount": {
+                      "interval": "hours",
+                      "step": 6
+                    }
+                  }
+                },
+                "y": {
+                  "field": "lit",
+                  "type": "quantitative",
+                  "title": null,
+                  "scale": {
+                    "zero": false,
+                    "nice": false,
+                    "padding": 12,
+                    "domain": [
+                      -70,
+                      70
+                    ]
+                  },
+                  "axis": {
+                    "orient": "left",
+                    "labelAlign": "left",
+                    "labelBaseline": "bottom",
+                    "labelPadding": -2,
+                    "labelOffset": 0,
+                    "ticks": false,
+                    "domain": false,
+                    "gridDash": [
+                      1,
+                      3
+                    ],
+                    "labelFont": "ui-monospace, SFMono-Regular, Menlo, Consolas, monospace",
+                    "labelFontSize": 9,
+                    "labelColor": {
+                      "expr": "agateColors.muted"
+                    },
+                    "tickCount": 3,
+                    "values": [
+                      -60,
+                      0,
+                      60
+                    ]
+                  }
+                },
+                "detail": {
+                  "field": "day"
+                }
+              }
+            },
+            {
+              "mark": {
+                "type": "rule",
+                "color": {
+                  "expr": "agateColors.muted"
+                },
+                "strokeDash": [
+                  2,
+                  2
+                ],
+                "strokeWidth": 0.8
+              },
+              "data": {
+                "values": [
+                  {
+                    "y": 0
+                  }
+                ]
+              },
+              "encoding": {
+                "y": {
+                  "datum": 0
+                }
+              }
+            },
+            {
+              "mark": {
+                "type": "point",
+                "filled": true,
+                "size": 2.5,
+                "opacity": 0.7,
+                "color": {
+                  "expr": "agateColors.text"
+                },
+                "strokeWidth": 0
+              },
+              "encoding": {
+                "x": {
+                  "field": "tl",
+                  "type": "temporal",
+                  "scale": {
+                    "type": "utc",
+                    "nice": false,
+                    "domain": {
+                      "param": "span"
+                    }
+                  }
+                },
+                "y": {
+                  "field": "sun",
+                  "type": "quantitative"
+                }
+              }
+            },
+            {
+              "data": {
+                "values": [
+                  {}
+                ]
+              },
+              "mark": {
+                "type": "text",
+                "align": "right",
+                "baseline": "top",
+                "font": "ui-monospace, SFMono-Regular, Menlo, Consolas, monospace",
+                "fontSize": 9,
+                "fontWeight": 600,
+                "color": {
+                  "expr": "agateColors.text"
+                },
+                "dy": 2
+              },
+              "encoding": {
+                "x": {
+                  "value": {
+                    "expr": "width - 2"
+                  }
+                },
+                "y": {
+                  "value": 0
+                },
+                "text": {
+                  "value": "SUN ° above horizon · shaded = sunlight through cloud"
+                }
+              }
+            },
+            {
+              "mark": {
+                "type": "rule",
+                "strokeWidth": 1,
+                "color": {
+                  "expr": "agateColors.accent"
+                }
+              },
+              "encoding": {
+                "x": {
+                  "field": "tl",
+                  "type": "temporal",
+                  "scale": {
+                    "type": "utc",
+                    "nice": false,
+                    "domain": {
+                      "param": "span"
+                    }
+                  }
+                },
+                "opacity": {
+                  "condition": {
+                    "test": {
+                      "or": [
+                        {
+                          "param": "hoverMap",
+                          "empty": false
+                        },
+                        {
+                          "param": "hoverProfile",
+                          "empty": false
+                        }
+                      ]
+                    },
+                    "value": 1
+                  },
+                  "value": 0
+                }
+              }
+            },
+            {
+              "mark": {
+                "type": "point",
+                "filled": true,
+                "size": 36,
+                "color": {
+                  "expr": "agateColors.accent"
+                }
+              },
+              "encoding": {
+                "x": {
+                  "field": "tl",
+                  "type": "temporal",
+                  "scale": {
+                    "type": "utc",
+                    "nice": false,
+                    "domain": {
+                      "param": "span"
+                    }
+                  }
+                },
+                "y": {
+                  "field": "sun",
+                  "type": "quantitative"
+                },
+                "opacity": {
+                  "condition": {
+                    "test": {
+                      "or": [
+                        {
+                          "param": "hoverMap",
+                          "empty": false
+                        },
+                        {
+                          "param": "hoverProfile",
+                          "empty": false
+                        }
+                      ]
+                    },
+                    "value": 1
+                  },
+                  "value": 0
+                }
+              }
+            },
+            {
+              "transform": [
+                {
+                  "calculate": "format(datum.sun, '.0f') + '° · ' + lower(utcFormat(datum.tl, '%a %-I:%M%p')) + (datum.cloud_pct > 50 ? ' · cloudy' : '')",
+                  "as": "lab"
+                }
+              ],
+              "mark": {
+                "type": "text",
+                "align": "left",
+                "dx": 6,
+                "dy": -8,
+                "font": "ui-monospace, SFMono-Regular, Menlo, Consolas, monospace",
+                "fontSize": 10,
+                "fontWeight": 600,
+                "color": {
+                  "expr": "agateColors.accent"
+                }
+              },
+              "encoding": {
+                "x": {
+                  "field": "tl",
+                  "type": "temporal",
+                  "scale": {
+                    "type": "utc",
+                    "nice": false,
+                    "domain": {
+                      "param": "span"
+                    }
+                  }
+                },
+                "y": {
+                  "field": "sun",
+                  "type": "quantitative"
+                },
+                "text": {
+                  "condition": {
+                    "test": {
+                      "or": [
+                        {
+                          "param": "hoverMap",
+                          "empty": false
+                        },
+                        {
+                          "param": "hoverProfile",
+                          "empty": false
+                        }
+                      ]
+                    },
+                    "field": "lab"
+                  },
+                  "value": ""
+                }
+              }
+            }
+          ]
+        },
+        {
+          "width": "container",
+          "height": 95,
+          "transform": [
+            {
+              "calculate": "datum.temp_c * 9 / 5 + 32",
+              "as": "temp_f"
+            }
+          ],
+          "resolve": {
+            "scale": {
+              "y": "independent"
+            }
+          },
+          "layer": [
+            {
+              "transform": [
+                {
+                  "filter": "datum.precip_mm > 0"
+                }
+              ],
+              "mark": {
+                "type": "bar",
+                "color": {
+                  "expr": "agateColors.text"
+                },
+                "opacity": 0.18,
+                "binSpacing": 0
+              },
+              "encoding": {
+                "x": {
+                  "field": "tl",
+                  "timeUnit": "utcyearmonthdatehours",
+                  "type": "temporal",
+                  "scale": {
+                    "type": "utc",
+                    "nice": false,
+                    "domain": {
+                      "param": "span"
+                    }
+                  }
+                },
+                "y": {
+                  "aggregate": "max",
+                  "field": "precip_mm",
+                  "type": "quantitative",
+                  "title": null,
+                  "scale": {
+                    "domain": [
+                      0,
+                      4
+                    ]
+                  },
+                  "axis": {
+                    "orient": "right",
+                    "labelAlign": "right",
+                    "labelBaseline": "bottom",
+                    "labelPadding": -2,
+                    "labelOffset": 0,
+                    "ticks": false,
+                    "domain": false,
+                    "gridDash": [
+                      1,
+                      3
+                    ],
+                    "labelFont": "ui-monospace, SFMono-Regular, Menlo, Consolas, monospace",
+                    "labelFontSize": 9,
+                    "labelColor": {
+                      "expr": "agateColors.muted"
+                    },
+                    "tickCount": 3,
+                    "values": [
+                      2,
+                      4
+                    ]
+                  }
+                },
+                "tooltip": [
+                  {
+                    "aggregate": "max",
+                    "field": "precip_mm",
+                    "title": "Rain (mm/h)",
+                    "format": ".1f"
+                  }
+                ]
+              }
+            },
+            {
+              "layer": [
+                {
+                  "mark": {
+                    "type": "point",
+                    "filled": true,
+                    "size": 3,
+                    "opacity": 0.85,
+                    "color": {
+                      "expr": "agateColors.text"
+                    },
+                    "strokeWidth": 0
+                  },
+                  "encoding": {
+                    "x": {
+                      "field": "tl",
+                      "type": "temporal",
+                      "title": null,
+                      "scale": {
+                        "type": "utc",
+                        "nice": false,
+                        "domain": {
+                          "param": "span"
+                        }
+                      },
+                      "axis": {
+                        "labels": true,
+                        "ticks": false,
+                        "domain": false,
+                        "grid": true,
+                        "gridDash": [
+                          1,
+                          3
+                        ],
+                        "tickCount": {
+                          "interval": "hours",
+                          "step": 6
+                        },
+                        "labelExpr": "utchours(datum.value) === 0 ? upper(utcFormat(datum.value, '%a %d')) : lower(utcFormat(datum.value, '%-I%p'))",
+                        "labelFont": "ui-monospace, SFMono-Regular, Menlo, Consolas, monospace",
+                        "labelColor": {
+                          "expr": "agateColors.muted"
+                        },
+                        "labelFontSize": 9
+                      }
+                    },
+                    "y": {
+                      "field": "temp_f",
+                      "type": "quantitative",
+                      "title": null,
+                      "scale": {
+                        "zero": false,
+                        "nice": false,
+                        "padding": 12
+                      },
+                      "axis": {
+                        "orient": "left",
+                        "labelAlign": "left",
+                        "labelBaseline": "bottom",
+                        "labelPadding": -2,
+                        "labelOffset": 0,
+                        "ticks": false,
+                        "domain": false,
+                        "gridDash": [
+                          1,
+                          3
+                        ],
+                        "labelFont": "ui-monospace, SFMono-Regular, Menlo, Consolas, monospace",
+                        "labelFontSize": 9,
+                        "labelColor": {
+                          "expr": "agateColors.muted"
+                        },
+                        "tickCount": 3
+                      }
+                    }
+                  }
+                },
+                {
+                  "data": {
+                    "values": [
+                      {}
+                    ]
+                  },
+                  "mark": {
+                    "type": "text",
+                    "align": "right",
+                    "baseline": "top",
+                    "font": "ui-monospace, SFMono-Regular, Menlo, Consolas, monospace",
+                    "fontSize": 9,
+                    "fontWeight": 600,
+                    "color": {
+                      "expr": "agateColors.text"
+                    },
+                    "dy": 2
+                  },
+                  "encoding": {
+                    "x": {
+                      "value": {
+                        "expr": "width - 2"
+                      }
+                    },
+                    "y": {
+                      "value": 0
+                    },
+                    "text": {
+                      "value": "TEMP °F · RAIN mm/h (bars)"
+                    }
+                  }
+                },
+                {
+                  "mark": {
+                    "type": "rule",
+                    "strokeWidth": 1,
+                    "color": {
+                      "expr": "agateColors.accent"
+                    }
+                  },
+                  "encoding": {
+                    "x": {
+                      "field": "tl",
+                      "type": "temporal",
+                      "scale": {
+                        "type": "utc",
+                        "nice": false,
+                        "domain": {
+                          "param": "span"
+                        }
+                      }
+                    },
+                    "opacity": {
+                      "condition": {
+                        "test": {
+                          "or": [
+                            {
+                              "param": "hoverMap",
+                              "empty": false
+                            },
+                            {
+                              "param": "hoverProfile",
+                              "empty": false
+                            }
+                          ]
+                        },
+                        "value": 1
+                      },
+                      "value": 0
+                    }
+                  }
+                },
+                {
+                  "mark": {
+                    "type": "point",
+                    "filled": true,
+                    "size": 36,
+                    "color": {
+                      "expr": "agateColors.accent"
+                    }
+                  },
+                  "encoding": {
+                    "x": {
+                      "field": "tl",
+                      "type": "temporal",
+                      "scale": {
+                        "type": "utc",
+                        "nice": false,
+                        "domain": {
+                          "param": "span"
+                        }
+                      }
+                    },
+                    "y": {
+                      "field": "temp_f",
+                      "type": "quantitative"
+                    },
+                    "opacity": {
+                      "condition": {
+                        "test": {
+                          "or": [
+                            {
+                              "param": "hoverMap",
+                              "empty": false
+                            },
+                            {
+                              "param": "hoverProfile",
+                              "empty": false
+                            }
+                          ]
+                        },
+                        "value": 1
+                      },
+                      "value": 0
+                    }
+                  }
+                },
+                {
+                  "transform": [
+                    {
+                      "calculate": "format(datum.temp_f, '.0f') + '°F · ' + lower(utcFormat(datum.tl, '%a %-I:%M%p')) + (datum.precip_mm > 0 ? ' · rain' : '')",
+                      "as": "lab"
+                    }
+                  ],
+                  "mark": {
+                    "type": "text",
+                    "align": "left",
+                    "dx": 6,
+                    "dy": -8,
+                    "font": "ui-monospace, SFMono-Regular, Menlo, Consolas, monospace",
+                    "fontSize": 10,
+                    "fontWeight": 600,
+                    "color": {
+                      "expr": "agateColors.accent"
+                    }
+                  },
+                  "encoding": {
+                    "x": {
+                      "field": "tl",
+                      "type": "temporal",
+                      "scale": {
+                        "type": "utc",
+                        "nice": false,
+                        "domain": {
+                          "param": "span"
+                        }
+                      }
+                    },
+                    "y": {
+                      "field": "temp_f",
+                      "type": "quantitative"
+                    },
+                    "text": {
+                      "condition": {
+                        "test": {
+                          "or": [
+                            {
+                              "param": "hoverMap",
+                              "empty": false
+                            },
+                            {
+                              "param": "hoverProfile",
+                              "empty": false
+                            }
+                          ]
+                        },
+                        "field": "lab"
+                      },
+                      "value": ""
+                    }
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "width": "container",
+      "height": 12,
+      "data": {
+        "values": [
+          {}
+        ]
+      },
+      "mark": {
+        "type": "text",
+        "align": "left",
+        "baseline": "middle",
+        "font": "ui-monospace, SFMono-Regular, Menlo, Consolas, monospace",
+        "fontSize": 8,
+        "color": {
+          "expr": "agateColors.muted"
+        },
+        "limit": {
+          "expr": "width"
+        }
+      },
+      "encoding": {
+        "x": {
+          "value": 0
+        },
+        "y": {
+          "value": 6
+        },
+        "text": {
+          "value": {
+            "expr": "upper((bm === '3dep' ? 'Basemap USGS 3DEP' : bm === 'satellite' ? 'Imagery Esri, Maxar' : bm === 'usgs' ? 'Basemap USGS' : bm === 'hillshade' ? 'Basemap Esri, USGS' : 'Map © OpenStreetMap, OpenTopoMap') + ' · trail © OSM contributors · Copernicus DEM · Open-Meteo ERA5 · shower invented · not for navigation')"
+          }
+        }
+      }
+    }
+  ],
+  "params": [
+    {
+      "name": "agateDark",
+      "value": false
+    },
+    {
+      "name": "agateColors",
+      "value": {
+        "text": "#222",
+        "muted": "#777",
+        "faint": "#999",
+        "background": "#fff",
+        "accent": "#7c3aed",
+        "red": "#e93147",
+        "orange": "#ec7500",
+        "yellow": "#e0ac00",
+        "green": "#08b94e",
+        "cyan": "#00bfbc",
+        "blue": "#086ddd",
+        "purple": "#7852ee",
+        "pink": "#d53984"
+      }
+    },
+    {
+      "name": "tz",
+      "value": 13
+    },
+    {
+      "name": "utcOffset",
+      "value": -4
+    },
+    {
+      "name": "basemap",
+      "value": "auto",
+      "bind": {
+        "input": "select",
+        "options": [
+          "auto",
+          "3dep",
+          "hillshade",
+          "topo",
+          "satellite",
+          "usgs"
+        ],
+        "labels": [
+          "Auto (USGS 3DEP multidirectional hillshade)",
+          "USGS 3DEP multidirectional (US only)",
+          "Esri hillshade",
+          "OpenTopoMap",
+          "Satellite (Esri)",
+          "USGS Topo"
+        ],
+        "name": "Basemap "
+      }
+    },
+    {
+      "name": "bm",
+      "expr": "basemap === 'auto' ? '3dep' : basemap"
+    },
+    {
+      "name": "lonX",
+      "expr": "extent(pluck(data('track'), 'lon'))"
+    },
+    {
+      "name": "latX",
+      "expr": "extent(pluck(data('track'), 'lat'))"
+    },
+    {
+      "name": "mercY",
+      "expr": "[log(tan(PI / 4 + latX[0] * PI / 360)), log(tan(PI / 4 + latX[1] * PI / 360))]"
+    },
+    {
+      "name": "mapScale",
+      "expr": "min((width - 24) / ((lonX[1] - lonX[0]) * PI / 180), (340 - 40) / (mercY[1] - mercY[0]))"
+    },
+    {
+      "name": "mapCenter",
+      "expr": "[(lonX[0] + lonX[1]) / 2, (2 * atan(exp((mercY[0] + mercY[1]) / 2)) - PI / 2) * 180 / PI]"
+    }
+  ]
+}

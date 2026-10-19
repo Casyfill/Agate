@@ -1,0 +1,87 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`demo vault charts > hike-stats.vl.json 1`] = `
+[
+  {
+    "label": "miles",
+    "note": "3 days",
+    "value": "29.2",
+  },
+  {
+    "label": "ft climbed",
+    "note": "2,710 on day 2",
+    "value": "6,289",
+  },
+  {
+    "label": "ft high point",
+    "note": "on day 3",
+    "value": "4,422",
+  },
+  {
+    "label": "hours moving",
+    "note": "1.5 mph on average",
+    "value": "18.9",
+  },
+  {
+    "label": "nights at camp",
+    "note": "in shelters",
+    "value": "2",
+  },
+]
+`;
+
+exports[`demo vault charts > interview-stats.vl.json 1`] = `
+[
+  {
+    "change": "12",
+    "direction": "up",
+    "good": true,
+    "label": "attempts",
+    "note": "in the last 4 weeks",
+    "value": "75",
+  },
+  {
+    "label": "problems",
+    "note": "24 reached 4+",
+    "value": "54",
+  },
+  {
+    "change": "0.1",
+    "direction": "up",
+    "good": true,
+    "label": "mean cold grade",
+    "note": "last 4 weeks vs before",
+    "value": "3.3",
+  },
+  {
+    "label": "cold re-tests",
+    "note": "a problem again, cold",
+    "value": "17",
+  },
+]
+`;
+
+exports[`demo vault charts > reading-stats.vl.json 1`] = `
+[
+  {
+    "label": "books finished",
+    "note": "of 26 started",
+    "value": "20",
+  },
+  {
+    "label": "pages read",
+    "note": "in finished books",
+    "value": "7,778",
+  },
+  {
+    "label": "days per book",
+    "note": "median, start to finish",
+    "value": "13",
+  },
+  {
+    "label": "pages abandoned",
+    "note": "in 4 books I put down",
+    "value": "3,434",
+  },
+]
+`;

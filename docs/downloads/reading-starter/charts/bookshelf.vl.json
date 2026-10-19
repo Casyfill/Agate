@@ -1,0 +1,94 @@
+{
+  "$schema": "https://vega.github.io/schema/vega-lite/v6.json",
+  "description": "Pages read per genre, one block per book in the order I started them, coloured by status. Hover a block for the book and its cover (formula.cover in Books.base), click to open the note. The Agate quickstart's finished chart.",
+  "usermeta": {
+    "agate": {
+      "open": "click"
+    }
+  },
+  "title": {
+    "text": "Where my reading time went",
+    "anchor": "start",
+    "color": "#dadada",
+    "fontSize": 15,
+    "subtitle": "One block per book, by when I started it"
+  },
+  "data": {
+    "name": "base"
+  },
+  "transform": [
+    {
+      "filter": "isValid(datum[\"note\"][\"genre\"]) && datum[\"note\"][\"genre\"] !== ''"
+    }
+  ],
+  "mark": {
+    "type": "bar",
+    "cornerRadius": 2,
+    "stroke": "#1e1e1e",
+    "strokeWidth": 1.5,
+    "cursor": "pointer"
+  },
+  "encoding": {
+    "y": {
+      "field": "note.genre",
+      "type": "nominal",
+      "sort": "-x",
+      "title": null
+    },
+    "x": {
+      "aggregate": "sum",
+      "field": "note.pages",
+      "title": "Pages"
+    },
+    "color": {
+      "field": "note.status",
+      "type": "nominal",
+      "title": "status",
+      "scale": {
+        "domain": [
+          "finished",
+          "reading",
+          "abandoned"
+        ],
+        "range": [
+          "#44cf6e",
+          "#027aff",
+          "#6b6b6b"
+        ]
+      },
+      "legend": {
+        "orient": "bottom",
+        "title": null
+      }
+    },
+    "detail": {
+      "field": "file.name"
+    },
+    "order": {
+      "field": "note.started",
+      "type": "temporal"
+    },
+    "tooltip": [
+      {
+        "field": "file.name",
+        "title": "title"
+      },
+      {
+        "field": "formula.cover",
+        "title": "image"
+      },
+      {
+        "field": "note.author",
+        "title": "Author"
+      },
+      {
+        "field": "note.pages",
+        "title": "Pages"
+      },
+      {
+        "field": "note.status",
+        "title": "Status"
+      }
+    ]
+  }
+}

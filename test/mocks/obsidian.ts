@@ -95,13 +95,19 @@ export type App = FakeApp;
 export const requestUrlCalls: string[] = [];
 /** Queue of failures for the next calls: an Error (network) or a number (HTTP status). */
 export const requestUrlFailures: Array<Error | number> = [];
-export async function requestUrl(req: { url: string; headers?: Record<string, string> }): Promise<{ text: string; json: unknown }> {
+export async function requestUrl(req: {
+  url: string;
+  headers?: Record<string, string>;
+}): Promise<{ text: string; json: unknown; arrayBuffer: ArrayBuffer; headers: Record<string, string> }> {
   requestUrlCalls.push(req.url);
   const fail = requestUrlFailures.shift();
   if (typeof fail === "number") throw Object.assign(new Error(`Request failed, status ${fail}`), { status: fail });
   if (fail) throw fail;
-  return { text: `remote:${req.url}`, json: null };
+  const text = `remote:${req.url}`;
+  return { text, json: null, arrayBuffer: new TextEncoder().encode(text).buffer, headers: { "content-type": "image/png" } };
 }
+
+export type RequestUrlResponse = Awaited<ReturnType<typeof requestUrl>>;
 
 // --- components --------------------------------------------------------------
 

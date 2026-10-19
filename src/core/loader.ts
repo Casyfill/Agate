@@ -1,4 +1,4 @@
-import { App, requestUrl } from "obsidian";
+import { App, requestUrl, type RequestUrlResponse } from "obsidian";
 import { loader as vegaLoader, type Loader } from "vega";
 import { resolveVaultFile } from "./spec";
 import type { DataSchemeProvider } from "./types";
@@ -7,10 +7,45 @@ export interface LoaderDeps {
   app: App;
   sourcePath: string | null;
   allowRemote: boolean;
+  /** Which `{env:NAME}` placeholders may be filled, and for which host (see fillEnv). */
+  envHosts: Map<string, string>;
   schemes: Map<string, DataSchemeProvider>;
 }
 
 const SCHEME_RE = /^([a-z][a-z0-9+.-]*):/i;
+const ENV_RE = /\{env:([A-Za-z_][A-Za-z0-9_]*)\}/g;
+
+/** The "Environment variables in URLs" setting: one `NAME host` pair per line, `#` starts a comment. */
+export function parseEnvHosts(text: string): Map<string, string> {
+  const out = new Map<string, string>();
+  for (const line of text.split("\n")) {
+    const [name, host] = line.replace(/#.*/, "").trim().split(/\s+/);
+    if (name && host) out.set(name, host.toLowerCase());
+  }
+  return out;
+}
+
+/**
+ * Fill `{env:NAME}` in a URL from the OS environment (desktop only), so an API key never
+ * sits in a spec. A name is filled only when the user allowed it for this URL's host:
+ * otherwise any shared spec could send the key to a server of its choosing.
+ */
+export function fillEnv(
+  uri: string,
+  allowed: Map<string, string>,
+  env: Record<string, string | undefined> | undefined = typeof process === "undefined" ? undefined : process.env,
+): string {
+  if (!uri.includes("{env:")) return uri;
+  const host = new URL(uri.replace(ENV_RE, "x")).host.toLowerCase();
+  return uri.replace(ENV_RE, (_, name: string) => {
+    const want = allowed.get(name);
+    if (!want) throw new Error(`{env:${name}} is not allowed: add "${name} ${host}" to Agate settings → Environment variables in URLs.`);
+    if (want !== host) throw new Error(`{env:${name}} is allowed for ${want} only, not ${host}.`);
+    const value = env?.[name];
+    if (!value) throw new Error(`Environment variable ${name} is not set${env ? "" : " (they are read on desktop only)"}.`);
+    return encodeURIComponent(value);
+  });
+}
 
 /** At most this many requests in flight per host; a dozen parallel fetches get HTTP/2 streams reset. */
 const PER_HOST = 2;
@@ -53,8 +88,13 @@ function retryable(err: unknown): boolean {
   return status === 429 || status >= 500;
 }
 
+/** GET a remote URL as text. `shown` stands for the URL in errors, so a filled-in key stays out of them. */
+export async function fetchRemote(uri: string, shown = uri): Promise<string> {
+  return (await fetchRemoteResponse(uri, shown)).text;
+}
+
 /** GET a remote URL through Obsidian (no CORS), per-host limited, retrying transient failures. */
-export async function fetchRemote(uri: string): Promise<string> {
+async function fetchRemoteResponse(uri: string, shown: string): Promise<RequestUrlResponse> {
   let host = uri;
   try {
     host = new URL(uri).host;
@@ -68,7 +108,7 @@ export async function fetchRemote(uri: string): Promise<string> {
       if (attempt > 0) await sleep(RETRY_DELAY_MS * 2 ** (attempt - 1));
       try {
         const res = await requestUrl({ url: uri, headers: { Accept: "text/csv, application/json;q=0.9, */*;q=0.8" } });
-        return res.text;
+        return res;
       } catch (err) {
         lastErr = err;
         if (!retryable(err)) break;
@@ -76,7 +116,7 @@ export async function fetchRemote(uri: string): Promise<string> {
     }
     const status = (lastErr as { status?: unknown } | null)?.status;
     const msg = typeof status === "number" ? `HTTP ${status}` : lastErr instanceof Error ? lastErr.message : String(lastErr);
-    throw new Error(`${msg} (${uri})`);
+    throw new Error(`${msg} (${shown})`);
   } finally {
     release(host);
   }
@@ -89,6 +129,23 @@ export async function fetchRemote(uri: string): Promise<string> {
 export function createVaultLoader(deps: LoaderDeps): Loader {
   const base = vegaLoader();
   const originalLoad = base.load.bind(base);
+  const originalSanitize = base.sanitize.bind(base);
+
+  // Vega fetches image marks (map tiles, pictures) itself via sanitize(), outside load();
+  // hold them to the same "Load remote URLs" setting as data.
+  base.sanitize = async (uri: string, options?: unknown) => {
+    if (/^https?:/i.test(uri) && !deps.allowRemote) {
+      throw new Error(`Remote URL blocked: ${uri}. Enable "Load remote URLs" in Agate settings to allow it.`);
+    }
+    if (uri.includes("{env:")) {
+      // Fetch it here and hand Vega a blob: URL, so the key is not in the chart's DOM or an SVG export.
+      // ponytail: blob URLs are never revoked (one per keyed tile per render); revoke on view finalize if memory shows up.
+      const res = await fetchRemoteResponse(fillEnv(uri, deps.envHosts), uri);
+      const type = Object.entries(res.headers ?? {}).find(([k]) => k.toLowerCase() === "content-type")?.[1];
+      return { href: URL.createObjectURL(new Blob([res.arrayBuffer], type ? { type } : {})) };
+    }
+    return originalSanitize(uri, options as never);
+  };
 
   base.load = async (uri: string, options?: unknown): Promise<string> => {
     const m = SCHEME_RE.exec(uri);
@@ -100,7 +157,7 @@ export function createVaultLoader(deps: LoaderDeps): Loader {
             `Remote URL blocked: ${uri}. Enable "Load remote URLs" in Agate settings to allow it.`,
           );
         }
-        return fetchRemote(uri);
+        return fetchRemote(fillEnv(uri, deps.envHosts), uri);
       }
       if (scheme === "data" || scheme === "blob") {
         return originalLoad(uri, options as never);

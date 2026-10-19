@@ -1,0 +1,6 @@
+---
+type: resource
+tags: [resource/pkm]
+area: pkm
+---
+idea next detail step detail detail step plan summary context detail next follow note context summary idea idea review summary question reference sketch reference note source source detail source reference step plan follow up next question review context plan source context thought thought draft up sketch thought thought review detail follow source review idea step idea draft sketch context source note detail follow draft summary idea sketch idea thought detail note decision reference thought decision next decision next decision reference reference step context up draft next summary draft summary detail source step next idea detail summary context source note plan detail note decision summary question context decision question sketch note follow plan up source plan reference step question step sketch detail detail up sketch idea context detail plan draft context decision plan next idea up sketch reference question decision decision up review plan summary review idea follow plan context plan summary detail thought question next idea question sketch sketch summary up detail review review review detail note idea thought follow note step reference decision follow detail source detail note draft thought review summary source draft note.

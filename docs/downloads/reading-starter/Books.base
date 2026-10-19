@@ -1,0 +1,28 @@
+filters:
+  and:
+    - type == "book"
+formulas:
+  cover: if(isbn, "https://covers.openlibrary.org/b/isbn/" + isbn + "-M.jpg", null)
+views:
+  - type: table
+    name: Shelf
+    order: [file.name, author, genre, pages, status, started, finished, rating]
+    sort:
+      - property: started
+        direction: DESC
+  - type: agate
+    name: Genres
+    order: [file.name, genre, status]
+    specFile: charts/bars-genre.vl.json
+  - type: agate
+    name: Bookshelf
+    order: [file.name, author, genre, pages, status]
+    specFile: charts/bookshelf.vl.json
+  - type: agate
+    name: Bookshelf with covers
+    order: [file.name, author, genre, pages, status]
+    specFile: charts/bookshelf-covers.vl.json
+  - type: agate
+    name: Numbers
+    order: [file.name, pages, status, started, finished]
+    specFile: charts/reading-stats.vl.json

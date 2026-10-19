@@ -1,0 +1,319 @@
+{
+  "$schema": "https://vega.github.io/schema/vega-lite/v6.json",
+  "description": "Hans Rosling's 'wealth and health of nations': income per person against life expectancy, one bubble per country sized by population, with a slider over 1952–2007 and faint trails behind. Every country is a note with its continent as a property and its own CSV (usermeta.agate.rowData, from note.data), so the base decides which countries are drawn. Data: Gapminder, CC BY 4.0, via the gapminder R package.",
+  "usermeta": {
+    "agate": {
+      "rowData": {
+        "name": "series",
+        "from": "note.data"
+      },
+      "open": "click"
+    }
+  },
+  "width": 620,
+  "height": 380,
+  "data": {
+    "name": "series"
+  },
+  "params": [
+    {
+      "name": "year",
+      "value": 2007,
+      "bind": {
+        "input": "range",
+        "min": 1952,
+        "max": 2007,
+        "step": 5,
+        "name": "Year "
+      }
+    }
+  ],
+  "transform": [
+    {
+      "calculate": "toNumber(datum.year)",
+      "as": "y"
+    },
+    {
+      "calculate": "toNumber(datum.lifeExp)",
+      "as": "life"
+    },
+    {
+      "calculate": "toNumber(datum.gdpPercap)",
+      "as": "gdp"
+    },
+    {
+      "calculate": "toNumber(datum.pop)",
+      "as": "people"
+    },
+    {
+      "calculate": "datum.note.continent",
+      "as": "continent"
+    },
+    {
+      "calculate": "datum.file.name",
+      "as": "country"
+    }
+  ],
+  "layer": [
+    {
+      "data": {
+        "values": [
+          {}
+        ]
+      },
+      "transform": [
+        {
+          "calculate": "year",
+          "as": "t"
+        }
+      ],
+      "mark": {
+        "type": "text",
+        "x": {
+          "expr": "width / 2"
+        },
+        "y": {
+          "expr": "height / 2"
+        },
+        "fontSize": 150,
+        "fontWeight": "bold",
+        "opacity": 0.07,
+        "baseline": "middle"
+      },
+      "encoding": {
+        "text": {
+          "field": "t"
+        }
+      }
+    },
+    {
+      "transform": [
+        {
+          "filter": "datum.y <= year"
+        }
+      ],
+      "mark": {
+        "type": "line",
+        "strokeWidth": 1.1,
+        "opacity": 0.22,
+        "interpolate": "monotone",
+        "clip": true
+      },
+      "encoding": {
+        "x": {
+          "field": "gdp",
+          "type": "quantitative",
+          "title": "Income per person (GDP per capita, $, log)",
+          "scale": {
+            "type": "log",
+            "domain": [
+              250,
+              60000
+            ]
+          },
+          "axis": {
+            "format": "~s",
+            "tickCount": 6,
+            "grid": true
+          }
+        },
+        "y": {
+          "field": "life",
+          "type": "quantitative",
+          "title": "Life expectancy (years)",
+          "scale": {
+            "domain": [
+              25,
+              85
+            ]
+          }
+        },
+        "color": {
+          "field": "continent",
+          "type": "nominal",
+          "title": null,
+          "scale": {
+            "domain": [
+              "Africa",
+              "Americas",
+              "Asia",
+              "Europe",
+              "Oceania"
+            ]
+          },
+          "legend": {
+            "orient": "bottom-right",
+            "direction": "vertical",
+            "symbolType": "circle",
+            "symbolSize": 90,
+            "labelFontSize": 11
+          }
+        },
+        "detail": {
+          "field": "country"
+        },
+        "order": {
+          "field": "y"
+        }
+      }
+    },
+    {
+      "transform": [
+        {
+          "filter": "datum.y === year"
+        }
+      ],
+      "mark": {
+        "type": "circle",
+        "opacity": 0.85,
+        "stroke": "white",
+        "strokeWidth": 0.8,
+        "clip": true
+      },
+      "encoding": {
+        "x": {
+          "field": "gdp",
+          "type": "quantitative",
+          "title": "Income per person (GDP per capita, $, log)",
+          "scale": {
+            "type": "log",
+            "domain": [
+              250,
+              60000
+            ]
+          },
+          "axis": {
+            "format": "~s",
+            "tickCount": 6,
+            "grid": true
+          }
+        },
+        "y": {
+          "field": "life",
+          "type": "quantitative",
+          "title": "Life expectancy (years)",
+          "scale": {
+            "domain": [
+              25,
+              85
+            ]
+          }
+        },
+        "color": {
+          "field": "continent",
+          "type": "nominal",
+          "title": null,
+          "scale": {
+            "domain": [
+              "Africa",
+              "Americas",
+              "Asia",
+              "Europe",
+              "Oceania"
+            ]
+          },
+          "legend": {
+            "orient": "bottom-right",
+            "direction": "vertical",
+            "symbolType": "circle",
+            "symbolSize": 90,
+            "labelFontSize": 11,
+            "symbolOpacity": 0.9
+          }
+        },
+        "size": {
+          "field": "people",
+          "type": "quantitative",
+          "scale": {
+            "domain": [
+              0,
+              1300000000.0
+            ],
+            "range": [
+              12,
+              2600
+            ]
+          },
+          "legend": null
+        },
+        "order": {
+          "field": "people",
+          "sort": "descending"
+        },
+        "tooltip": [
+          {
+            "field": "country",
+            "title": "Country"
+          },
+          {
+            "field": "y",
+            "title": "Year"
+          },
+          {
+            "field": "life",
+            "title": "Life expectancy",
+            "format": ".1f"
+          },
+          {
+            "field": "gdp",
+            "title": "GDP per capita",
+            "format": "$,.0f"
+          },
+          {
+            "field": "people",
+            "title": "Population",
+            "format": ",.3s"
+          }
+        ]
+      }
+    },
+    {
+      "transform": [
+        {
+          "filter": "datum.y === year && datum.people > 1.8e8"
+        }
+      ],
+      "mark": {
+        "type": "text",
+        "dy": 0,
+        "fontSize": 11,
+        "fontWeight": "bold",
+        "opacity": 0.75,
+        "clip": true
+      },
+      "encoding": {
+        "x": {
+          "field": "gdp",
+          "type": "quantitative",
+          "title": "Income per person (GDP per capita, $, log)",
+          "scale": {
+            "type": "log",
+            "domain": [
+              250,
+              60000
+            ]
+          },
+          "axis": {
+            "format": "~s",
+            "tickCount": 6,
+            "grid": true
+          }
+        },
+        "y": {
+          "field": "life",
+          "type": "quantitative",
+          "title": "Life expectancy (years)",
+          "scale": {
+            "domain": [
+              25,
+              85
+            ]
+          }
+        },
+        "text": {
+          "field": "country"
+        }
+      }
+    }
+  ]
+}

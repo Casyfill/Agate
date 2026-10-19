@@ -1,0 +1,365 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Quickstart · Agate for Obsidian</title>
+<meta name="description" content="A hands-on tutorial: from 26 book notes to a bar chart, step by step, then tailoring its Vega-Lite spec.">
+<link rel="icon" href="images/agate-icon.svg" type="image/svg+xml">
+<script>try { var t = localStorage.getItem("theme"); if (t) document.documentElement.dataset.theme = t; } catch (e) {}</script>
+<link rel="stylesheet" href="site.css">
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <img src="images/agate-icon.svg" alt="">
+    <span class="name"><a href="index.html">Agate</a></span>
+    <nav>
+      <a class="wide" href="index.html#why">Why</a>
+      <a class="wide" href="gallery.html">Gallery</a>
+      <a class="wide" href="quickstart.html" aria-current="page">Quickstart</a>
+      <a href="https://github.com/Casyfill/Agate/blob/main/docs/guide.md">Guide</a>
+      <a href="https://github.com/Casyfill/Agate">GitHub</a>
+      <button class="mode" type="button" aria-label="Switch light or dark mode">◐</button>
+    </nav>
+  </header>
+
+  <div class="hero narrow">
+    <p class="eyebrow">quickstart</p>
+    <h1>Your first chart, step by step.</h1>
+    <p class="lede">A hands-on walk-through: 26 book notes become a chart of what you read, then a bookshelf with covers in the tooltip. About fifteen minutes. Grab the starter files to follow along, or use notes of your own.</p>
+    <div class="cta">
+      <a class="btn primary" href="downloads/reading-starter.zip" download>Download the starter (.zip)</a>
+      <a class="btn" href="https://github.com/Casyfill/Agate/tree/main/docs/downloads/reading-starter">Browse it on GitHub</a>
+    </div>
+    <p class="before"><b>Before you start:</b> Obsidian 1.13 or later with the core <b>Bases</b> plugin on, and Agate installed and enabled under Settings → Community plugins. Until Agate is listed there, copy <code>main.js</code>, <code>manifest.json</code> and <code>styles.css</code> from the <a href="https://github.com/Casyfill/Agate/releases">latest release</a> into <code>.obsidian/plugins/agate/</code>.</p>
+  </div>
+
+  <section class="tut">
+    <div class="tut-text">
+      <p class="tut-n"><span>1</span> notes</p>
+      <h2>Start with notes that have properties.</h2>
+      <p>A chart draws properties, so the first step happens in your notes. Each book is one note, and its frontmatter holds the facts about it: who wrote it, the genre, how long it is, whether you finished it.</p>
+      <pre class="codefig"><code><span class="s">---</span>
+<span class="k">type</span>:<span class="s"> book</span>
+<span class="k">author</span>:<span class="s"> Frank Herbert</span>
+<span class="k">genre</span>:<span class="s"> sci-fi</span>
+<span class="k">pages</span>:<span class="s"> 412</span>
+<span class="k">rating</span>:<span class="s"> 5</span>
+<span class="k">status</span>:<span class="s"> finished</span>
+<span class="k">started</span>:<span class="s"> 2025-04-30</span>
+<span class="k">finished</span>:<span class="s"> 2025-05-09</span>
+<span class="s">---</span></code></pre>
+      <ul class="tips">
+        <li>Use the <b>same property names</b> in every note: <code>genre</code>, not <code>Genre</code> in one and <code>category</code> in another.</li>
+        <li>Write numbers as numbers (<code>412</code>) and dates as <code>YYYY-MM-DD</code>, so Obsidian types them and the chart can do maths.</li>
+        <li>A property like <code>type: book</code> makes the notes easy to pick out in the next step.</li>
+      </ul>
+      <p class="get"><b>Follow along:</b> <a href="downloads/reading-starter.zip" download>download the starter</a> and unzip it into the root of a vault. You get a <code>Reading</code> folder with the 26 book notes (made up, from Agate's demo vault), plus the files for the next steps. Or <a href="https://github.com/Casyfill/Agate/tree/main/docs/downloads/reading-starter/Reading">browse the notes on GitHub</a>.</p>
+    </div>
+    <figure class="tut-fig"><div class="mock">
+  <div class="mock-bar"><i></i><i></i><i></i><span>Reading / Dune.md</span></div>
+  <div class="mock-body">
+    <div class="mock-title">Dune</div>
+    <div class="mock-props">
+      <div class="mock-props-h">Properties</div>
+      <div class="mock-prop"><span>type</span><b>book</b></div><div class="mock-prop"><span>author</span><b>Frank Herbert</b></div><div class="mock-prop"><span>genre</span><b>sci-fi</b></div><div class="mock-prop"><span>pages</span><b>412</b></div><div class="mock-prop"><span>rating</span><b>5</b></div><div class="mock-prop"><span>status</span><b>finished</b></div><div class="mock-prop"><span>started</span><b>2025-04-30</b></div><div class="mock-prop"><span>finished</span><b>2025-05-09</b></div>
+    </div>
+    <p class="mock-text"><i>Frank Herbert</i>, 412 pages. Read in 9 days, ★★★★★.</p>
+    <p class="mock-h">Notes</p>
+    <p class="mock-text">· Slow start, worth it after the first third.</p>
+  </div>
+</div><figcaption>One note per book; the properties panel shows its frontmatter.</figcaption></figure>
+  </section>
+
+  <section class="tut">
+    <div class="tut-text">
+      <p class="tut-n"><span>2</span> base</p>
+      <h2>Let a base pick the notes.</h2>
+      <p>A base is Obsidian's query over your notes: a filter, the columns to show, a sort. Create one with <b>New base</b> from the file menu, or open <code>Books.base</code> from the starter. Here it keeps every note with <code>type == "book"</code>.</p>
+      <pre class="codefig"><code><span class="k">filters</span>:<span class="s"></span>
+  <span class="k">and</span>:<span class="s"></span>
+<span class="s">    - type == &quot;book&quot;</span>
+<span class="k">views</span>:<span class="s"></span>
+  - <span class="k">type</span>:<span class="s"> table</span>
+    <span class="k">name</span>:<span class="s"> Shelf</span>
+    <span class="k">order</span>:<span class="s"> [file.name, author, genre, pages,</span>
+<span class="s">            status, started, finished, rating]</span>
+    <span class="k">sort</span>:<span class="s"></span>
+      - <span class="k">property</span>:<span class="s"> started</span>
+        <span class="k">direction</span>:<span class="s"> DESC</span></code></pre>
+      <p>You rarely write this by hand: <b>Filter</b>, <b>Properties</b> and <b>Sort</b> in the toolbar write it for you. Every column you can show is a field the chart can draw, named by its property id: <code>note.genre</code>, <code>note.pages</code>, <code>file.name</code>.</p>
+      <p class="get"><b>The file:</b> <a href="https://github.com/Casyfill/Agate/blob/main/docs/downloads/reading-starter/Books.base">Books.base on GitHub</a>. The demo vault's richer version is <a href="https://github.com/Casyfill/Agate/blob/main/demo-vault/bases/Reading.base">Reading.base</a>.</p>
+    </div>
+    <figure class="tut-fig"><div class="mock">
+  <div class="mock-bar"><i></i><i></i><i></i><span>Books.base</span></div>
+  <div class="mock-body tight">
+    <div class="mock-toolbar"><b>▦ Shelf</b><span>26 results</span><em>Sort</em><em>Filter</em><em>Properties</em><em>+ New</em></div>
+    <table class="mock-table"><thead><tr><th>file name</th><th>author</th><th>genre</th><th>pages</th><th>status</th><th>rating</th></tr></thead><tbody><tr><td class="lnk">SPQR</td><td>Mary Beard</td><td>history</td><td class="num">608</td><td>reading</td><td class="num"></td></tr><tr><td class="lnk">The Three-Body Problem</td><td>Liu Cixin</td><td>sci-fi</td><td class="num">400</td><td>reading</td><td class="num"></td></tr><tr><td class="lnk">Lincoln in the Bardo</td><td>George Saunders</td><td>fiction</td><td class="num">343</td><td>finished</td><td class="num">4</td></tr><tr><td class="lnk">Foundation</td><td>Isaac Asimov</td><td>sci-fi</td><td class="num">244</td><td>finished</td><td class="num">4</td></tr><tr><td class="lnk">The Girl with the Dragon Tattoo</td><td>Stieg Larsson</td><td>thriller</td><td class="num">465</td><td>finished</td><td class="num">3</td></tr><tr><td class="lnk">The Silk Roads</td><td>Peter Frankopan</td><td>history</td><td class="num">636</td><td>finished</td><td class="num">4</td></tr><tr><td class="lnk">A Wizard of Earthsea</td><td>Ursula K. Le Guin</td><td>fantasy</td><td class="num">183</td><td>finished</td><td class="num">4</td></tr></tbody></table>
+    <div class="mock-more">… 19 more</div>
+  </div>
+</div><figcaption>The base's table view: the notes it picked, the properties as columns.</figcaption></figure>
+  </section>
+
+  <section class="tut">
+    <div class="tut-text">
+      <p class="tut-n"><span>3</span> chart</p>
+      <h2>Add a chart view.</h2>
+      <p>In the base, open the view menu and <b>Add view</b>, then set its layout to <b>Agate chart</b>. The empty view offers two ways in.</p>
+      <h3>With a recipe</h3>
+      <ol>
+        <li>Click <b>Pick a recipe</b> and choose <b>Notes per category</b>.</li>
+        <li>Set <b>Category</b> to <code>genre</code> and <b>Colour by</b> to <code>status</code>.</li>
+        <li>Keep the file name <code>bars-genre.vl.json</code> and click <b>Create chart</b>.</li>
+      </ol>
+      <p>Agate writes the spec into <code>charts/</code> and points the view at it. The chart appears straight away.</p>
+      <h3>Or with an assistant</h3>
+      <p>Click <b>Copy prompt for an LLM</b>. The prompt holds your base's properties, a few sample notes and the rules a working Agate spec follows. Paste it into any assistant, describe the chart in plain words, save the reply as a <code>.vl.json</code> file and pick it as the view's <b>Spec file</b>.</p>
+      <pre class="codefig prompt"><code>I use Obsidian with the Agate plugin, which renders
+Vega and Vega-Lite specs over an Obsidian Bases view.
+Write a chart spec for me.
+
+## What I want
+Books per genre as horizontal bars, coloured by status.
+
+## Data
+The spec receives the notes of an Obsidian base
+(view &quot;Shelf&quot;), 26 notes, as a dataset named `base`.
+…
+Properties in this base:
+- `note.genre` (text)
+- `note.pages` (number)
+- `note.status` (text)
+…</code></pre>
+      <p class="get"><b>Either way, this is the spec:</b> <a href="https://github.com/Casyfill/Agate/blob/main/docs/downloads/reading-starter/charts/bars-genre.vl.json">bars-genre.vl.json</a>. It is also in the starter, already wired to the base's <b>Genres</b> view.</p>
+    </div>
+    <figure class="tut-fig"><div class="mock">
+  <div class="mock-bar"><i></i><i></i><i></i><span>Books.base · Pick a recipe</span></div>
+  <div class="mock-body">
+    <div class="mock-search">Pick a recipe…</div>
+    <ul class="mock-list"><li class="">Timeline</li><li class="on">Notes per category</li><li class="">Scatter plot</li><li class="">Histogram</li><li class="">Line over time</li><li class="">Calendar heatmap</li><li class="">Folder sunburst</li><li class="dim">… 5 more</li></ul>
+  </div>
+</div>
+<div class="mock mock-modal">
+  <div class="mock-body">
+    <div class="mock-title small">Notes per category</div>
+    <p class="mock-text dim">Horizontal bars counting notes by a property. Sort the bars from the Bases toolbar.</p>
+    <div class="mock-field"><span>Category</span><b>genre&nbsp;&nbsp;(note.genre) ▾</b></div>
+    <div class="mock-field"><span>Colour by (optional)</span><b>status&nbsp;&nbsp;(note.status) ▾</b></div>
+    <div class="mock-field"><span>File name<small>Saved in charts. The current view will use it.</small></span><b class="txt">bars-genre.vl.json</b></div>
+    <div class="mock-buttons"><em>Cancel</em><em class="cta">Create chart</em></div>
+  </div>
+</div><figcaption>Pick a recipe, then say which property goes where.</figcaption></figure>
+  </section>
+
+  <section class="tut">
+    <div class="tut-text">
+      <p class="tut-n"><span>4</span> spec</p>
+      <h2>Read the spec, then make it yours.</h2>
+      <p>The spec is plain <a href="https://vega.github.io/vega-lite/">Vega-Lite</a> JSON. Read it top to bottom: the data is the base's notes; a bar mark; the genre down the side, a count along the bottom, colour from the status. The filter drops books with no genre.</p>
+      <pre class="codefig"><code>{
+  <span class="k">&quot;$schema&quot;</span>: <span class="s">&quot;https://vega.github.io/schema/vega-lite/v6.json&quot;</span>,
+  <span class="k">&quot;data&quot;</span>: {
+    <span class="k">&quot;name&quot;</span>: <span class="s">&quot;base&quot;</span>
+  },
+  <span class="k">&quot;mark&quot;</span>: {
+    <span class="k">&quot;type&quot;</span>: <span class="s">&quot;bar&quot;</span>,
+    <span class="k">&quot;tooltip&quot;</span>: <span class="n">true</span>,
+    <span class="k">&quot;cornerRadiusEnd&quot;</span>: <span class="n">3</span>
+  },
+  <span class="k">&quot;encoding&quot;</span>: {
+    <span class="k">&quot;y&quot;</span>: {
+      <span class="k">&quot;field&quot;</span>: <span class="s">&quot;note.genre&quot;</span>,
+      <span class="k">&quot;type&quot;</span>: <span class="s">&quot;nominal&quot;</span>,
+      <span class="k">&quot;sort&quot;</span>: <span class="s">&quot;-x&quot;</span>,
+      <span class="k">&quot;title&quot;</span>: <span class="s">&quot;genre&quot;</span>
+    },
+    <span class="k">&quot;x&quot;</span>: {
+      <span class="k">&quot;aggregate&quot;</span>: <span class="s">&quot;count&quot;</span>,
+      <span class="k">&quot;title&quot;</span>: <span class="s">&quot;Notes&quot;</span>
+    },
+    <span class="k">&quot;color&quot;</span>: {
+      <span class="k">&quot;field&quot;</span>: <span class="s">&quot;note.status&quot;</span>,
+      <span class="k">&quot;type&quot;</span>: <span class="s">&quot;nominal&quot;</span>,
+      <span class="k">&quot;title&quot;</span>: <span class="s">&quot;status&quot;</span>
+    }
+  },
+  <span class="k">&quot;transform&quot;</span>: [
+    {
+      <span class="k">&quot;filter&quot;</span>: <span class="s">&quot;isValid(datum[\&quot;note\&quot;][\&quot;genre\&quot;]) &amp;&amp; datum[\&quot;note\&quot;][\&quot;genre\&quot;] !== &#x27;&#x27;&quot;</span>
+    }
+  ]
+}</code></pre>
+      <p><b>Where to edit it.</b> Obsidian doesn't open <code>.json</code> files itself, so open <code>charts/bars-genre.vl.json</code> in any text editor and keep the base open next to it: Agate watches spec files, and every save redraws every chart that uses the file. To stay inside Obsidian, paste the spec into the view's <b>Inline spec (JSON)</b> option, or into an <code>agate</code> code block in a note.</p>
+    </div>
+    <figure class="tut-fig"><div class="render"><img src="site/quickstart/base.jpg" alt="Books per genre as horizontal bars, coloured by finished, reading and abandoned" loading="lazy"></div><figcaption>What the recipe draws from the 26 books.</figcaption></figure>
+  </section>
+
+  <section class="tweaks">
+    <p class="sub">Four small edits, each a few lines, and one for when you want more. Make them one after another and watch the chart change on every save.</p>
+    
+    <div class="tut tweak">
+      <div class="tut-text">
+        <p class="tweak-n">4.1</p>
+        <h3>Pick the colours</h3>
+        <p>Vega-Lite chose a palette for the three statuses. Give each its own colour with a <code>scale</code> on the colour channel: green for finished, blue for reading, grey for abandoned.</p>
+        <pre class="codefig"><code><span class="k">&quot;color&quot;</span>: {
+  <span class="k">&quot;field&quot;</span>: <span class="s">&quot;note.status&quot;</span>,
+  <span class="k">&quot;type&quot;</span>: <span class="s">&quot;nominal&quot;</span>,
+  <span class="k">&quot;title&quot;</span>: <span class="s">&quot;status&quot;</span>,
+  <span class="k">&quot;scale&quot;</span>: {
+    <span class="k">&quot;domain&quot;</span>: [<span class="s">&quot;finished&quot;</span>, <span class="s">&quot;reading&quot;</span>, <span class="s">&quot;abandoned&quot;</span>],
+    <span class="k">&quot;range&quot;</span>: [<span class="s">&quot;#44cf6e&quot;</span>, <span class="s">&quot;#027aff&quot;</span>, <span class="s">&quot;#6b6b6b&quot;</span>]
+  }
+}</code></pre>
+      </div>
+      <figure class="tut-fig"><div class="render"><img src="site/quickstart/colours.jpg" alt="The bar chart after this edit" loading="lazy"></div></figure>
+    </div>
+    <div class="tut tweak">
+      <div class="tut-text">
+        <p class="tweak-n">4.2</p>
+        <h3>Count pages, not books</h3>
+        <p>Swap the count for a sum of a number property. Now each bar shows how many pages of that genre you got through: history is long, thrillers are quick.</p>
+        <pre class="codefig"><code><span class="k">&quot;x&quot;</span>: {
+  <span class="k">&quot;aggregate&quot;</span>: <span class="s">&quot;sum&quot;</span>,
+  <span class="k">&quot;field&quot;</span>: <span class="s">&quot;note.pages&quot;</span>,
+  <span class="k">&quot;title&quot;</span>: <span class="s">&quot;Pages&quot;</span>
+}</code></pre>
+      </div>
+      <figure class="tut-fig"><div class="render"><img src="site/quickstart/pages.jpg" alt="The bar chart after this edit" loading="lazy"></div></figure>
+    </div>
+    <div class="tut tweak">
+      <div class="tut-text">
+        <p class="tweak-n">4.3</p>
+        <h3>Title it, tidy the legend</h3>
+        <p>Add a title at the top level, drop the axis title the title now explains, and move the legend under the chart.</p>
+        <pre class="codefig"><code><span class="k">&quot;title&quot;</span>: {
+  <span class="k">&quot;text&quot;</span>: <span class="s">&quot;Where my reading time went&quot;</span>,
+  <span class="k">&quot;anchor&quot;</span>: <span class="s">&quot;start&quot;</span>
+},
+<span class="k">&quot;encoding&quot;</span>: {
+  <span class="k">&quot;y&quot;</span>: { …, <span class="k">&quot;title&quot;</span>: <span class="n">null</span> },
+  <span class="k">&quot;color&quot;</span>: { …, <span class="k">&quot;legend&quot;</span>: { <span class="k">&quot;orient&quot;</span>: <span class="s">&quot;bottom&quot;</span>, <span class="k">&quot;title&quot;</span>: <span class="n">null</span> } }
+}</code></pre>
+      </div>
+      <figure class="tut-fig"><div class="render"><img src="site/quickstart/titled.jpg" alt="The bar chart after this edit" loading="lazy"></div></figure>
+    </div>
+
+    <div class="tut tweak">
+      <div class="tut-text">
+        <p class="tweak-n">4.4</p>
+        <h3>One block per book, with its cover</h3>
+        <p>Split each bar into its books: <code>detail</code> draws one block per note, <code>order</code> lines them up by when you started, and a thin dark stroke separates the spines. Now the chart reads like a shelf: the grey doorstoppers you gave up on stand out.</p>
+        <p>Then put the cover in the tooltip. Add a formula to the base that turns each book's <code>isbn</code> into an <a href="https://openlibrary.org/dev/docs/api/covers">Open Library cover</a> URL:</p>
+        <pre class="codefig"><code><span class="k">formulas</span>:<span class="s"></span>
+<span class="k">  cover</span>:<span class="s"> if(isbn, &quot;https://covers.openlibrary.org/b/isbn/&quot; + isbn + &quot;-M.jpg&quot;, null)</span></code></pre>
+        <p>and list it in the tooltip with the title <code>image</code>: Agate draws that field as a picture, and the one titled <code>title</code> as the heading. Hover a block to see the book; click it to open the note.</p>
+        <pre class="codefig"><code><span class="k">&quot;mark&quot;</span>: { <span class="k">&quot;type&quot;</span>: <span class="s">&quot;bar&quot;</span>, <span class="k">&quot;stroke&quot;</span>: <span class="s">&quot;#1e1e1e&quot;</span>, <span class="k">&quot;strokeWidth&quot;</span>: <span class="n">1.5</span> },
+<span class="k">&quot;encoding&quot;</span>: {
+  …,
+  <span class="k">&quot;detail&quot;</span>: { <span class="k">&quot;field&quot;</span>: <span class="s">&quot;file.name&quot;</span> },
+  <span class="k">&quot;order&quot;</span>: { <span class="k">&quot;field&quot;</span>: <span class="s">&quot;note.started&quot;</span>, <span class="k">&quot;type&quot;</span>: <span class="s">&quot;temporal&quot;</span> },
+  <span class="k">&quot;tooltip&quot;</span>: [
+    { <span class="k">&quot;field&quot;</span>: <span class="s">&quot;file.name&quot;</span>, <span class="k">&quot;title&quot;</span>: <span class="s">&quot;title&quot;</span> },
+    { <span class="k">&quot;field&quot;</span>: <span class="s">&quot;formula.cover&quot;</span>, <span class="k">&quot;title&quot;</span>: <span class="s">&quot;image&quot;</span> },
+    { <span class="k">&quot;field&quot;</span>: <span class="s">&quot;note.author&quot;</span>, <span class="k">&quot;title&quot;</span>: <span class="s">&quot;Author&quot;</span> },
+    { <span class="k">&quot;field&quot;</span>: <span class="s">&quot;note.pages&quot;</span>, <span class="k">&quot;title&quot;</span>: <span class="s">&quot;Pages&quot;</span> }
+  ]
+}</code></pre>
+        <p class="get"><b>The finished spec:</b> <a href="https://github.com/Casyfill/Agate/blob/main/docs/downloads/reading-starter/charts/bookshelf.vl.json">bookshelf.vl.json</a>, also in the starter with the formula, as the base's <b>Bookshelf</b> view.</p>
+      </div>
+      <figure class="tut-fig"><div class="render"><img src="site/quickstart/shelf-tooltip.jpg" alt="Pages per genre, one block per book; hovering Dune shows its cover, author, pages and status" loading="lazy"></div><figcaption>Hover a book: its cover, from the ISBN in the note.</figcaption></figure>
+    </div>
+
+    <div class="tut tweak">
+      <div class="tut-text">
+        <p class="tweak-n">4.5 · going further</p>
+        <h3>Covers on the spines, an open end for what you're reading, hatching for what you dropped</h3>
+        <p>To draw on top of each block you need its position, so compute the stack yourself: a <code>stack</code> transform gives every book its start and end (<code>x0</code>, <code>x1</code>). Then layer three marks on the same positions: the finished and abandoned books as plain blocks, the books still in progress with a rounded, open right end, and each cover as a small <code>image</code> at the start of its block.</p>
+        <pre class="codefig"><code><span class="k">&quot;transform&quot;</span>: [
+  …,
+  { <span class="k">&quot;stack&quot;</span>: <span class="s">&quot;pages&quot;</span>, <span class="k">&quot;groupby&quot;</span>: [<span class="s">&quot;genre&quot;</span>],
+    <span class="k">&quot;sort&quot;</span>: [{ <span class="k">&quot;field&quot;</span>: <span class="s">&quot;started&quot;</span> }], <span class="k">&quot;as&quot;</span>: [<span class="s">&quot;x0&quot;</span>, <span class="s">&quot;x1&quot;</span>] }
+],
+<span class="k">&quot;layer&quot;</span>: [
+  { <span class="k">&quot;transform&quot;</span>: [{ <span class="k">&quot;filter&quot;</span>: <span class="s">&quot;datum.status !== &#x27;reading&#x27;&quot;</span> }],
+    <span class="k">&quot;mark&quot;</span>: { <span class="k">&quot;type&quot;</span>: <span class="s">&quot;bar&quot;</span>, <span class="k">&quot;cornerRadius&quot;</span>: <span class="n">2</span> }, … },
+  { <span class="k">&quot;transform&quot;</span>: [{ <span class="k">&quot;filter&quot;</span>: <span class="s">&quot;datum.status === &#x27;reading&#x27;&quot;</span> }],
+    <span class="k">&quot;mark&quot;</span>: { <span class="k">&quot;type&quot;</span>: <span class="s">&quot;bar&quot;</span>, <span class="k">&quot;cornerRadiusTopRight&quot;</span>: <span class="n">18</span>,
+              <span class="k">&quot;cornerRadiusBottomRight&quot;</span>: <span class="n">18</span> }, … },
+  { <span class="k">&quot;transform&quot;</span>: [{ <span class="k">&quot;filter&quot;</span>: <span class="s">&quot;isValid(datum.cover)&quot;</span> }],
+    <span class="k">&quot;mark&quot;</span>: { <span class="k">&quot;type&quot;</span>: <span class="s">&quot;image&quot;</span>, <span class="k">&quot;width&quot;</span>: <span class="n">21</span>, <span class="k">&quot;height&quot;</span>: <span class="n">31</span>,
+              <span class="k">&quot;align&quot;</span>: <span class="s">&quot;left&quot;</span>, <span class="k">&quot;xOffset&quot;</span>: <span class="n">4</span> },
+    <span class="k">&quot;encoding&quot;</span>: { <span class="k">&quot;x&quot;</span>: { <span class="k">&quot;field&quot;</span>: <span class="s">&quot;x0&quot;</span> }, <span class="k">&quot;url&quot;</span>: { <span class="k">&quot;field&quot;</span>: <span class="s">&quot;cover&quot;</span> }, … } }
+]</code></pre>
+        <p>Last, mark the abandoned books as dead ends: an Agate texture hatches them, declared once and used like a colour in the scale, so the legend shows it too (<a href="https://github.com/Casyfill/Agate/blob/main/docs/guide.md#textures-hatching-and-dots-svg-only">textures</a> work with the SVG renderer).</p>
+        <pre class="codefig"><code><span class="k">"usermeta"</span>: { <span class="k">"agate"</span>: { <span class="k">"textures"</span>: {
+  <span class="k">"abandoned"</span>: { <span class="k">"orientation"</span>: <span class="s">"diagonal"</span>, <span class="k">"size"</span>: <span class="n">7</span>,
+                 <span class="k">"stroke"</span>: <span class="s">"#7a7a7a"</span>, <span class="k">"background"</span>: <span class="s">"#2e2e2e"</span> }
+} } },
+<span class="k">"range"</span>: [<span class="s">"#44cf6e"</span>, <span class="s">"#027aff"</span>, <span class="s">"url(#abandoned)"</span>]</code></pre>
+        <p>The covers are image marks, so they load only with <b>Settings → Agate → Load remote data</b> on (tooltip pictures don't need it). Books without an ISBN keep a plain block.</p>
+        <p class="get"><b>The full spec:</b> <a href="https://github.com/Casyfill/Agate/blob/main/docs/downloads/reading-starter/charts/bookshelf-covers.vl.json">bookshelf-covers.vl.json</a>, the base's <b>Bookshelf with covers</b> view in the starter.</p>
+      </div>
+      <figure class="tut-fig"><div class="render"><img src="site/quickstart/shelf-covers.jpg" alt="The bookshelf with a cover at the start of each book's block, and the two books in progress ending in a rounded open shape, abandoned books hatched" loading="lazy"></div><figcaption>Thirteen books have an ISBN, so thirteen covers.</figcaption></figure>
+    </div>
+  </section>
+
+  <section class="tut">
+    <div class="tut-text">
+      <p class="tut-n"><span>5</span> note</p>
+      <h2>Put it where you write.</h2>
+      <p>The chart is a view of the base, so it shows up wherever a base can. Embed it in any note by name:</p>
+      <pre class="codefig"><code>![[Books.base#Bookshelf with covers]]</code></pre>
+      <p>Or point an <code>agate</code> block at the spec and the base, which leaves the base's own views alone:</p>
+      <pre class="codefig"><code>```agate
+spec: charts/bookshelf-covers.vl.json
+base: Books.base
+```</code></pre>
+      <p>Add a book note and the bar grows; filter the base to this year and the chart follows.</p>
+      <p>The numbers above the chart are a spec too: Vega counts and sums over the same base, and Agate shows the result as note text instead of a chart. The starter's <b>Numbers</b> view uses <a href="https://github.com/Casyfill/Agate/blob/main/docs/downloads/reading-starter/charts/reading-stats.vl.json">reading-stats.vl.json</a>; how it works is in <a href="https://github.com/Casyfill/Agate/blob/main/docs/guide.md#11-experimental-big-numbers-as-note-text">the guide's big numbers section</a>.</p>
+    </div>
+    <figure class="tut-fig"><div class="mock">
+  <div class="mock-bar"><i></i><i></i><i></i><span>Reading 2026.md</span></div>
+  <div class="mock-body">
+    <div class="mock-title">Reading 2026</div>
+    <p class="mock-text">Long year for history; the thrillers went fast. Two books still on the go.</p>
+    <p class="mock-text dim">![[Books.base#Numbers]]</p>
+    <div class="mock-stats"><div><b>20</b><span>books finished</span><small>of 26 started</small></div><div><b>7,778</b><span>pages read</span><small>in finished books</small></div><div><b>13</b><span>days per book</span><small>median, start to finish</small></div><div><b>3,434</b><span>pages abandoned</span><small>in 4 books I put down</small></div></div>
+    <p class="mock-text dim">![[Books.base#Bookshelf with covers]]</p>
+    <div class="mock-embed"><img src="site/quickstart/shelf-covers.jpg" alt="The finished bookshelf chart embedded in a note: one block per book with its cover" loading="lazy"></div>
+    <p class="mock-h">Next up</p>
+    <p class="mock-text">· Finish SPQR before the trip.</p>
+  </div>
+</div><figcaption>The finished chart, embedded in a note. It updates as the notes change.</figcaption></figure>
+  </section>
+
+  <section>
+    <div class="panel">
+      <h2>Where next.</h2>
+      <p>The same steps make any chart: different notes, a different recipe or prompt, a different spec.</p>
+      <div class="lead-links">
+        <a href="gallery.html">See what else it can draw</a>
+        <a href="https://github.com/Casyfill/Agate/blob/main/docs/guide.md#4-building-a-new-visualisation">Build a chart from a Vega example</a>
+        <a href="https://github.com/Casyfill/Agate/blob/main/docs/guide.md#8-theme-dark-mode-and-colour">Themes and textures</a>
+        <a href="https://github.com/Casyfill/Agate/blob/main/docs/guide.md#6-per-note-external-data">Each note's own data</a>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    Agate is MIT-licensed and made by <a href="https://github.com/Casyfill">Philipp Kats</a>. Vega and Vega-Lite are by the <a href="https://vega.github.io/">UW Interactive Data Lab</a>. Not affiliated with Obsidian.
+  </footer>
+
+</div>
+<script>
+  document.querySelector(".mode").onclick = function () {
+    var root = document.documentElement;
+    var dark = root.dataset.theme ? root.dataset.theme === "dark" : matchMedia("(prefers-color-scheme: dark)").matches;
+    root.dataset.theme = dark ? "light" : "dark";
+    try { localStorage.setItem("theme", root.dataset.theme); } catch (e) {}
+  };
+</script>
+</body>
+</html>

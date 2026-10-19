@@ -1,0 +1,23 @@
+filters:
+  or:
+    - type == "meeting"
+    - type == "person"
+    - type == "project"
+views:
+  - type: agate
+    name: Who I meet
+    filters:
+      and:
+        - type == "meeting"
+    order: [file.name, date, kind, duration, attendees]
+    specFile: charts/meetings-heatmap.vl.json
+  - type: agate
+    name: People and projects
+    order: [file.name, type, team, area]
+    specFile: charts/people-graph.vg.json
+  - type: table
+    name: Meetings
+    filters:
+      and:
+        - type == "meeting"
+    order: [file.name, date, kind, duration, project]

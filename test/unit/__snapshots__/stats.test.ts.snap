@@ -1,0 +1,24 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`stats output (experimental) > computes the stats with their changes (tests/Surfaces/13 Stats, section 3) 1`] = `
+[
+  [
+    "books",
+    "15",
+    "7",
+    true,
+  ],
+  [
+    "mean rating",
+    "4.0",
+    "±0",
+    undefined,
+  ],
+  [
+    "pages per book",
+    "351",
+    "86",
+    false,
+  ],
+]
+`;

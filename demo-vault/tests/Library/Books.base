@@ -1,0 +1,111 @@
+filters:
+  and:
+    - file.inFolder("tests/Library")
+    - file.hasTag("book")
+formulas:
+  age: if(published, today().year - published.year, null)
+  decade: if(published, (published.year / 10).floor() * 10, null)
+  cover: if(isbn, "https://covers.openlibrary.org/b/isbn/" + isbn + "-M.jpg", null)
+properties:
+  note.rating:
+    displayName: Rating
+  note.pages:
+    displayName: Pages
+  formula.age:
+    displayName: Age (years)
+views:
+  - type: table
+    name: Table
+    order:
+      - file.name
+      - author
+      - genre
+      - rating
+      - pages
+      - published
+      - formula.age
+      - formula.decade
+    sort:
+      - property: rating
+        direction: DESC
+  - type: agate
+    name: Ratings
+    order:
+      - file.name
+      - rating
+      - genre
+    sort:
+      - property: genre
+        direction: DESC
+    specFile: tests/charts/ratings-by-genre.vl.json
+  - type: agate
+    name: Scatter
+    order:
+      - file.name
+      - author
+      - genre
+      - rating
+      - pages
+    specFile: tests/charts/pages-vs-rating.vl.json
+  - type: agate
+    name: Timeline
+    order:
+      - file.name
+      - genre
+      - published
+      - formula.decade
+    specFile: tests/charts/published-by-decade.vl.json
+  - type: agate
+    name: Histogram (Vega)
+    order:
+      - file.name
+      - rating
+    specFile: tests/charts/ratings-histogram.vg.json
+  - type: agate
+    name: Grouped
+    groupBy:
+      property: genre
+      direction: ASC
+    order:
+      - file.name
+      - genre
+      - rating
+    specFile: tests/charts/grouped-rating-strip.vl.json
+  - type: agate
+    name: Inline spec
+    order:
+      - file.name
+      - status
+    spec: '{"mark": {"type": "bar", "tooltip": true}, "encoding": {"x": {"field": "note.status", "type": "nominal", "title": "Status"}, "y": {"aggregate": "count", "title": "Books"}}, "height": 160}'
+  - type: agate
+    name: Covers
+    order:
+      - file.name
+      - author
+      - rating
+      - pages
+    specFile: tests/charts/covers-tooltip.vl.json
+  - type: agate
+    name: Reading flow
+    order:
+      - file.name
+      - genre
+      - status
+      - rating
+    specFile: tests/charts/reading-sankey.vg.json
+  - type: agate
+    name: Dashboard
+    order:
+      - file.name
+      - author
+      - genre
+      - rating
+      - pages
+      - published
+    specFile: tests/charts/reading-dashboard.vl.json
+  - type: agate
+    name: View
+    specFile: tests/charts/histogram-rating.vl.json
+  - type: agate
+    name: View 2
+    spec: "{   \"$schema\": \"https://vega.github.io/schema/vega-lite/v6.json\",   \"description\": \"Books by publication date and rating; size is pages, colour is genre. Hover for the cover, click to open the note.\",   \"usermeta\": { \"agate\": { \"open\": \"click\" } },   \"data\": { \"name\": \"base\" },   \"transform\": [     { \"filter\": \"isValid(datum['note']['published']) && isValid(datum['note']['rating'])\" }   ],   \"height\": 300,   \"mark\": { \"type\": \"circle\", \"opacity\": 0.85, \"stroke\": \"white\", \"strokeWidth\": 0.5, \"cursor\": \"pointer\" },   \"encoding\": {     \"x\": { \"field\": \"note.published\", \"type\": \"temporal\", \"title\": \"Published\" },     \"y\": { \"field\": \"note.rating\", \"type\": \"quantitative\", \"title\": \"Rating\", \"scale\": { \"domain\": [0, 5] }, \"axis\": { \"tickMinStep\": 1 } },     \"size\": { \"field\": \"note.pages\", \"type\": \"quantitative\", \"title\": \"Pages\", \"scale\": { \"range\": [60, 900] } },     \"color\": { \"field\": \"note.genre\", \"type\": \"nominal\", \"title\": \"Genre\" },     \"tooltip\": [       { \"field\": \"file.name\", \"title\": \"title\" },       { \"field\": \"formula.cover\", \"title\": \"image\" },       { \"field\": \"note.author\", \"title\": \"Author\" },       { \"field\": \"note.published\", \"type\": \"temporal\", \"format\": \"%Y\", \"title\": \"Published\" },       { \"field\": \"note.rating\", \"title\": \"Rating\" },       { \"field\": \"note.pages\", \"title\": \"Pages\" },       { \"field\": \"note.status\", \"title\": \"Status\" }     ]   } }"

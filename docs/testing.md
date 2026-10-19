@@ -1,6 +1,6 @@
 # Testing Agate
 
-Obsidian cannot run in CI cheaply and the `obsidian` package ships type declarations only, so testing is layered (ADR-0001 D8): everything that can run in Node does, and what needs Obsidian is a short manual checklist over the committed test vault.
+Obsidian cannot run in CI cheaply and the `obsidian` package ships type declarations only, so testing is layered (ADR-0001 D8): everything that can run in Node does, and what needs Obsidian is a short manual checklist over the test notes in the committed repo vault (`demo-vault/tests/`, ADR-0002).
 
 ## Commands
 
@@ -27,19 +27,19 @@ What is covered: block parsing and the bare-spec versus envelope decision, mode 
 
 ## Layer 2: headless renders (`test/render/specs.test.ts`)
 
-Every spec in `test-vault/charts/` is compiled (Vega-Lite → Vega where needed), given rows in the D4 shape from `test/fixtures/rows.ts` the way the plugin injects them, and rendered to SVG by real Vega with a loader that reads the vault directory. Assertions: at least one shape drawn, no "Infinite extent" warnings (rows must be present on the first run), and a snapshot of the SVG (or a hash for the world map). Snapshots live in `test/render/__snapshots__/`.
+Every spec in `demo-vault/tests/charts/` is compiled (Vega-Lite → Vega where needed), given rows in the D4 shape from `test/fixtures/rows.ts` the way the plugin injects them, and rendered to SVG by real Vega with a loader that reads the vault directory. Assertions: at least one shape drawn, no "Infinite extent" warnings (rows must be present on the first run), and a snapshot of the SVG (or a hash for the world map). Snapshots live in `test/render/__snapshots__/`.
 
 A snapshot diff means one of: the spec changed (expected, update with `npx vitest run -u`), the fixture rows changed, or Agate's spec preprocessing (`ensureNamedData`, `withInitialValues`) changed behaviour. Vega and Vega-Lite upgrades also move snapshots; review the diff, then update.
 
-Adding a fixture spec to `test-vault/charts/` adds it to this suite automatically. Specs that need a dataset other than `base`, or a data file outside the vault directory, need a case in the test.
+Adding a fixture spec to `demo-vault/tests/charts/` adds it to this suite automatically. Specs that need a dataset other than `base`, or a data file outside the vault directory, need a case in the test.
 
-## Layer 3: manual, in Obsidian (`test-vault/`)
+## Layer 3: manual, in Obsidian (`demo-vault/tests/`)
 
-`test-vault/Start here.md` explains the setup; `test-vault/M0 Checklist.md` is the current checklist (it will be renamed to `Checklist.md` and trimmed to the release gate once M0's round-log is no longer useful). The loop:
+`demo-vault/tests/Test guide.md` explains the setup; `demo-vault/tests/M0 Checklist.md` is the current checklist (it will be renamed to `Checklist.md` and trimmed to the release gate once M0's round-log is no longer useful). The loop:
 
 1. `npm run dev` in one terminal (esbuild watch, writes `main.js`).
-2. `npm run install:local` once (symlinks into `test-vault/.obsidian/plugins/agate/`; `AGATE_VAULT=/path npm run install:local` for another vault).
-3. Open `test-vault/` as a vault, trust and enable plugins, enable Agate, turn on Debug logging.
+2. `npm run install:local` once (symlinks into `demo-vault/.obsidian/plugins/agate/`; `AGATE_VAULT=/path npm run install:local` for another vault).
+3. Open `demo-vault/` as a vault, trust and enable plugins, enable Agate, turn on Debug logging.
 4. Rebuilds are picked up by the community Hot Reload plugin, or by the command "Reload app without saving".
 5. Developer console: `Cmd/Ctrl+Shift+I`. Agate logs under `[agate]`; the command "Agate: Debug: dump first Bases row" prints the raw `Value` shapes and the converted row of the last rendered base view, useful whenever Obsidian's Bases API drifts.
 
@@ -47,4 +47,4 @@ Before a tag: the full checklist on desktop, a pass on a real mobile device, and
 
 ## Layer 4: end to end (not yet)
 
-`wdio-obsidian-service` can drive a real Obsidian against `test-vault/` in CI. Planned once the manual checklist outgrows a screen.
+`wdio-obsidian-service` can drive a real Obsidian against `demo-vault/` in CI. Planned once the manual checklist outgrows a screen.

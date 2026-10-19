@@ -1,0 +1,152 @@
+{
+  "$schema": "https://vega.github.io/schema/vega-lite/v6.json",
+  "description": "Reading headline numbers (Agate stats output): books finished, pages read, median days per book, pages abandoned. Vega does the maths over the base; Agate shows the rows as note text.",
+  "usermeta": {
+    "agate": {
+      "output": "stats"
+    }
+  },
+  "data": {
+    "name": "base"
+  },
+  "width": "container",
+  "height": 52,
+  "transform": [
+    {
+      "calculate": "datum.note.status",
+      "as": "status"
+    },
+    {
+      "calculate": "toNumber(datum.note.pages)",
+      "as": "pages"
+    },
+    {
+      "calculate": "datum.status === 'finished' ? 1 : 0",
+      "as": "fin"
+    },
+    {
+      "calculate": "datum.status === 'abandoned' ? 1 : 0",
+      "as": "ab"
+    },
+    {
+      "calculate": "datum.fin ? datum.pages : 0",
+      "as": "finPages"
+    },
+    {
+      "calculate": "datum.ab ? datum.pages : 0",
+      "as": "abPages"
+    },
+    {
+      "calculate": "datum.fin && isValid(datum.note.finished) ? (toDate(datum.note.finished) - toDate(datum.note.started)) / 864e5 : null",
+      "as": "days"
+    },
+    {
+      "aggregate": [
+        {
+          "op": "count",
+          "as": "n"
+        },
+        {
+          "op": "sum",
+          "field": "fin",
+          "as": "fin"
+        },
+        {
+          "op": "sum",
+          "field": "ab",
+          "as": "ab"
+        },
+        {
+          "op": "sum",
+          "field": "finPages",
+          "as": "finPages"
+        },
+        {
+          "op": "sum",
+          "field": "abPages",
+          "as": "abPages"
+        },
+        {
+          "op": "median",
+          "field": "days",
+          "as": "days"
+        }
+      ]
+    },
+    {
+      "calculate": "['finished', 'pages', 'days', 'dropped']",
+      "as": "key"
+    },
+    {
+      "flatten": [
+        "key"
+      ]
+    },
+    {
+      "calculate": "datum.key === 'finished' ? format(datum.fin, 'd') : datum.key === 'pages' ? format(datum.finPages, ',') : datum.key === 'days' ? format(datum.days, '.0f') : format(datum.abPages, ',')",
+      "as": "value"
+    },
+    {
+      "calculate": "datum.key === 'finished' ? 'books finished' : datum.key === 'pages' ? 'pages read' : datum.key === 'days' ? 'days per book' : 'pages abandoned'",
+      "as": "label"
+    },
+    {
+      "calculate": "datum.key === 'finished' ? 'of ' + datum.n + ' started' : datum.key === 'pages' ? 'in finished books' : datum.key === 'days' ? 'median, start to finish' : 'in ' + datum.ab + ' books I put down'",
+      "as": "note"
+    },
+    {
+      "calculate": "indexof(['finished', 'pages', 'days', 'dropped'], datum.key)",
+      "as": "i"
+    }
+  ],
+  "encoding": {
+    "x": {
+      "field": "i",
+      "type": "ordinal",
+      "axis": null,
+      "scale": {
+        "type": "band",
+        "paddingInner": 0,
+        "paddingOuter": 0
+      },
+      "bandPosition": 0
+    }
+  },
+  "layer": [
+    {
+      "mark": {
+        "type": "text",
+        "align": "left",
+        "baseline": "alphabetic",
+        "fontSize": 28,
+        "fontWeight": 700,
+        "y": 30
+      },
+      "encoding": {
+        "text": {
+          "field": "value"
+        }
+      }
+    },
+    {
+      "mark": {
+        "type": "text",
+        "align": "left",
+        "baseline": "alphabetic",
+        "fontSize": 11,
+        "opacity": 0.7,
+        "y": 48
+      },
+      "encoding": {
+        "text": {
+          "field": "label"
+        }
+      }
+    }
+  ],
+  "config": {
+    "view": {
+      "stroke": null
+    }
+  }
+}

@@ -107,3 +107,66 @@ ${env ? environmentSection(env) : ""}## Rules
 
 Reply with the JSON spec only.`;
 }
+
+/**
+ * "Copy theme prompt" (companion to the chart prompt): everything an LLM needs to write a static Vega
+ * `config` theme that matches the user's Obsidian theme and current overrides, to paste into the
+ * "Theme file" setting. Agate makes no network call and holds no key.
+ */
+export interface ThemePromptInput {
+  colors: Record<string, string>;
+  fonts: { interface: string; text: string; mono: string; textSize: number };
+  /** The user's current "Config overrides" setting, if any, so the assistant keeps what still applies. */
+  currentOverrides?: string;
+  /** Where the result goes, shown in the instruction. */
+  themeFilePath?: string;
+  env?: PromptEnvironment;
+}
+
+export function buildThemePrompt(input: ThemePromptInput): string {
+  const { colors, fonts, currentOverrides, themeFilePath, env } = input;
+  const vgMajor = env ? major(env.vega) : "6";
+  const palette = Object.entries(colors)
+    .map(([role, hex]) => `- ${role}: ${hex}`)
+    .join("\n");
+  const overrides = currentOverrides?.trim();
+  const target = themeFilePath?.trim() || "agate/theme.json";
+
+  return `I use Obsidian with the Agate plugin, which renders Vega and Vega-Lite specs over an Obsidian Bases view. A "theme" in Agate is a plain Vega \`config\` object (no data, no marks, no $schema) that is merged under every chart. Write one for me.
+
+## What I want
+
+<describe the look: mood, contrast, whether the background should be transparent or a colour, any fonts or accent to lean on>
+
+## My Obsidian theme
+
+Match or tastefully complement these. Colours (role: value):
+${palette}
+
+Fonts: interface "${fonts.interface}", reading "${fonts.text}", monospace "${fonts.mono}"; base text size ${fonts.textSize}px.
+${
+  overrides
+    ? `
+## My current overrides
+
+Keep what still applies and fold it into the result:
+
+\`\`\`json
+${overrides}
+\`\`\`
+`
+    : ""
+}
+## How Agate will use it
+
+I'll save your reply to the "Theme file" setting (\`${target}\`), where it applies to every chart in the vault. Unlike Agate's built-in dynamic \`obsidian\` theme, this file is a fixed snapshot: it will not re-derive from my theme when I switch light and dark, so pick colours that read on my background.
+
+## Rules
+
+- Output a single Vega \`config\` object valid for Vega v${vgMajor}. No \`$schema\`, \`data\`, \`marks\` or top-level chart keys.
+- Set \`background\` (use "transparent" to sit on the Obsidian pane, or a colour if the look needs one).
+- Cover the usual keys: \`title\`, \`axis\` (labelColor, titleColor, domainColor, tickColor, gridColor, labelFont, titleFont, and label/title font sizes), \`legend\`, \`header\`, \`view\` (stroke "transparent"), \`mark\` (color), \`text\` (color), and \`range.category\` as an array of distinct, legible hues.
+- Prefer the \`font\` keys over hard-coding one weight; keep sizes proportional to the base text size above.
+
+Reply with the JSON config object only.`;
+}

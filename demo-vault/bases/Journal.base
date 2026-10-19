@@ -1,0 +1,15 @@
+filters:
+  and:
+    - type == "journal"
+views:
+  - type: agate
+    name: Habits
+    order: [date, habits, mood]
+    specFile: charts/habit-grid.vl.json
+  - type: agate
+    name: Mood
+    order: [date, mood, energy, sleep]
+    specFile: charts/mood-beeswarm.vg.json
+  - type: table
+    name: Table
+    order: [date, mood, energy, sleep, habits]

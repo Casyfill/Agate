@@ -1,0 +1,21 @@
+filters:
+  and:
+    - type == "book"
+views:
+  - type: agate
+    name: Reading year
+    order: [file.name, author, genre, started, finished, status, rating]
+    sort:
+      - property: started
+        direction: ASC
+    specFile: charts/reading-journey.vg.json
+  - type: agate
+    name: Genres
+    order: [file.name, genre, status]
+    specFile: charts/bars-genre.vl.json
+  - type: table
+    name: Shelf
+    order: [file.name, author, genre, pages, started, finished, status, rating]
+    sort:
+      - property: started
+        direction: DESC

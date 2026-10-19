@@ -1,0 +1,382 @@
+{
+  "$schema": "https://vega.github.io/schema/vega/v6.json",
+  "description": "After W. E. B. Du Bois, 'Assessed value of household and kitchen furniture owned by Georgia Negroes' (Paris Exposition, 1900; Library of Congress, item 2013650445). A bar chart wrapped into a spiral: every year is a band that starts at the top beside its label and runs clockwise, curling inward as it wraps, its length proportional to the value. A static chart: the six figures are in the spec, there is no base behind it.",
+  "width": 820,
+  "height": 620,
+  "padding": 0,
+  "background": "#e9dccb",
+  "autosize": "none",
+  "signals": [
+    {
+      "name": "cx",
+      "value": 396
+    },
+    {
+      "name": "cy",
+      "value": 352
+    },
+    {
+      "name": "R0",
+      "value": 246,
+      "description": "Radius where the first (outermost) band starts."
+    },
+    {
+      "name": "pitch",
+      "value": 10.5,
+      "description": "Distance between neighbouring bands."
+    },
+    {
+      "name": "band",
+      "value": 8.5
+    },
+    {
+      "name": "drop",
+      "value": 78,
+      "description": "How far a band curls inward per turn, px."
+    },
+    {
+      "name": "c",
+      "update": "drop / (2 * PI)"
+    },
+    {
+      "name": "perDollar",
+      "value": 0.001016,
+      "description": "Band length per dollar, px; 1899 winds about 1.85 turns."
+    },
+    {
+      "name": "agateDark",
+      "value": false
+    }
+  ],
+  "data": [
+    {
+      "name": "years",
+      "values": [
+        {
+          "year": 1875,
+          "value": 21186,
+          "valLabel": "$21,186",
+          "color": "#e3a3a0"
+        },
+        {
+          "year": 1880,
+          "value": 498532,
+          "valLabel": "$498,532",
+          "color": "#9da6cc"
+        },
+        {
+          "year": 1885,
+          "value": 736170,
+          "valLabel": "$736,170",
+          "color": "#b9a68e"
+        },
+        {
+          "year": 1890,
+          "value": 1173624,
+          "valLabel": "$1,173,624",
+          "color": "#e9b62f"
+        },
+        {
+          "year": 1895,
+          "value": 1322694,
+          "valLabel": "$1,322,694",
+          "color": "#d9d1c1"
+        },
+        {
+          "year": 1899,
+          "value": 1434975,
+          "valLabel": "$1,434,975",
+          "color": "#d0213f"
+        }
+      ],
+      "transform": [
+        {
+          "type": "window",
+          "ops": [
+            "row_number"
+          ],
+          "as": [
+            "idx"
+          ]
+        },
+        {
+          "type": "formula",
+          "as": "R",
+          "expr": "R0 - (datum.idx - 1) * pitch"
+        },
+        {
+          "type": "formula",
+          "as": "len",
+          "expr": "datum.value * perDollar"
+        },
+        {
+          "type": "formula",
+          "as": "thetaEnd",
+          "expr": "(datum.R - sqrt(datum.R * datum.R - 2 * c * datum.len)) / c",
+          "$comment": "arc length of r = R - c·θ from 0 to θ is R·θ - c·θ²/2"
+        }
+      ]
+    },
+    {
+      "name": "bands",
+      "source": "years",
+      "transform": [
+        {
+          "type": "formula",
+          "as": "t",
+          "expr": "sequence(0, 241)"
+        },
+        {
+          "type": "flatten",
+          "fields": [
+            "t"
+          ]
+        },
+        {
+          "type": "formula",
+          "as": "theta",
+          "expr": "datum.thetaEnd * datum.t / 240"
+        },
+        {
+          "type": "formula",
+          "as": "r",
+          "expr": "datum.R - c * datum.theta"
+        },
+        {
+          "type": "formula",
+          "as": "x",
+          "expr": "cx + datum.r * sin(datum.theta)"
+        },
+        {
+          "type": "formula",
+          "as": "y",
+          "expr": "cy - datum.r * cos(datum.theta)"
+        }
+      ]
+    }
+  ],
+  "marks": [
+    {
+      "type": "group",
+      "from": {
+        "facet": {
+          "name": "seg",
+          "data": "bands",
+          "groupby": [
+            "year",
+            "color",
+            "valLabel"
+          ]
+        }
+      },
+      "marks": [
+        {
+          "type": "line",
+          "from": {
+            "data": "seg"
+          },
+          "interactive": false,
+          "encode": {
+            "enter": {
+              "x": {
+                "field": "x"
+              },
+              "y": {
+                "field": "y"
+              },
+              "stroke": {
+                "value": "#5b5148"
+              },
+              "strokeOpacity": {
+                "value": 0.55
+              },
+              "strokeWidth": {
+                "signal": "band + 1.2"
+              },
+              "strokeCap": {
+                "value": "butt"
+              }
+            }
+          }
+        },
+        {
+          "type": "line",
+          "from": {
+            "data": "seg"
+          },
+          "encode": {
+            "enter": {
+              "x": {
+                "field": "x"
+              },
+              "y": {
+                "field": "y"
+              },
+              "stroke": {
+                "signal": "parent.color"
+              },
+              "strokeWidth": {
+                "signal": "band"
+              },
+              "strokeCap": {
+                "value": "butt"
+              },
+              "tooltip": {
+                "signal": "{'Year': parent.year, 'Assessed value': parent.valLabel}"
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "type": "text",
+      "from": {
+        "data": "years"
+      },
+      "encode": {
+        "enter": {
+          "x": {
+            "signal": "cx - 168"
+          },
+          "y": {
+            "signal": "cy - datum.R"
+          },
+          "align": {
+            "value": "right"
+          },
+          "baseline": {
+            "value": "middle"
+          },
+          "fill": {
+            "value": "#2b2622"
+          },
+          "fontSize": {
+            "value": 12.5
+          },
+          "font": {
+            "value": "'DIN Condensed', 'Bahnschrift Condensed', 'Arial Narrow', sans-serif"
+          },
+          "text": {
+            "field": "year"
+          }
+        }
+      }
+    },
+    {
+      "type": "rule",
+      "from": {
+        "data": "years"
+      },
+      "encode": {
+        "enter": {
+          "x": {
+            "signal": "cx - 162"
+          },
+          "x2": {
+            "signal": "cx - 118"
+          },
+          "y": {
+            "signal": "cy - datum.R"
+          },
+          "stroke": {
+            "value": "#2b2622"
+          },
+          "strokeWidth": {
+            "value": 0.8
+          }
+        }
+      }
+    },
+    {
+      "type": "text",
+      "from": {
+        "data": "years"
+      },
+      "encode": {
+        "enter": {
+          "x": {
+            "signal": "cx - 8"
+          },
+          "y": {
+            "signal": "cy - datum.R"
+          },
+          "align": {
+            "value": "right"
+          },
+          "baseline": {
+            "value": "middle"
+          },
+          "fill": {
+            "value": "#2b2622"
+          },
+          "fontSize": {
+            "value": 12.5
+          },
+          "font": {
+            "value": "'DIN Condensed', 'Bahnschrift Condensed', 'Arial Narrow', sans-serif"
+          },
+          "text": {
+            "signal": "datum.idx <= 2 ? datum.valLabel : '\" ' + replace(datum.valLabel, '$', '')"
+          }
+        }
+      }
+    },
+    {
+      "type": "text",
+      "encode": {
+        "enter": {
+          "x": {
+            "signal": "width / 2"
+          },
+          "y": {
+            "value": 38
+          },
+          "align": {
+            "value": "center"
+          },
+          "fill": {
+            "value": "#2b2622"
+          },
+          "fontSize": {
+            "value": 24
+          },
+          "font": {
+            "value": "'DIN Condensed', 'Bahnschrift Condensed', 'Arial Narrow', sans-serif"
+          },
+          "text": {
+            "value": "ASSESSED VALUE OF HOUSEHOLD AND KITCHEN FURNITURE"
+          }
+        }
+      }
+    },
+    {
+      "type": "text",
+      "encode": {
+        "enter": {
+          "x": {
+            "signal": "width / 2"
+          },
+          "y": {
+            "value": 66
+          },
+          "align": {
+            "value": "center"
+          },
+          "fill": {
+            "value": "#2b2622"
+          },
+          "fontSize": {
+            "value": 24
+          },
+          "font": {
+            "value": "'DIN Condensed', 'Bahnschrift Condensed', 'Arial Narrow', sans-serif"
+          },
+          "text": {
+            "value": "OWNED BY BLACK GEORGIANS."
+          }
+        }
+      }
+    }
+  ]
+}

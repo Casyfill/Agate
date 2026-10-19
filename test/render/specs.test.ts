@@ -1,5 +1,5 @@
 /**
- * Layer 2 (ADR-0001 D8): every fixture spec in test-vault/charts is compiled, fed rows in
+ * Layer 2 (ADR-0001 D8): every fixture spec in demo-vault/tests/charts is compiled, fed rows in
  * the D4 shape, and rendered to SVG with real Vega. Small specs are snapshotted whole; the
  * world map (190 KB of paths) is snapshotted as a hash plus shape count.
  */
@@ -10,6 +10,7 @@ import { env } from "node:process";
 import { fileURLToPath } from "node:url";
 import * as vega from "vega";
 import * as vl from "vega-lite";
+import * as vegaThemes from "vega-themes";
 import { describe, expect, it } from "vitest";
 import { defaultRows } from "../fixtures/rows";
 import { marketColumns, marketLabels, marketRows, marketsFixtureDir } from "../fixtures/markets";
@@ -20,14 +21,15 @@ import { edgesDatasetName, linkEdges, pathTree, treeDatasetName } from "../../sr
 import { vaultResolvedLinks, vaultRows } from "../fixtures/vault";
 import type { Row } from "../../src/core/types";
 
-/** Which test-vault notes each example charts, by spec file name. Everything else charts the Library fixture. */
+/** Which test notes each example charts, by spec file name. Everything else charts the Library fixture. */
 function rowsFor(name: string, hasRowData: boolean): Row[] {
   if (hasRowData) return marketRows();
-  const md = (folder: string) => (p: string) => p.startsWith(`${folder}/`) && p.endsWith(".md");
+  const md = (folder: string) => (p: string) => p.startsWith(`tests/${folder}/`) && p.endsWith(".md");
   if (name.startsWith("link-")) return vaultRows(md("Ideas"));
+  if (name.startsWith("stats-")) return vaultRows((p) => md("Library")(p) && /^\s*- book$/m.test(readFileSync(join(vaultDir, p), "utf8")));
   if (name.startsWith("travel-")) return vaultRows((p) => md("Trips")(p) || md("Places")(p));
   if (name.startsWith("mood-")) return vaultRows(md("Journal"));
-  if (name.startsWith("vault-")) return vaultRows(() => true);
+  if (name.startsWith("vault-")) return vaultRows((p) => p.startsWith("tests/"));
   return defaultRows;
 }
 
@@ -41,8 +43,8 @@ const previewDark = {
 };
 
 const root = fileURLToPath(new URL("../..", import.meta.url));
-const chartsDir = join(root, "test-vault/charts");
-const vaultDir = join(root, "test-vault");
+const chartsDir = join(root, "demo-vault/tests/charts");
+const vaultDir = join(root, "demo-vault");
 
 const loader = vega.loader();
 // `markets/…` is the offline stand-in for FRED (test/fixtures/markets); everything else is the vault.
@@ -73,11 +75,18 @@ const quietLogger = {
   },
 };
 
+/** AGATE_PREVIEW_THEME (previews only): a vega-themes name, or a path to a Vega config JSON such as a theme file. */
+function previewConfig(dark: boolean): Record<string, unknown> | undefined {
+  const theme = env.AGATE_PREVIEW_THEME;
+  if (theme) return (vegaThemes as unknown as Record<string, Record<string, unknown>>)[theme] ?? (JSON.parse(readFileSync(theme, "utf8")) as Record<string, unknown>);
+  return dark ? previewDark : undefined;
+}
+
 async function renderFixture(name: string): Promise<string> {
   const raw = JSON.parse(readFileSync(join(chartsDir, name), "utf8")) as Record<string, unknown>;
   const isVL = typeof raw.$schema === "string" && /vega-lite/.test(raw.$schema);
   const mode = isVL ? "vega-lite" : "vega";
-  // Specs with per-row data (D12) chart test-vault/Markets; the rest chart the Library rows.
+  // Specs with per-row data (D12) chart tests/Markets; the rest chart the Library rows.
   const defs = rowDataDefs(raw);
   const baseRows = rowsFor(name, defs.length > 0);
   const datasets: Record<string, Row[]> = { base: baseRows };
@@ -91,7 +100,7 @@ async function renderFixture(name: string): Promise<string> {
   const edges = edgesDatasetName(raw);
   if (edges) datasets[edges] = linkEdges(baseRows, vaultResolvedLinks(baseRows));
   const tree = treeDatasetName(raw);
-  if (tree) datasets[tree] = pathTree(baseRows, "test-vault");
+  if (tree) datasets[tree] = pathTree(baseRows, "demo-vault");
   const dark = env.AGATE_PREVIEW_DARK === "1";
   let spec = withSignalValues(raw, mode, { agateDark: dark });
   for (const [name, rows] of Object.entries(datasets)) {
@@ -99,7 +108,7 @@ async function renderFixture(name: string): Promise<string> {
     spec = withInitialValues(spec, mode, name, rows);
   }
   if (spec.width === "container") spec = { ...spec, width: 500 }; // no DOM to measure
-  const config = dark ? previewDark : undefined;
+  const config = previewConfig(dark);
   const vgSpec = isVL ? vl.compile(spec as never, { logger: quietLogger, config: config as never }).spec : spec;
   const view = new vega.View(vega.parse(vgSpec, isVL ? undefined : config), { renderer: "none", loader, logger: quietLogger });
   const svg = await view.toSVG();

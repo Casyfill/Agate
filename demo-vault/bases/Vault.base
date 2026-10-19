@@ -1,0 +1,27 @@
+filters:
+  and:
+    - file.inFolder("notes")
+views:
+  - type: agate
+    name: Sunburst
+    order: [file.name, file.folder, file.size]
+    specFile: charts/vault-sunburst.vg.json
+  - type: agate
+    name: Links
+    filters:
+      or:
+        - type == "meeting"
+        - type == "person"
+        - type == "project"
+        - type == "play"
+        - type == "boardgame"
+        - type == "trip"
+        - type == "place"
+    order: [file.name, type]
+    specFile: charts/vault-links.vg.json
+  - type: table
+    name: Largest files
+    order: [file.name, file.folder, file.size]
+    sort:
+      - property: file.size
+        direction: DESC

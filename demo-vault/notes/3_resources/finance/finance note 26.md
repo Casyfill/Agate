@@ -1,0 +1,6 @@
+---
+type: resource
+tags: [resource/finance]
+area: finance
+---
+draft thought up note note detail note plan note detail reference summary step next detail reference thought review source summary next review up reference review review step question plan summary plan step idea question review follow detail plan thought up plan decision reference idea decision detail note review context follow next next plan decision idea note draft next detail note reference note source step next up reference thought next reference note detail decision thought idea next thought note next note step plan summary source thought question review review step draft question summary review step review question summary reference follow summary context sketch reference thought sketch thought context thought detail up plan idea idea reference step thought detail thought draft reference next sketch context idea follow decision question up follow plan question question idea note source context decision context context decision step idea next follow detail sketch follow next summary step source idea reference reference question reference note detail source reference source context next note decision step step sketch detail note review follow decision plan review note context.

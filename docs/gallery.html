@@ -1,0 +1,187 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Gallery · Agate for Obsidian</title>
+<meta name="description" content="What Agate can draw over an Obsidian base — maps, networks, hierarchies, dashboards and experiments — each with the feature it relies on and a link to its spec.">
+<link rel="icon" href="images/agate-icon.svg" type="image/svg+xml">
+<script>try { var t = localStorage.getItem("theme"); if (t) document.documentElement.dataset.theme = t; } catch (e) {}</script>
+<link rel="stylesheet" href="site.css">
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <img src="images/agate-icon.svg" alt="">
+    <span class="name"><a href="index.html">Agate</a></span>
+    <nav>
+      <a class="wide" href="index.html#why">Why</a>
+      <a class="wide" href="gallery.html" aria-current="page">Gallery</a>
+      <a class="wide" href="quickstart.html">Quickstart</a>
+      <a href="https://github.com/Casyfill/Agate/blob/main/docs/guide.md">Guide</a>
+      <a href="https://github.com/Casyfill/Agate">GitHub</a>
+      <button class="mode" type="button" aria-label="Switch light or dark mode">◐</button>
+    </nav>
+  </header>
+
+  <div class="hero narrow">
+    <p class="eyebrow">gallery</p>
+    <h1>Made with Agate.</h1>
+    <p class="lede">Every example is a real note in the demo vault: a plain Vega or Vega-Lite spec over ordinary notes. Each shows the Agate feature it leans on and links to its spec. Click a picture to see it larger.</p>
+  </div>
+
+  <section>
+    <div class="gallery">
+
+      <figure class="wide">
+        <a class="shot" href="site/minard.jpg"><img class="natural" src="site/crops/minard-map.jpg" alt="Minard's map of Napoleon's 1812 campaign: the army as a gold band to Moscow and a dark band back, the battles marked, and the temperature on the retreat below" loading="lazy" width="2128" height="1166"></a>
+        <span class="tag">maps · history</span>
+        <h3>Minard's 1812, from battle notes</h3>
+        <p>The army's path and width come from Minard's own figures; every battle is a note in a base, so adding one drops a mark on the map. Hover a battle for the note's date, outcome and phase, click it to open the note. The temperature on the retreat sits underneath, on the same scale.</p>
+        <p class="feat"><b>feature:</b> layered maps · tooltips from note properties · open on click · <a href="https://github.com/Casyfill/Agate/blob/main/demo-vault/charts/campaign-1812.vg.json">campaign-1812.vg.json</a></p>
+      </figure>
+
+      <figure>
+        <a class="shot" href="site/crops/dubois.jpg"><img src="site/crops/dubois.jpg" alt="After W. E. B. Du Bois, 1900: the assessed value of furniture owned by Black Georgians, 1875 to 1899, as six bands that start at the top and wrap clockwise, curling inward" loading="lazy" width="1984" height="1240"></a>
+        <span class="tag">static · no base</span>
+        <h3>Du Bois, 1900</h3>
+        <p>A static chart in a note, with no base behind it: the six figures sit in the spec, and a code block draws them. After W. E. B. Du Bois's portrait of the furniture owned by Black Georgians, 1875–1899, made for the 1900 Paris Exposition (<a href="https://www.loc.gov/item/2013650445/">the original</a>, Library of Congress). As in his plate, it is a bar chart wrapped into a spiral: each year's band starts at the top beside its label and runs clockwise, curling inward as it wraps, its length proportional to the value.</p>
+        <p class="feat"><b>feature:</b> static charts in notes · any Vega spec · <a href="https://github.com/Casyfill/Agate/blob/main/demo-vault/charts/dubois-furniture.vg.json">dubois-furniture.vg.json</a></p>
+      </figure>
+
+      <figure>
+        <a class="shot" href="site/crops/holc.jpg"><img src="site/crops/holc.jpg" alt="Brooklyn's 1938 HOLC map: zones in muted green, blue, yellow and pink over a fine street grid, ungraded land lightly crosshatched, a plain title panel with the HOLC's grade descriptions" loading="lazy" width="1600" height="1000"></a>
+        <span class="tag">maps · history</span>
+        <h3>Redlining in Brooklyn, 1938</h3>
+        <p>The HOLC's "residential security" grades, A (best) to D (hazardous): the D zones were denied mortgage backing, the origin of "redlining". Drawn quietly after the original sheet, where the grades were printed over Hagstrom's street map: muted colours over a fine street grid, ungraded land in a light crosshatch, the HOLC's own grade words in quotes, in New York's Long Island state plane projection. Today's shoreline sits underneath for orientation. Both GeoJSON files live in the vault as ordinary files. Grades: Mapping Inequality, University of Richmond (CC-BY-NC); shoreline: NYC Department of City Planning.</p>
+        <p class="feat"><b>feature:</b> vault files as data · SVG textures · <a href="https://github.com/Casyfill/Agate/blob/main/demo-vault/charts/redlining-brooklyn.vl.json">redlining-brooklyn.vl.json</a></p>
+      </figure>
+
+      <figure>
+        <a class="shot" href="site/crops/gapminder.jpg"><img src="site/crops/gapminder.jpg" alt="Gapminder's wealth and health of nations: one bubble per country by income and life expectancy in 2007, sized by population, with faint trails back to 1952" loading="lazy" width="1366" height="854"></a>
+        <span class="tag">per-note data · animation</span>
+        <h3>The wealth and health of nations</h3>
+        <p>Hans Rosling's chart, 1952–2007: income per person against life expectancy, a bubble per country sized by population, with a year slider and faint trails behind. Every country is a note with its continent as a property and its own CSV, so filtering the base to one continent redraws the world. Data: Gapminder (CC BY 4.0).</p>
+        <p class="feat"><b>feature:</b> per-note data · bound sliders · open on click · <a href="https://github.com/Casyfill/Agate/blob/main/demo-vault/charts/gapminder.vl.json">gapminder.vl.json</a></p>
+      </figure>
+
+      <figure>
+        <a class="shot" href="site/crops/vault-links.jpg"><img src="site/crops/vault-links.jpg" alt="Hierarchical edge bundling of the vault: notes on a circle grouped by folder, links between them bundled through the folder tree" loading="lazy" width="1920" height="1200"></a>
+        <span class="tag">networks · pure vega</span>
+        <h3>How the vault links, bundled</h3>
+        <p>Every note that links or is linked sits on the circle, grouped by folder; each link curves through the folder tree, so meetings bundle into people and projects, plays into games, trips into places. Hover a note to light up its links. Vega-Lite has no tree layout or bundled lines; full Vega does, and Agate hands it both the folder tree and the links.</p>
+        <p class="feat"><b>feature:</b> the folder tree · links as edges · Vega-only layouts · <a href="https://github.com/Casyfill/Agate/blob/main/demo-vault/charts/vault-links.vg.json">vault-links.vg.json</a></p>
+      </figure>
+
+      <figure>
+        <a class="shot" href="site/travel.jpg"><img src="site/crops/travel-globe.jpg" alt="A globe with great-circle trip routes from New York, coloured by family, work and personal" loading="lazy" width="1760" height="1100"></a>
+        <span class="tag">maps</span>
+        <h3>Trips on a globe you can spin</h3>
+        <p>Trip notes list their stops; place notes carry coordinates. Every leg is a great circle on an orthographic globe you drag to rotate.</p>
+        <p class="feat"><b>feature:</b> map projections · links between notes · <a href="https://github.com/Casyfill/Agate/blob/main/demo-vault/charts/travel-globe.vg.json">travel-globe.vg.json</a></p>
+      </figure>
+
+      <figure>
+        <a class="shot" href="site/vault.jpg"><img src="site/crops/vault-sunburst.jpg" alt="A sunburst of the vault's folders and notes sized by bytes, with a legend of the top-level folders" loading="lazy" width="1576" height="984"></a>
+        <span class="tag">hierarchies</span>
+        <h3>The vault itself</h3>
+        <p>A DaisyDisk-style sunburst of folders and files, arc length by bytes. Click a ring to zoom into a folder, the centre to go back up, a file to open it.</p>
+        <p class="feat"><b>feature:</b> the folder tree · partition layout · open on click · <a href="https://github.com/Casyfill/Agate/blob/main/demo-vault/charts/vault-sunburst.vg.json">vault-sunburst.vg.json</a></p>
+      </figure>
+
+    </div>
+  </section>
+
+  <section>
+    <p class="eyebrow">your look</p>
+    <h2>Any look, including your own.</h2>
+    <div class="themes">
+      <div class="themes-text">
+        <p>Pick a theme for the whole vault in settings, or per chart in the view's <b>Theme</b> option.</p>
+        <h3>Built in, and alive</h3>
+        <ul>
+          <li><code>obsidian</code> reads your Obsidian fonts and colours, and redraws the moment you switch light or dark.</li>
+          <li><code>instrument</code> is the same, redrawn as a monochrome readout for dense time series.</li>
+        </ul>
+        <h3>Every stock Vega theme</h3>
+        <p class="theme-names"><code>excel</code> <code>fivethirtyeight</code> <code>ggplot2</code> <code>googlecharts</code> <code>latimes</code> <code>powerbi</code> <code>quartz</code> <code>urbaninstitute</code> <code>vox</code> <code>dark</code> <code>carbonwhite</code> <code>carbong10</code> <code>carbong90</code> <code>carbong100</code></p>
+        <h3>Or make your own</h3>
+        <ul>
+          <li><b>Theme file:</b> a Vega config (JSON or YAML) in your vault, merged over the chosen theme. The Du Bois look at the bottom right is one file: <a href="https://github.com/Casyfill/Agate/blob/main/demo-vault/charts/themes/du-bois.json">du-bois.json</a>.</li>
+          <li><b>Config overrides</b> in settings, for a font or a colour or two.</li>
+          <li><b>Copy theme prompt:</b> an assistant drafts the file from your current Obsidian theme and a description of the look you want.</li>
+          <li><b>Plugins</b> can register named themes through Agate's API.</li>
+        </ul>
+        <p><a href="https://github.com/Casyfill/Agate/blob/main/docs/guide.md#8-theme-dark-mode-and-colour">How themes work →</a></p>
+      </div>
+      <div class="theme-stack">
+          <figure><a class="shot" href="site/crops/themes/fivethirtyeight.jpg"><img src="site/crops/themes/fivethirtyeight.jpg" alt="Board-game nights by month and the shelf, in the stock fivethirtyeight theme" loading="lazy"></a><span class="chip">stock · fivethirtyeight</span></figure>
+        <div class="pair">
+          <figure><a class="shot" href="site/crops/themes/obsidian.jpg"><img src="site/crops/themes/obsidian.jpg" alt="The Journal note: headline numbers, a habit grid and a mood line in the vault's own colours" loading="lazy"></a><span class="chip">obsidian</span></figure>
+          <figure><a class="shot" href="site/crops/themes/instrument.jpg"><img src="site/crops/themes/instrument.jpg" alt="The AT Georgia note: a hike dashboard drawn as a monochrome instrument readout" loading="lazy"></a><span class="chip">instrument</span></figure>
+        </div>
+          <figure><a class="shot" href="site/crops/themes/du-bois.jpg"><img src="site/crops/themes/du-bois.jpg" alt="The same board-game chart in a custom Du Bois theme: cream paper, condensed lettering, crimson and gold" loading="lazy"></a><span class="chip">custom · du bois</span></figure>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <p class="eyebrow">beyond pure vega</p>
+    <h2>What Agate adds to the spec.</h2>
+    <p class="sub">A plain Vega spec only sees the data you give it. Agate also hands it the web, each note's own files, the base's totals and real map tiles. Each tile links to the recipe in the guide.</p>
+    <div class="strip four">
+      <figure>
+        <a class="shot" href="https://github.com/Casyfill/Agate/blob/main/docs/guide.md#9-images-in-tooltips"><img src="site/crops/remote.jpg" alt="A board-game tooltip showing cover art fetched from a URL" loading="lazy" width="404" height="303"></a>
+        <div class="label"><span class="tag">remote</span><h3><a href="https://github.com/Casyfill/Agate/blob/main/docs/guide.md#9-images-in-tooltips">Fetched from the web</a></h3></div>
+        <p class="desc">A note can carry a URL: a cover for the tooltip, or a dataset. Remote data loads only once you allow it.</p>
+        <a class="more" href="https://github.com/Casyfill/Agate/blob/main/docs/guide.md#9-images-in-tooltips">How to →</a>
+      </figure>
+      <figure>
+        <a class="shot" href="https://github.com/Casyfill/Agate/blob/main/docs/guide.md#6-per-note-external-data"><img src="site/crops/pernote.jpg" alt="Horizon chart of twelve market series, one strip per note, each loaded from that note's own CSV" loading="lazy" width="1000" height="800"></a>
+        <div class="label"><span class="tag">per-note data</span><h3><a href="https://github.com/Casyfill/Agate/blob/main/docs/guide.md#6-per-note-external-data">Each note's own data</a></h3></div>
+        <p class="desc">Point each note at a CSV or a URL; Agate loads one dataset per note. Here, twelve market notes, each with its own FRED series.</p>
+        <a class="more" href="https://github.com/Casyfill/Agate/blob/main/docs/guide.md#6-per-note-external-data">How to →</a>
+      </figure>
+      <figure>
+        <a class="shot" href="https://github.com/Casyfill/Agate/blob/main/docs/guide.md#11-experimental-big-numbers-as-note-text"><img src="site/crops/stats.jpg" alt="Rows of big headline numbers from five notes: plays, trips, practice attempts, hike miles and Napoleon's army" loading="lazy" width="1000" height="800"></a>
+        <div class="label"><span class="tag">stats</span><h3><a href="https://github.com/Casyfill/Agate/blob/main/docs/guide.md#11-experimental-big-numbers-as-note-text">Aggregate counters</a></h3></div>
+        <p class="desc">Counts, sums and averages over the base as big headline numbers that update with every note. Vega does the maths.</p>
+        <a class="more" href="https://github.com/Casyfill/Agate/blob/main/docs/guide.md#11-experimental-big-numbers-as-note-text">How to →</a>
+      </figure>
+      <figure>
+        <a class="shot" href="https://github.com/Casyfill/Agate/blob/main/docs/guide.md#basemaps-under-a-route"><img src="site/crops/basemap.jpg" alt="The Appalachian Trail route from Springer Mountain to Neel Gap over a colourful OpenTopoMap basemap" loading="lazy" width="595" height="476"></a>
+        <div class="label"><span class="tag">basemaps</span><h3><a href="https://github.com/Casyfill/Agate/blob/main/docs/guide.md#basemaps-under-a-route">Set the basemap</a></h3></div>
+        <p class="desc">Real map tiles under your routes: topo, hillshade or satellite, keyless out of the box. Keyed providers read their token from an environment variable.</p>
+        <a class="more" href="https://github.com/Casyfill/Agate/blob/main/docs/guide.md#basemaps-under-a-route">How to →</a>
+      </figure>
+    </div>
+    <p class="usecases">More in the repo: a <a href="https://github.com/Casyfill/Agate/blob/main/demo-vault/tests/charts/reading-sankey.vg.json">sankey</a> across properties, an <a href="https://github.com/Casyfill/Agate/blob/main/demo-vault/tests/charts/link-arcs.vg.json">arc diagram</a> of links over time, a <a href="https://github.com/Casyfill/Agate/blob/main/demo-vault/tests/charts/reading-dashboard.vl.json">linked dashboard</a>, and a <a href="https://github.com/Casyfill/Agate/blob/main/demo-vault/tests/charts/mood-beeswarm.vg.json">beeswarm</a>.</p>
+  </section>
+
+  <section>
+    <div class="panel">
+      <h2>Make one over your own notes.</h2>
+      <p>Pick a recipe or prompt an assistant — no chart library to learn.</p>
+      <div class="lead-links">
+        <a href="quickstart.html">Five-minute quickstart</a>
+        <a href="https://github.com/Casyfill/Agate/blob/main/docs/guide.md">Full guide</a>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    Agate is MIT-licensed and made by <a href="https://github.com/Casyfill">Philipp Kats</a>. Vega and Vega-Lite are by the <a href="https://vega.github.io/">UW Interactive Data Lab</a>. Not affiliated with Obsidian. Basemap tile: © OpenStreetMap contributors, SRTM, <a href="https://opentopomap.org/">OpenTopoMap</a> (CC-BY-SA).
+  </footer>
+
+</div>
+<script>
+  document.querySelector(".mode").onclick = function () {
+    var root = document.documentElement;
+    var dark = root.dataset.theme ? root.dataset.theme === "dark" : matchMedia("(prefers-color-scheme: dark)").matches;
+    root.dataset.theme = dark ? "light" : "dark";
+    try { localStorage.setItem("theme", root.dataset.theme); } catch (e) {}
+  };
+</script>
+</body>
+</html>

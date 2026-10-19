@@ -1,0 +1,312 @@
+{
+  "$schema": "https://vega.github.io/schema/vega-lite/v6.json",
+  "description": "The collection: complexity against playing time, bubble area = times played this year (from the play notes), colour = kind of game. Games not played this year are dashed rings (the shelf of shame). Click a game to open it. The tooltip shows each game's picture from its `image` property (a tooltip field titled \"image\" is drawn as a picture).",
+  "usermeta": {
+    "agate": {
+      "open": "click"
+    }
+  },
+  "params": [
+    {
+      "name": "agateDark",
+      "value": false
+    }
+  ],
+  "width": "container",
+  "height": 340,
+  "data": {
+    "name": "base"
+  },
+  "transform": [
+    {
+      "filter": "datum.note.type === 'play' || datum.note.type === 'boardgame'"
+    },
+    {
+      "calculate": "datum.note.type === 'play' ? replace(replace(replace(datum.note.game + '', regexp('^\\\\[\\\\[|\\\\]\\\\]$|\\\\|.*$', 'g'), ''), regexp('^.*/'), ''), regexp('\\\\.md$'), '') : datum.file.name",
+      "as": "game"
+    },
+    {
+      "joinaggregate": [
+        {
+          "op": "valid",
+          "field": "note.winner",
+          "as": "plays"
+        }
+      ],
+      "groupby": [
+        "game"
+      ]
+    },
+    {
+      "filter": "datum.note.type === 'boardgame'"
+    },
+    {
+      "calculate": "indexof(['party', 'abstract', 'tiles'], datum.note.theme) >= 0 ? 'Party & family' : indexof(['nature', 'trading', 'trains', 'economic'], datum.note.theme) >= 0 ? 'Euro' : indexof(['fantasy', 'sci-fi', 'space', 'horror'], datum.note.theme) >= 0 ? 'Thematic' : 'Epic & co-op'",
+      "as": "kind"
+    }
+  ],
+  "encoding": {
+    "x": {
+      "field": "note.complexity",
+      "type": "quantitative",
+      "title": "Complexity (1–5) →",
+      "scale": {
+        "domain": [
+          1,
+          4.6
+        ]
+      },
+      "axis": {
+        "domain": false,
+        "ticks": false,
+        "grid": true,
+        "gridOpacity": 0.12,
+        "titleAnchor": "end",
+        "titleFontWeight": "normal"
+      }
+    },
+    "y": {
+      "field": "note.time",
+      "type": "quantitative",
+      "title": "Playing time, minutes (log)",
+      "scale": {
+        "type": "log",
+        "domain": [
+          10,
+          600
+        ]
+      },
+      "axis": {
+        "domain": false,
+        "ticks": false,
+        "grid": true,
+        "gridOpacity": 0.12,
+        "values": [
+          15,
+          30,
+          60,
+          120,
+          240,
+          480
+        ],
+        "titleFontWeight": "normal"
+      }
+    }
+  },
+  "layer": [
+    {
+      "transform": [
+        {
+          "filter": "datum.plays > 0"
+        }
+      ],
+      "mark": {
+        "type": "circle",
+        "opacity": 0.85,
+        "stroke": {
+          "expr": "agateDark ? '#1e1e2e' : '#eff1f5'"
+        },
+        "strokeWidth": 1.2,
+        "cursor": "pointer"
+      },
+      "encoding": {
+        "size": {
+          "field": "plays",
+          "type": "quantitative",
+          "scale": {
+            "range": [
+              60,
+              1800
+            ]
+          },
+          "legend": null
+        },
+        "color": {
+          "field": "kind",
+          "type": "nominal",
+          "title": null,
+          "scale": {
+            "domain": [
+              "Party & family",
+              "Euro",
+              "Thematic",
+              "Epic & co-op"
+            ]
+          },
+          "legend": {
+            "orient": "top",
+            "direction": "horizontal",
+            "symbolType": "circle",
+            "symbolSize": 140,
+            "labelFontSize": 12,
+            "columnPadding": 16
+          }
+        },
+        "tooltip": [
+          {
+            "field": "note.image",
+            "title": "image"
+          },
+          {
+            "field": "file.name",
+            "title": "title"
+          },
+          {
+            "field": "plays",
+            "title": "Plays this year"
+          },
+          {
+            "field": "note.theme",
+            "title": "Theme"
+          },
+          {
+            "field": "note.players",
+            "title": "Max players"
+          },
+          {
+            "field": "note.time",
+            "title": "Minutes"
+          },
+          {
+            "field": "note.complexity",
+            "title": "Complexity"
+          }
+        ]
+      }
+    },
+    {
+      "transform": [
+        {
+          "filter": "datum.plays === 0"
+        }
+      ],
+      "mark": {
+        "type": "point",
+        "size": 130,
+        "strokeWidth": 1.6,
+        "strokeDash": [
+          3,
+          2
+        ],
+        "color": {
+          "expr": "agateDark ? '#f38ba8' : '#d20f39'"
+        },
+        "cursor": "pointer"
+      },
+      "encoding": {
+        "tooltip": [
+          {
+            "field": "file.name",
+            "title": "title"
+          },
+          {
+            "value": "not played this year",
+            "title": "Shelf of shame"
+          }
+        ]
+      }
+    },
+    {
+      "transform": [
+        {
+          "filter": "datum.plays > 0"
+        },
+        {
+          "window": [
+            {
+              "op": "rank",
+              "as": "r"
+            }
+          ],
+          "sort": [
+            {
+              "field": "plays",
+              "order": "descending"
+            }
+          ]
+        },
+        {
+          "filter": "datum.r <= 5"
+        },
+        {
+          "calculate": "datum.note.time * (datum.r % 2 === 0 ? 1.32 : 0.74)",
+          "as": "ly"
+        }
+      ],
+      "mark": {
+        "type": "text",
+        "dy": 0,
+        "fontSize": 11.5,
+        "fontWeight": "bold",
+        "stroke": {
+          "expr": "agateDark ? '#1e1e2e' : '#eff1f5'"
+        },
+        "strokeWidth": 3.5,
+        "strokeJoin": "round",
+        "opacity": 0.9,
+        "baseline": "middle"
+      },
+      "encoding": {
+        "text": {
+          "field": "file.name"
+        },
+        "y": {
+          "field": "ly",
+          "type": "quantitative"
+        }
+      }
+    },
+    {
+      "transform": [
+        {
+          "filter": "datum.plays > 0"
+        },
+        {
+          "window": [
+            {
+              "op": "rank",
+              "as": "r"
+            }
+          ],
+          "sort": [
+            {
+              "field": "plays",
+              "order": "descending"
+            }
+          ]
+        },
+        {
+          "filter": "datum.r <= 5"
+        },
+        {
+          "calculate": "datum.note.time * (datum.r % 2 === 0 ? 1.32 : 0.74)",
+          "as": "ly"
+        }
+      ],
+      "mark": {
+        "type": "text",
+        "dy": 0,
+        "fontSize": 11.5,
+        "fontWeight": "bold",
+        "color": {
+          "expr": "agateDark ? '#cdd6f4' : '#4c4f69'"
+        },
+        "baseline": "middle"
+      },
+      "encoding": {
+        "text": {
+          "field": "file.name"
+        },
+        "y": {
+          "field": "ly",
+          "type": "quantitative"
+        }
+      }
+    }
+  ],
+  "config": {
+    "view": {
+      "stroke": null
+    }
+  }
+}

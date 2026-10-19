@@ -12,6 +12,11 @@ import {
   withSignalValues,
 } from "./spec";
 import { errorMessage, type Logger } from "../util/log";
+import { quietAriaLabels } from "./aria";
+import { themeColors } from "./theme";
+import { containerSignals, isBounce } from "./resize";
+import { computeStats, isStatsSpec } from "./stats";
+import { bindTextures, texturesOf, texturesSvg } from "./textures";
 
 export interface RenderInput {
   resolved: ResolvedSpec;
@@ -45,8 +50,11 @@ function defaultToContainerWidth(spec: AnySpec, mode: "vega" | "vega-lite"): Any
 
 /** Signals a spec can declare to learn about its surroundings (see withSignalValues). */
 function environmentSignals(): Record<string, unknown> {
-  return { agateDark: document.body.classList.contains("theme-dark") };
+  return { agateDark: document.body.classList.contains("theme-dark"), agateColors: themeColors() };
 }
+
+/** Page-unique prefix for each chart's texture ids. */
+let textureCharts = 0;
 
 function stopBubbling(evt: Event): void {
   evt.stopPropagation();
@@ -69,7 +77,10 @@ export class AgateRenderer {
   private embedKey = "";
   private chartEl: HTMLElement | null = null;
   private resizeObserver: ResizeObserver | null = null;
+  private ariaObserver: MutationObserver | null = null;
   private lastWidth = 0;
+  private prevWidth = 0;
+  private lastResizeAt = 0;
   private resizeTimer: number | null = null;
   private generation = 0;
 
@@ -120,6 +131,37 @@ export class AgateRenderer {
       }
       spec = defaultToContainerWidth(spec, resolved.mode);
       spec = withSignalValues(spec, resolved.mode, env);
+      const textures = texturesOf(resolved.spec);
+      if (Object.keys(textures).length > 0) {
+        if (options.renderer === "svg") {
+          const prefix = `agate-tex-${++textureCharts}`;
+          spec = bindTextures(spec, textures, prefix);
+          this.hostEl.appendChild(texturesSvg(document, textures, prefix));
+        } else {
+          spec = bindTextures(spec, textures, null);
+        }
+      }
+
+      // Experimental: a stats spec renders as HTML numbers, not as a chart.
+      if (isStatsSpec(resolved.spec)) {
+        const stats = await computeStats(spec, resolved.mode, input.config, input.loader);
+        if (gen !== this.generation) return;
+        this.chartEl.empty();
+        this.chartEl.addClass("agate-stats");
+        for (const s of stats) {
+          const cell = this.chartEl.createDiv({ cls: "agate-stat" });
+          const top = cell.createDiv({ cls: "agate-stat-top" });
+          top.createSpan({ cls: "agate-stat-value", text: s.value });
+          if (s.change) {
+            const cls = ["agate-stat-change", `is-${s.direction ?? "flat"}`];
+            if (s.good !== undefined) cls.push(s.good ? "is-good" : "is-bad");
+            top.createSpan({ cls: cls.join(" "), text: s.change });
+          }
+          cell.createDiv({ cls: "agate-stat-label", text: s.label });
+          if (s.note) cell.createDiv({ cls: "agate-stat-note", text: s.note });
+        }
+        return;
+      }
 
       const embedOptions: EmbedOptions = {
         mode: resolved.mode,
@@ -135,6 +177,8 @@ export class AgateRenderer {
 
       const result = await vegaEmbed(this.chartEl, spec, embedOptions);
       this.isolateHover(this.chartEl);
+      this.ariaObserver?.disconnect();
+      this.ariaObserver = quietAriaLabels(this.chartEl);
       const openOn = openOnEvent(resolved.spec);
       const openNote = input.openNote;
       if (openOn && openNote && options.interactive) {
@@ -207,16 +251,26 @@ export class AgateRenderer {
     this.resizeObserver = new ResizeObserver(() => {
       const w = el.clientWidth;
       if (w === 0 || w === this.lastWidth) return;
+      // A chart that resizes can toggle the pane's scrollbar, which hands it back the width it just
+      // left (A → B → A). Following that bounce is a loop; the first move is enough.
+      if (isBounce(w, this.prevWidth, Date.now() - this.lastResizeAt)) return;
+      this.prevWidth = this.lastWidth;
       this.lastWidth = w;
+      this.lastResizeAt = Date.now();
       if (this.resizeTimer !== null) window.clearTimeout(this.resizeTimer);
       this.resizeTimer = window.setTimeout(() => {
         this.resizeTimer = null;
-        const view = this.result?.view;
-        if (!view) return;
-        // Vega-Lite's `width: "container"` listens to window resize; pane resizes never fire it.
-        window.dispatchEvent(new Event("resize"));
-        view.resize();
-        void view.runAsync();
+        const result = this.result;
+        if (!result) return;
+        // `width: "container"` (Vega-Lite, and Vega specs written the same way) reads containerSize()
+        // only on window resize, and pane resizes never fire one. Set this chart's container-sized
+        // signals directly; a window-wide resize event would re-measure every chart and the workspace.
+        const box = result.view.container();
+        for (const name of containerSignals(result.vgSpec)) {
+          if (box) result.view.signal(name, name === "width" ? box.clientWidth : box.clientHeight);
+        }
+        result.view.resize();
+        void result.view.runAsync();
       }, 80);
     });
     this.resizeObserver.observe(el);
@@ -250,6 +304,8 @@ export class AgateRenderer {
     }
     this.resizeObserver?.disconnect();
     this.resizeObserver = null;
+    this.ariaObserver?.disconnect();
+    this.ariaObserver = null;
     if (this.result) {
       try {
         this.result.finalize();

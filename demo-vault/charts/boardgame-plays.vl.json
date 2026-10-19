@@ -1,0 +1,371 @@
+{
+  "$schema": "https://vega.github.io/schema/vega-lite/v6.json",
+  "description": "Game nights: a year of plays by day, who wins (share of games won, by player), and the most played games. Players come from each play note's participants list.",
+  "params": [
+    {
+      "name": "agateDark",
+      "value": false
+    }
+  ],
+  "data": {
+    "name": "base"
+  },
+  "transform": [
+    {
+      "filter": "datum.note.type === 'play'"
+    },
+    {
+      "calculate": "toDate(datum.note.date)",
+      "as": "d"
+    },
+    {
+      "calculate": "replace(replace(replace(datum.note.game + '', regexp('^\\\\[\\\\[|\\\\]\\\\]$|\\\\|.*$', 'g'), ''), regexp('^.*/'), ''), regexp('\\\\.md$'), '')",
+      "as": "game"
+    },
+    {
+      "calculate": "toNumber(datum.note.duration)",
+      "as": "dur"
+    }
+  ],
+  "vconcat": [
+    {
+      "width": 600,
+      "height": 120,
+      "title": {
+        "text": "Game nights, day by day",
+        "anchor": "start",
+        "frame": "group",
+        "fontSize": 13,
+        "fontWeight": "bold",
+        "offset": 8,
+        "color": {
+          "expr": "agateDark ? '#cdd6f4' : '#4c4f69'"
+        }
+      },
+      "mark": {
+        "type": "rect",
+        "cornerRadius": 3,
+        "width": {
+          "band": 0.86
+        },
+        "height": {
+          "band": 0.86
+        }
+      },
+      "encoding": {
+        "x": {
+          "field": "d",
+          "timeUnit": "yearweek",
+          "type": "ordinal",
+          "title": null,
+          "axis": {
+            "labelExpr": "date(datum.value) <= 7 ? timeFormat(datum.value, '%b') : ''",
+            "ticks": false,
+            "domain": false,
+            "labelAngle": 0
+          }
+        },
+        "y": {
+          "field": "d",
+          "timeUnit": "day",
+          "type": "ordinal",
+          "title": null,
+          "axis": {
+            "ticks": false,
+            "domain": false
+          }
+        },
+        "color": {
+          "aggregate": "count",
+          "type": "quantitative",
+          "title": "Plays",
+          "scale": {
+            "domain": [
+              1,
+              3
+            ],
+            "range": [
+              {
+                "expr": "agateDark ? '#b4befe' : '#7287fd'"
+              },
+              {
+                "expr": "agateDark ? '#f5c2e7' : '#ea76cb'"
+              }
+            ],
+            "clamp": true
+          },
+          "legend": null
+        },
+        "tooltip": [
+          {
+            "field": "d",
+            "type": "temporal",
+            "title": "title",
+            "format": "%a %b %d"
+          },
+          {
+            "aggregate": "count",
+            "title": "Plays"
+          }
+        ]
+      }
+    },
+    {
+      "hconcat": [
+        {
+          "width": 220,
+          "height": {
+            "step": 24
+          },
+          "title": {
+            "text": "Who wins",
+            "anchor": "start",
+            "frame": "group",
+            "fontSize": 13,
+            "fontWeight": "bold",
+            "offset": 8,
+            "color": {
+              "expr": "agateDark ? '#cdd6f4' : '#4c4f69'"
+            }
+          },
+          "transform": [
+            {
+              "flatten": [
+                "note.participants"
+              ],
+              "as": [
+                "who"
+              ]
+            },
+            {
+              "calculate": "datum.who === datum.note.winner ? 1 : 0",
+              "as": "won"
+            },
+            {
+              "aggregate": [
+                {
+                  "op": "mean",
+                  "field": "won",
+                  "as": "rate"
+                },
+                {
+                  "op": "count",
+                  "as": "games"
+                }
+              ],
+              "groupby": [
+                "who"
+              ]
+            }
+          ],
+          "encoding": {
+            "y": {
+              "field": "who",
+              "type": "nominal",
+              "sort": "-x",
+              "title": null,
+              "axis": {
+                "domain": false,
+                "ticks": false,
+                "labelPadding": 6
+              }
+            },
+            "x": {
+              "field": "rate",
+              "type": "quantitative",
+              "title": null,
+              "axis": null
+            }
+          },
+          "layer": [
+            {
+              "mark": {
+                "type": "bar",
+                "cornerRadiusEnd": 4,
+                "tooltip": true,
+                "height": {
+                  "band": 0.7
+                }
+              },
+              "encoding": {
+                "color": {
+                  "condition": {
+                    "test": "datum.who === 'Me'",
+                    "value": {
+                      "expr": "agateDark ? '#fab387' : '#fe640b'"
+                    }
+                  },
+                  "value": {
+                    "expr": "agateDark ? '#6c7086' : '#9ca0b0'"
+                  }
+                }
+              }
+            },
+            {
+              "mark": {
+                "type": "text",
+                "align": "left",
+                "dx": 4,
+                "fontSize": 11,
+                "color": {
+                  "expr": "agateDark ? '#a6adc8' : '#6c6f85'"
+                }
+              },
+              "encoding": {
+                "text": {
+                  "field": "rate",
+                  "format": ".0%"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "width": 300,
+          "height": {
+            "step": 24
+          },
+          "title": {
+            "text": "Most played",
+            "anchor": "start",
+            "frame": "group",
+            "fontSize": 13,
+            "fontWeight": "bold",
+            "offset": 8,
+            "color": {
+              "expr": "agateDark ? '#cdd6f4' : '#4c4f69'"
+            }
+          },
+          "transform": [
+            {
+              "aggregate": [
+                {
+                  "op": "count",
+                  "as": "plays"
+                },
+                {
+                  "op": "sum",
+                  "field": "dur",
+                  "as": "minutes"
+                }
+              ],
+              "groupby": [
+                "game"
+              ]
+            },
+            {
+              "window": [
+                {
+                  "op": "rank",
+                  "as": "r"
+                }
+              ],
+              "sort": [
+                {
+                  "field": "plays",
+                  "order": "descending"
+                }
+              ]
+            },
+            {
+              "filter": "datum.r <= 8"
+            },
+            {
+              "calculate": "datum.minutes / 60",
+              "as": "hours"
+            }
+          ],
+          "encoding": {
+            "y": {
+              "field": "game",
+              "type": "nominal",
+              "sort": "-x",
+              "title": null,
+              "axis": {
+                "domain": false,
+                "ticks": false,
+                "labelPadding": 6,
+                "labelLimit": 160
+              }
+            },
+            "x": {
+              "field": "plays",
+              "type": "quantitative",
+              "title": null,
+              "axis": null
+            }
+          },
+          "layer": [
+            {
+              "mark": {
+                "type": "bar",
+                "cornerRadiusEnd": 4,
+                "tooltip": true,
+                "height": {
+                  "band": 0.7
+                }
+              },
+              "encoding": {
+                "color": {
+                  "field": "hours",
+                  "type": "quantitative",
+                  "title": "Hours",
+                  "scale": {
+                    "range": [
+                      {
+                        "expr": "agateDark ? '#89dceb' : '#04a5e5'"
+                      },
+                      {
+                        "expr": "agateDark ? '#89b4fa' : '#1e66f5'"
+                      }
+                    ]
+                  },
+                  "legend": null
+                }
+              }
+            },
+            {
+              "mark": {
+                "type": "text",
+                "align": "left",
+                "dx": 4,
+                "fontSize": 11,
+                "color": {
+                  "expr": "agateDark ? '#a6adc8' : '#6c6f85'"
+                }
+              },
+              "encoding": {
+                "text": {
+                  "field": "plays"
+                }
+              }
+            }
+          ]
+        }
+      ],
+      "spacing": 40,
+      "resolve": {
+        "scale": {
+          "color": "independent"
+        },
+        "legend": {
+          "color": "independent"
+        }
+      }
+    }
+  ],
+  "spacing": 28,
+  "config": {
+    "view": {
+      "stroke": null
+    }
+  },
+  "resolve": {
+    "scale": {
+      "color": "independent"
+    },
+    "legend": {
+      "color": "independent"
+    }
+  }
+}
