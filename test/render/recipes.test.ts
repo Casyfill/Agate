@@ -11,6 +11,7 @@ import { describe, expect, it } from "vitest";
 import { builtinRecipes } from "../../src/recipes";
 import { fillRecipe, inferPropertyTypes, missingRoles, parseRecipe, suggestMapping } from "../../src/core/recipes";
 import { ensureNamedData, withInitialValues } from "../../src/core/spec";
+import { computeStats, isStatsSpec } from "../../src/core/stats";
 import { edgesDatasetName, linkEdges, pathTree, treeDatasetName } from "../../src/core/data/structure";
 import type { AnySpec, Row } from "../../src/core/types";
 import { vaultDir, vaultResolvedLinks, vaultRows } from "../fixtures/vault";
@@ -24,6 +25,7 @@ const travel = () => vaultRows(md("Trips", "Places"));
 /** Rows and a full mapping per recipe; `sparse` leaves the optional roles empty. */
 const CASES: Record<string, { rows: () => Row[]; full: Record<string, string>; sparse?: Record<string, string> }> = {
   timeline: { rows: library, full: { date: "note.published", row: "note.genre" }, sparse: { date: "note.published" } },
+  stats: { rows: library, full: { number: "note.pages", date: "note.published", category: "note.genre" }, sparse: {} },
   bars: { rows: library, full: { category: "note.genre", colour: "note.status" }, sparse: { category: "note.genre" } },
   scatter: { rows: library, full: { x: "note.pages", y: "note.rating", colour: "note.genre", size: "note.pages" }, sparse: { x: "note.pages", y: "note.rating" } },
   histogram: { rows: library, full: { value: "note.pages" } },
@@ -108,14 +110,32 @@ describe("built-in recipes", () => {
         if (!mapping) continue;
         it(`renders (${variant})`, async () => {
           const roles = Object.fromEntries(Object.keys(recipe.roles).map((k) => [k, mapping[k] ?? null]));
-          const { svg, errors } = await render(fillRecipe(recipe, roles), c.rows());
+          const spec = fillRecipe(recipe, roles);
+          const { svg, errors } = await render(spec, c.rows());
           expect(errors).toEqual([]);
           expect(svg).not.toMatch(/\{\{/);
-          expect((svg.match(/<(path|rect|circle|line|text)\b/g) ?? []).length).toBeGreaterThan(5);
+          // A stats recipe is note text, not a chart; its numbers are checked on their own below.
+          if (!isStatsSpec(spec)) expect((svg.match(/<(path|rect|circle|line|text)\b/g) ?? []).length).toBeGreaterThan(5);
         });
       }
     });
   }
+
+  it("stats: the numbers Agate shows, and only the parts that were mapped", async () => {
+    const recipe = recipes.find((r) => r.id === "stats")!;
+    const rows = library();
+    const run = async (m: Record<string, string | null>) => {
+      let s = fillRecipe(recipe, { number: null, date: null, category: null, ...m });
+      s = withInitialValues(ensureNamedData(s, "vega-lite", "base"), "vega-lite", "base", rows);
+      return computeStats(s, "vega-lite", {}, loader);
+    };
+    const full = await run({ number: "note.pages", date: "note.published", category: "note.genre" });
+    expect(full.map((r) => r.label)).toEqual(["notes", "total pages", "latest published", "most common genre"]);
+    expect(full[0].value).toBe(String(rows.length));
+    const pages = rows.reduce((a, r) => a + (Number((r.note as { pages?: number }).pages) || 0), 0);
+    expect(full[1].value).toBe(pages.toLocaleString("en-US"));
+    expect((await run({})).map((r) => r.label)).toEqual(["notes"]);
+  });
 
   it("a user recipe from the test vault's recipe folder parses and renders", async () => {
     const raw = JSON.parse(readFileSync(join(vaultDir, "tests/charts/recipes/count-by-decade.vl.json"), "utf8")) as AnySpec;

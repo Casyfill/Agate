@@ -4,6 +4,10 @@ All notable changes to Agate. The format follows [Keep a Changelog](https://keep
 
 ## [Unreleased]
 
+### Added
+
+- Recipe **Headline numbers**: a row of big numbers as note text over the base (how many notes; total and average of a number; latest and first date; most common value). Every role is optional and only the mapped parts appear; uses the experimental stats output.
+
 ## [0.1.0] - 2026-10-19
 
 ### Added

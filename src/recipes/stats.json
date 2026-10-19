@@ -1,0 +1,226 @@
+{
+  "$schema": "https://vega.github.io/schema/vega-lite/v6.json",
+  "description": "Headline numbers over the base (Agate stats output): notes, total and average of a number, latest date, most common value.",
+  "usermeta": {
+    "agate": {
+      "output": "stats",
+      "recipe": {
+        "id": "stats",
+        "name": "Headline numbers",
+        "description": "A row of big numbers as note text: how many notes, the total and average of a number, the latest date, the most common value. Every part is optional; the numbers follow the base's filters.",
+        "roles": {
+          "number": {
+            "label": "Number to total",
+            "types": [
+              "number"
+            ],
+            "optional": true,
+            "prefer": [
+              "pages",
+              "duration",
+              "price",
+              "amount",
+              "time",
+              "distance",
+              "rating"
+            ]
+          },
+          "date": {
+            "label": "Date",
+            "types": [
+              "date"
+            ],
+            "optional": true,
+            "prefer": [
+              "date",
+              "finished",
+              "started",
+              "created",
+              "published"
+            ]
+          },
+          "category": {
+            "label": "Most common",
+            "types": [
+              "text",
+              "link"
+            ],
+            "optional": true,
+            "prefer": [
+              "genre",
+              "status",
+              "category",
+              "type",
+              "kind"
+            ]
+          }
+        }
+      }
+    }
+  },
+  "data": {
+    "name": "base"
+  },
+  "width": "container",
+  "height": 52,
+  "transform": [
+    {
+      "calculate": "toNumber({{number.expr}})",
+      "as": "num"
+    },
+    {
+      "calculate": "isValid({{date.expr}}) ? toDate({{date.expr}}) : null",
+      "as": "day"
+    },
+    {
+      "calculate": "{{category.expr}}",
+      "as": "cat"
+    },
+    {
+      "joinaggregate": [
+        {
+          "op": "count",
+          "as": "catN"
+        }
+      ],
+      "groupby": [
+        "cat"
+      ]
+    },
+    {
+      "aggregate": [
+        {
+          "op": "count",
+          "as": "n"
+        },
+        {
+          "op": "valid",
+          "field": "num",
+          "as": "nNum"
+        },
+        {
+          "op": "sum",
+          "field": "num",
+          "as": "total"
+        },
+        {
+          "op": "mean",
+          "field": "num",
+          "as": "avg"
+        },
+        {
+          "op": "valid",
+          "field": "day",
+          "as": "nDay"
+        },
+        {
+          "op": "min",
+          "field": "day",
+          "as": "first"
+        },
+        {
+          "op": "max",
+          "field": "day",
+          "as": "last"
+        },
+        {
+          "op": "valid",
+          "field": "cat",
+          "as": "nCat"
+        },
+        {
+          "op": "distinct",
+          "field": "cat",
+          "as": "kinds"
+        },
+        {
+          "op": "argmax",
+          "field": "catN",
+          "as": "top"
+        }
+      ]
+    },
+    {
+      "calculate": "['notes', 'total', 'latest', 'top']",
+      "as": "key"
+    },
+    {
+      "flatten": [
+        "key"
+      ]
+    },
+    {
+      "filter": "datum.key === 'notes' || (datum.key === 'total' && datum.nNum > 0) || (datum.key === 'latest' && datum.nDay > 0) || (datum.key === 'top' && datum.nCat > 0)"
+    },
+    {
+      "calculate": "datum.key === 'notes' ? format(datum.n, ',') : datum.key === 'total' ? format(datum.total, abs(datum.total) >= 100 ? ',.0f' : ',.2~f') : datum.key === 'latest' ? timeFormat(datum.last, '%b %-d, %Y') : '' + datum.top.cat",
+      "as": "value"
+    },
+    {
+      "calculate": "datum.key === 'notes' ? 'notes' : datum.key === 'total' ? 'total {{number.label}}' : datum.key === 'latest' ? 'latest {{date.label}}' : 'most common {{category.label}}'",
+      "as": "label"
+    },
+    {
+      "calculate": "datum.key === 'notes' ? (datum.nDay > 0 ? 'since ' + timeFormat(datum.first, '%b %Y') : '') : datum.key === 'total' ? 'average ' + format(datum.avg, ',.1~f') + ' over ' + datum.nNum : datum.key === 'latest' ? 'first ' + timeFormat(datum.first, '%b %-d, %Y') : datum.top.catN + ' of ' + datum.nCat + ', ' + (datum.kinds - 1 + (datum.nCat === datum.n ? 1 : 0)) + ' kinds'",
+      "as": "note"
+    },
+    {
+      "window": [
+        {
+          "op": "row_number",
+          "as": "i"
+        }
+      ]
+    }
+  ],
+  "encoding": {
+    "x": {
+      "field": "i",
+      "type": "ordinal",
+      "axis": null,
+      "bandPosition": 0,
+      "scale": {
+        "type": "band",
+        "paddingInner": 0,
+        "paddingOuter": 0
+      }
+    }
+  },
+  "layer": [
+    {
+      "mark": {
+        "type": "text",
+        "align": "left",
+        "baseline": "alphabetic",
+        "fontSize": 28,
+        "fontWeight": 700,
+        "y": 30
+      },
+      "encoding": {
+        "text": {
+          "field": "value"
+        }
+      }
+    },
+    {
+      "mark": {
+        "type": "text",
+        "align": "left",
+        "baseline": "alphabetic",
+        "fontSize": 11,
+        "opacity": 0.7,
+        "y": 48
+      },
+      "encoding": {
+        "text": {
+          "field": "label"
+        }
+      }
+    }
+  ],
+  "config": {
+    "view": {
+      "stroke": null
+    }
+  }
+}
