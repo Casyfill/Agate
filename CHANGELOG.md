@@ -4,8 +4,15 @@ All notable changes to Agate. The format follows [Keep a Changelog](https://keep
 
 ## [Unreleased]
 
+## [0.1.0] - 2026-10-19
+
 ### Added
 
+- Textures for SVG charts: declare hatching, dots or textures.js-style shapes under `usermeta.agate.textures` and use `url(#name)` wherever a colour goes, including scale ranges, so legends show them too. Kinds `lines` (any orientation, arrays cross-hatch), `circles` and `paths` (`squares`, `nylon`, `waves`, `woven`, `crosses`, `caps`, `hexagons`, or your own path), plus `shapeRendering` and `rough` for a hand-drawn wobble. SVG renderer only; with canvas each texture falls back to a flat colour. Guide: "Textures: hatching and dots".
+- API keys from environment variables: a URL in a spec (data, per-row data or image marks such as map tiles) can contain `{env:NAME}`, filled from the OS environment at fetch time, desktop only. A name is filled only for the one host the new **Environment variables in URLs** setting allows it for (`NAME host` per line), so a shared spec cannot send the key elsewhere. Keyed images reach the chart as `blob:` URLs and errors show the placeholder, so the key stays out of the DOM, exports and messages. Guide: "Basemaps under a route" and "Providers that need an API key".
+- Docs site in `docs/` for GitHub Pages: a main page, a gallery (Minard, Du Bois, Redlining in Brooklyn, Gapminder, vault edge bundling, travel globe, vault sunburst, themes) and a step-by-step quickstart from 26 book notes to a bookshelf chart with cover tooltips and headline numbers. Starter files to follow along in `docs/downloads/reading-starter.zip`.
+- Demo vault charts: Du Bois's 1900 furniture plate as a static chart in a note; Brooklyn's 1938 HOLC grades (all 66 zones over today's shoreline, Long Island state plane projection, textures); Gapminder's wealth and health of nations with one note and one CSV per country; hierarchical edge bundling of the vault's links (pure Vega); a theme sampler; reading stats; a custom Du Bois theme file (`charts/themes/du-bois.json`).
+- Render tests: `AGATE_PREVIEW_THEME` previews specs in any stock theme or theme file.
 - Demo board games: each game note has an `image` property (the lead image of its Wikipedia article, mostly the box), and the collection chart's tooltip shows it as a picture.
 - Hike dashboard basemap: "Auto" is now the USGS 3DEP multidirectional hillshade (keyless, US only, from lidar terrain), fetched as one image for the map frame: multiplied into the background in light mode, drawn faintly in dark mode. Esri hillshade, OpenTopoMap, satellite and USGS Topo stay in the basemap menu.
 - Stats blocks hide the Bases title and toolbar and the fixed view height around them, so a stats row in a note reads as a line of numbers. The Interview prep and AT Georgia notes use live stats (`charts/interview-stats.vl.json`, `charts/hike-stats.vl.json`, the hike's from its GPS tracks) instead of numbers written by the generator.
@@ -25,13 +32,16 @@ All notable changes to Agate. The format follows [Keep a Changelog](https://keep
 - **Copy prompt for an LLM** (button and command): the base's properties, types and sample rows plus Agate's conventions, ready to paste into any assistant. The error box has **Copy error**.
 - Structure datasets: `usermeta.agate.edges` gives a spec the links between the notes of the base (from Obsidian's resolved link index, by row position, ready for Vega's force layout); `usermeta.agate.tree` gives the folder hierarchy with per-folder byte and file totals and ancestor lists, ready for `stratify` and `partition`.
 - Open on click: `usermeta.agate.open: "click"` (or `"dblclick"`) opens the note behind a mark; Cmd/Ctrl opens it in a new tab.
-- Gallery (`test-vault/Surfaces/12 Gallery`): DaisyDisk-style zoomable vault sunburst, link graph, arc diagram over time, travel globe with great-circle routes, reading sankey, linked dashboard and mood beeswarm; with test notes in `Ideas/`, `Places/`, `Trips/`, `Journal/`.
+- Gallery (`demo-vault/tests/Surfaces/12 Gallery`): DaisyDisk-style zoomable vault sunburst, link graph, arc diagram over time, travel globe with great-circle routes, reading sankey, linked dashboard and mood beeswarm; with test notes in `Ideas/`, `Places/`, `Trips/`, `Journal/`.
 - Tooltip images: a tooltip field titled `image` shows as a picture (styled to fit the tooltip). Example: the Books base builds `formula.cover` from each note's `isbn` with Open Library covers (`charts/covers-tooltip.vl.json`).
 - Draft docs: `docs/guide.md` (getting started, building charts, tips, per-note data) and `docs/why-agate.md` (pros and cons against alternatives).
-- Example: `test-vault/Markets`, twelve FRED series (indices, VIX, rates, FX, oil, crypto) drawn as a cubism-style horizon table (`charts/horizon-table.vg.json`) and as plain horizon strips (`charts/horizon.vg.json`).
+- Example: `demo-vault/tests/Markets`, twelve FRED series (indices, VIX, rates, FX, oil, crypto) drawn as a cubism-style horizon table (`charts/horizon-table.vg.json`) and as plain horizon strips (`charts/horizon.vg.json`).
 
 ### Changed
 
+- Minard's map: thin flank columns have a minimum band width, and only the battles are interactive (the band no longer has a tooltip).
+- `scripts/demo-vault.mjs` now produces every hand-made part of the demo vault (notes in `scripts/data/notes/`, map files in `demo-vault/tests/geo/`, Gapminder data in `demo-vault/tests/data/`), so regenerating loses nothing.
+- Guide: sections on basemaps, keyed providers and textures.
 - Container-width charts resize themselves only: Agate sets the chart's container-sized `width`/`height` signals directly instead of firing a window-wide `resize` event (which made every chart and the workspace re-measure), and ignores an immediate bounce back to the previous width (a scrollbar toggling). Fixes a container-width chart that could re-render in a loop, reloading its images, until the window went blank.
 - One repo vault (ADR-0002): `test-vault/` moved into `demo-vault/tests/`, so the showcase and the test fixtures live in one vault and every chart in it is rendered by the test suite. Test notes that share a name with a showcase note got a ` (test)` suffix; test bases only look inside `tests/`. `npm run install:local` now targets `demo-vault/`.
 - A spec's `description` no longer pops up as an Obsidian tooltip over the whole chart. Vega puts descriptions in `aria-label`, which Obsidian shows on hover; Agate moves them to `aria-description`, so screen readers still get them.
@@ -40,6 +50,11 @@ All notable changes to Agate. The format follows [Keep a Changelog](https://keep
 - Theme `obsidian`: Vega-Lite text marks use the theme's text colour (they were black, unreadable in dark mode).
 - The Agate chart view has its own line icon in the Bases view picker (a rounded square with a rising spline), drawn in the same style and stroke as Table, Cards and List. The settings tab carries the Agate icon (Obsidian 1.13.7 does not draw icons for community-plugin tabs yet).
 - Remote loads run at most two at a time per host and retry network errors, 429 and 5xx twice with backoff; the error names the URL.
+
+### Fixed
+
+- Brooklyn HOLC data: the vault copy was missing 15 of the 23 D-graded zones (Red Hook, downtown, Williamsburg, Bushwick) and its rings were wound the wrong way for d3-geo, which filled the whole frame.
+- Gapminder data was cut off alphabetically after "Slovenia" (116 of 142 countries).
 
 ## [0.0.2] - 2026-09-27
 
