@@ -1,0 +1,48 @@
+{
+  "$comment": "A custom Agate theme file: a plain Vega config. After the palette and lettering of W. E. B. Du Bois's data portraits for the 1900 Paris Exposition. Use it vault-wide (Settings → Agate → Theme file: charts/themes/du-bois.json) or paste it into a spec's own config.",
+  "background": "#e7dcc6",
+  "padding": 14,
+  "font": "'DIN Condensed', 'Bahnschrift Condensed', 'Arial Narrow', sans-serif",
+  "view": { "stroke": null },
+  "title": { "fontSize": 20, "fontWeight": "bold", "color": "#1f1a16", "anchor": "middle", "offset": 14 },
+  "range": {
+    "category": ["#dc143c", "#ffc000", "#4682b4", "#00aa5a", "#d2b48c", "#654321", "#ffb6c1", "#1f1a16"],
+    "ordinal": { "scheme": "goldred" },
+    "ramp": ["#ffc000", "#dc143c", "#1f1a16"],
+    "heatmap": ["#e7dcc6", "#ffc000", "#dc143c", "#1f1a16"]
+  },
+  "mark": { "color": "#dc143c" },
+  "arc": { "stroke": "#1f1a16", "strokeWidth": 0.8 },
+  "bar": { "stroke": "#1f1a16", "strokeWidth": 0.8, "binSpacing": 2 },
+  "rect": { "stroke": "#1f1a16", "strokeWidth": 0.6 },
+  "area": { "stroke": "#1f1a16", "strokeWidth": 0.8 },
+  "line": { "strokeWidth": 3.5, "strokeCap": "butt" },
+  "point": { "filled": true, "size": 70, "stroke": "#1f1a16", "strokeWidth": 0.8, "opacity": 1 },
+  "circle": { "size": 70, "stroke": "#1f1a16", "strokeWidth": 0.8, "opacity": 1 },
+  "axis": {
+    "domainColor": "#1f1a16",
+    "domainWidth": 1.5,
+    "grid": false,
+    "tickColor": "#1f1a16",
+    "tickSize": 4,
+    "labelColor": "#1f1a16",
+    "labelFontSize": 13,
+    "labelPadding": 4,
+    "titleColor": "#1f1a16",
+    "titleFontSize": 13,
+    "titleFontWeight": "bold",
+    "titlePadding": 8
+  },
+  "axisBand": { "domain": false, "ticks": false },
+  "legend": {
+    "labelColor": "#1f1a16",
+    "labelFontSize": 13,
+    "titleColor": "#1f1a16",
+    "titleFontSize": 13,
+    "symbolType": "square",
+    "symbolSize": 140,
+    "symbolStrokeColor": "#1f1a16",
+    "symbolStrokeWidth": 0.8
+  },
+  "header": { "labelFontSize": 14, "titleFontSize": 15, "labelColor": "#1f1a16" }
+}

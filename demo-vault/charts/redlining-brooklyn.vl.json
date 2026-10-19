@@ -1,0 +1,681 @@
+{
+  "$schema": "https://vega.github.io/schema/vega-lite/v6.json",
+  "description": "Brooklyn's 1938 HOLC 'residential security' map, from the Mapping Inequality project (Digital Scholarship Lab, University of Richmond; CC-BY-NC), after the look of the original sheet (HOLC grades printed over Hagstrom's street map): muted green, blue, yellow and pink over a fine street grid, ungraded land in a light crosshatch, with a plain title and the HOLC's own grade descriptions. Drawn in New York's Long Island state plane projection (Lambert conformal conic, EPSG:2263 parameters). Each zone is graded A (best) to D (hazardous); D zones were denied mortgage backing, the origin of 'redlining'. Agate textures draw the grid and the hatching. Shorelines are today's (NYC Department of City Planning). Both GeoJSON files live in the vault.",
+  "width": 800,
+  "height": 500,
+  "padding": 0,
+  "autosize": {
+    "type": "none"
+  },
+  "background": "#f6f3e6",
+  "usermeta": {
+    "agate": {
+      "textures": {
+        "streets": {
+          "orientation": [
+            "vertical",
+            "horizontal"
+          ],
+          "size": 5,
+          "strokeWidth": 0.4,
+          "stroke": "#dcd7c4",
+          "background": "#f6f3e6",
+          "rough": 0.25
+        },
+        "ungraded": {
+          "orientation": [
+            "diagonal",
+            "6/8"
+          ],
+          "size": 7,
+          "strokeWidth": 0.4,
+          "stroke": "#9a9486",
+          "background": "#f6f3e6",
+          "rough": 0.2
+        },
+        "gradeA": {
+          "orientation": [
+            "vertical",
+            "horizontal"
+          ],
+          "size": 6,
+          "strokeWidth": 0.3,
+          "stroke": "#6b9661",
+          "background": "#9cc690",
+          "rough": 0.2
+        },
+        "gradeB": {
+          "orientation": [
+            "vertical",
+            "horizontal"
+          ],
+          "size": 6,
+          "strokeWidth": 0.3,
+          "stroke": "#5f939b",
+          "background": "#94c4cc",
+          "rough": 0.2
+        },
+        "gradeC": {
+          "orientation": [
+            "vertical",
+            "horizontal"
+          ],
+          "size": 6,
+          "strokeWidth": 0.3,
+          "stroke": "#aaa65e",
+          "background": "#e7e397",
+          "rough": 0.2
+        },
+        "gradeD": {
+          "orientation": [
+            "vertical",
+            "horizontal"
+          ],
+          "size": 6,
+          "strokeWidth": 0.3,
+          "stroke": "#b46d78",
+          "background": "#e9a1ab",
+          "rough": 0.2
+        }
+      }
+    }
+  },
+  "config": {
+    "view": {
+      "stroke": null
+    },
+    "font": "'Avenir Next', Avenir, 'Helvetica Neue', Arial, sans-serif"
+  },
+  "params": [
+    {
+      "name": "agateDark",
+      "value": false
+    }
+  ],
+  "projection": {
+    "type": "conicConformal",
+    "parallels": [
+      40.6667,
+      41.0333
+    ],
+    "rotate": [
+      74,
+      0
+    ],
+    "center": [
+      0.088,
+      40.655
+    ],
+    "scale": 198000
+  },
+  "layer": [
+    {
+      "data": {
+        "values": [
+          {}
+        ]
+      },
+      "mark": {
+        "type": "rect",
+        "fill": "#fbfaf3"
+      },
+      "encoding": {
+        "x": {
+          "value": 0
+        },
+        "x2": {
+          "value": 800
+        },
+        "y": {
+          "value": 0
+        },
+        "y2": {
+          "value": 500
+        }
+      }
+    },
+    {
+      "data": {
+        "url": "attachments/geo/nyc-boroughs.geojson",
+        "format": {
+          "type": "json",
+          "property": "features"
+        }
+      },
+      "transform": [
+        {
+          "filter": "datum.properties.name !== 'Brooklyn'"
+        }
+      ],
+      "mark": {
+        "type": "geoshape",
+        "clip": true,
+        "fill": "url(#streets)",
+        "stroke": "#a39d8f",
+        "strokeWidth": 0.5
+      }
+    },
+    {
+      "data": {
+        "url": "attachments/geo/nyc-boroughs.geojson",
+        "format": {
+          "type": "json",
+          "property": "features"
+        }
+      },
+      "transform": [
+        {
+          "filter": "datum.properties.name === 'Brooklyn'"
+        }
+      ],
+      "mark": {
+        "type": "geoshape",
+        "clip": true,
+        "fill": "url(#ungraded)",
+        "stroke": "#6b655a",
+        "strokeWidth": 0.8
+      }
+    },
+    {
+      "data": {
+        "url": "attachments/geo/brooklyn-holc.geojson",
+        "format": {
+          "type": "json",
+          "property": "features"
+        }
+      },
+      "transform": [
+        {
+          "calculate": "datum.properties.grade",
+          "as": "grade"
+        },
+        {
+          "calculate": "datum.properties.label",
+          "as": "zone"
+        }
+      ],
+      "mark": {
+        "type": "geoshape",
+        "clip": true,
+        "stroke": "#5a544a",
+        "strokeWidth": 0.55
+      },
+      "encoding": {
+        "color": {
+          "field": "grade",
+          "type": "nominal",
+          "scale": {
+            "domain": [
+              "A",
+              "B",
+              "C",
+              "D"
+            ],
+            "range": [
+              "url(#gradeA)",
+              "url(#gradeB)",
+              "url(#gradeC)",
+              "url(#gradeD)"
+            ]
+          },
+          "legend": {
+            "orient": "none",
+            "legendX": 604,
+            "legendY": 112,
+            "title": null,
+            "symbolType": "square",
+            "symbolSize": 100,
+            "symbolStrokeColor": "#5a544a",
+            "symbolStrokeWidth": 0.6,
+            "labelFont": "'Avenir Next', Avenir, 'Helvetica Neue', Arial, sans-serif",
+            "labelFontSize": 10,
+            "labelColor": "#3a352e",
+            "rowPadding": 5,
+            "labelOffset": 7,
+            "labelExpr": "datum.label === 'A' ? 'A   “Best”' : datum.label === 'B' ? 'B   “Still desirable”' : datum.label === 'C' ? 'C   “Definitely declining”' : 'D   “Hazardous”'"
+          }
+        },
+        "tooltip": [
+          {
+            "field": "zone",
+            "title": "Zone"
+          },
+          {
+            "field": "grade",
+            "title": "Grade"
+          }
+        ]
+      }
+    },
+    {
+      "data": {
+        "url": "attachments/geo/brooklyn-holc.geojson",
+        "format": {
+          "type": "json",
+          "property": "features"
+        }
+      },
+      "transform": [
+        {
+          "calculate": "datum.properties.lon",
+          "as": "lon"
+        },
+        {
+          "calculate": "datum.properties.lat",
+          "as": "lat"
+        },
+        {
+          "calculate": "datum.properties.label",
+          "as": "zone"
+        }
+      ],
+      "mark": {
+        "type": "text",
+        "clip": true,
+        "font": "'Avenir Next', Avenir, 'Helvetica Neue', Arial, sans-serif",
+        "fontSize": 7.5,
+        "fill": "#2f2b25",
+        "opacity": 0.75
+      },
+      "encoding": {
+        "longitude": {
+          "field": "lon",
+          "type": "quantitative"
+        },
+        "latitude": {
+          "field": "lat",
+          "type": "quantitative"
+        },
+        "text": {
+          "field": "zone"
+        }
+      }
+    },
+    {
+      "data": {
+        "values": [
+          {
+            "lon": -74.045,
+            "lat": 40.668,
+            "t": "Upper Bay"
+          }
+        ]
+      },
+      "mark": {
+        "type": "text",
+        "font": "'Avenir Next', Avenir, 'Helvetica Neue', Arial, sans-serif",
+        "fontStyle": "normal",
+        "fill": "#8a9599",
+        "clip": true,
+        "letterSpacing": 1.5,
+        "fontSize": 10
+      },
+      "encoding": {
+        "longitude": {
+          "field": "lon",
+          "type": "quantitative"
+        },
+        "latitude": {
+          "field": "lat",
+          "type": "quantitative"
+        },
+        "text": {
+          "field": "t"
+        }
+      }
+    },
+    {
+      "data": {
+        "values": [
+          {
+            "lon": -73.845,
+            "lat": 40.612,
+            "t": "Jamaica Bay"
+          }
+        ]
+      },
+      "mark": {
+        "type": "text",
+        "font": "'Avenir Next', Avenir, 'Helvetica Neue', Arial, sans-serif",
+        "fontStyle": "normal",
+        "fill": "#8a9599",
+        "clip": true,
+        "letterSpacing": 1.5,
+        "fontSize": 10
+      },
+      "encoding": {
+        "longitude": {
+          "field": "lon",
+          "type": "quantitative"
+        },
+        "latitude": {
+          "field": "lat",
+          "type": "quantitative"
+        },
+        "text": {
+          "field": "t"
+        }
+      }
+    },
+    {
+      "data": {
+        "values": [
+          {}
+        ]
+      },
+      "mark": {
+        "type": "rect",
+        "color": {
+          "gradient": "linear",
+          "x1": 0,
+          "y1": 0,
+          "x2": 0,
+          "y2": 1,
+          "stops": [
+            {
+              "offset": 0,
+              "color": "#f6f3e6"
+            },
+            {
+              "offset": 1,
+              "color": "rgba(246,243,230,0)"
+            }
+          ]
+        }
+      },
+      "encoding": {
+        "x": {
+          "value": 0
+        },
+        "x2": {
+          "value": 800
+        },
+        "y": {
+          "value": 0
+        },
+        "y2": {
+          "value": 36
+        }
+      }
+    },
+    {
+      "data": {
+        "values": [
+          {}
+        ]
+      },
+      "mark": {
+        "type": "rect",
+        "color": {
+          "gradient": "linear",
+          "x1": 0,
+          "y1": 1,
+          "x2": 0,
+          "y2": 0,
+          "stops": [
+            {
+              "offset": 0,
+              "color": "#f6f3e6"
+            },
+            {
+              "offset": 1,
+              "color": "rgba(246,243,230,0)"
+            }
+          ]
+        }
+      },
+      "encoding": {
+        "x": {
+          "value": 0
+        },
+        "x2": {
+          "value": 800
+        },
+        "y": {
+          "value": 464
+        },
+        "y2": {
+          "value": 500
+        }
+      }
+    },
+    {
+      "data": {
+        "values": [
+          {}
+        ]
+      },
+      "mark": {
+        "type": "rect",
+        "color": {
+          "gradient": "linear",
+          "x1": 0,
+          "y1": 0,
+          "x2": 1,
+          "y2": 0,
+          "stops": [
+            {
+              "offset": 0,
+              "color": "#f6f3e6"
+            },
+            {
+              "offset": 1,
+              "color": "rgba(246,243,230,0)"
+            }
+          ]
+        }
+      },
+      "encoding": {
+        "x": {
+          "value": 0
+        },
+        "x2": {
+          "value": 36
+        },
+        "y": {
+          "value": 0
+        },
+        "y2": {
+          "value": 500
+        }
+      }
+    },
+    {
+      "data": {
+        "values": [
+          {}
+        ]
+      },
+      "mark": {
+        "type": "rect",
+        "color": {
+          "gradient": "linear",
+          "x1": 1,
+          "y1": 0,
+          "x2": 0,
+          "y2": 0,
+          "stops": [
+            {
+              "offset": 0,
+              "color": "#f6f3e6"
+            },
+            {
+              "offset": 1,
+              "color": "rgba(246,243,230,0)"
+            }
+          ]
+        }
+      },
+      "encoding": {
+        "x": {
+          "value": 764
+        },
+        "x2": {
+          "value": 800
+        },
+        "y": {
+          "value": 0
+        },
+        "y2": {
+          "value": 500
+        }
+      }
+    },
+    {
+      "data": {
+        "values": [
+          {}
+        ]
+      },
+      "mark": {
+        "type": "rect",
+        "fill": "#f6f3e6",
+        "fillOpacity": 0.94,
+        "stroke": "#8f897c",
+        "strokeWidth": 0.5
+      },
+      "encoding": {
+        "x": {
+          "value": 592
+        },
+        "x2": {
+          "value": 778
+        },
+        "y": {
+          "value": 28
+        },
+        "y2": {
+          "value": 236
+        }
+      }
+    },
+    {
+      "data": {
+        "values": [
+          {}
+        ]
+      },
+      "mark": {
+        "type": "text",
+        "x": 604,
+        "y": 54,
+        "text": "Brooklyn, 1938",
+        "font": "'Avenir Next', Avenir, 'Helvetica Neue', Arial, sans-serif",
+        "fill": "#34312c",
+        "align": "left",
+        "fontSize": 17,
+        "fontWeight": 600
+      }
+    },
+    {
+      "data": {
+        "values": [
+          {}
+        ]
+      },
+      "mark": {
+        "type": "text",
+        "x": 604,
+        "y": 71,
+        "text": "Home Owners' Loan Corporation",
+        "font": "'Avenir Next', Avenir, 'Helvetica Neue', Arial, sans-serif",
+        "fill": "#77726a",
+        "align": "left",
+        "fontSize": 9.5
+      }
+    },
+    {
+      "data": {
+        "values": [
+          {}
+        ]
+      },
+      "mark": {
+        "type": "text",
+        "x": 604,
+        "y": 83,
+        "text": "residential security grades",
+        "font": "'Avenir Next', Avenir, 'Helvetica Neue', Arial, sans-serif",
+        "fill": "#77726a",
+        "align": "left",
+        "fontSize": 9.5
+      }
+    },
+    {
+      "data": {
+        "values": [
+          {}
+        ]
+      },
+      "mark": {
+        "type": "rect",
+        "fill": "#c9c3b5"
+      },
+      "encoding": {
+        "x": {
+          "value": 604
+        },
+        "x2": {
+          "value": 766
+        },
+        "y": {
+          "value": 96
+        },
+        "y2": {
+          "value": 96.5
+        }
+      }
+    },
+    {
+      "data": {
+        "values": [
+          {}
+        ]
+      },
+      "mark": {
+        "type": "text",
+        "x": 604,
+        "y": 203,
+        "text": "Areas graded D were outlined in red and",
+        "font": "'Avenir Next', Avenir, 'Helvetica Neue', Arial, sans-serif",
+        "fill": "#77726a",
+        "align": "left",
+        "fontSize": 8.3
+      }
+    },
+    {
+      "data": {
+        "values": [
+          {}
+        ]
+      },
+      "mark": {
+        "type": "text",
+        "x": 604,
+        "y": 214,
+        "text": "routinely denied mortgage lending.",
+        "font": "'Avenir Next', Avenir, 'Helvetica Neue', Arial, sans-serif",
+        "fill": "#77726a",
+        "align": "left",
+        "fontSize": 8.3
+      }
+    },
+    {
+      "data": {
+        "values": [
+          {}
+        ]
+      },
+      "mark": {
+        "type": "text",
+        "x": 604,
+        "y": 228,
+        "text": "Mapping Inequality (CC BY-NC) · shoreline NYC DCP",
+        "font": "'Avenir Next', Avenir, 'Helvetica Neue', Arial, sans-serif",
+        "fill": "#9a958b",
+        "align": "left",
+        "fontSize": 6.5
+      }
+    }
+  ]
+}

@@ -16,6 +16,7 @@ import { quietAriaLabels } from "./aria";
 import { themeColors } from "./theme";
 import { containerSignals, isBounce } from "./resize";
 import { computeStats, isStatsSpec } from "./stats";
+import { bindTextures, texturesOf, texturesSvg } from "./textures";
 
 export interface RenderInput {
   resolved: ResolvedSpec;
@@ -51,6 +52,9 @@ function defaultToContainerWidth(spec: AnySpec, mode: "vega" | "vega-lite"): Any
 function environmentSignals(): Record<string, unknown> {
   return { agateDark: document.body.classList.contains("theme-dark"), agateColors: themeColors() };
 }
+
+/** Page-unique prefix for each chart's texture ids. */
+let textureCharts = 0;
 
 function stopBubbling(evt: Event): void {
   evt.stopPropagation();
@@ -127,6 +131,16 @@ export class AgateRenderer {
       }
       spec = defaultToContainerWidth(spec, resolved.mode);
       spec = withSignalValues(spec, resolved.mode, env);
+      const textures = texturesOf(resolved.spec);
+      if (Object.keys(textures).length > 0) {
+        if (options.renderer === "svg") {
+          const prefix = `agate-tex-${++textureCharts}`;
+          spec = bindTextures(spec, textures, prefix);
+          this.hostEl.appendChild(texturesSvg(document, textures, prefix));
+        } else {
+          spec = bindTextures(spec, textures, null);
+        }
+      }
 
       // Experimental: a stats spec renders as HTML numbers, not as a chart.
       if (isStatsSpec(resolved.spec)) {

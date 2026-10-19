@@ -177,6 +177,23 @@ h2 { font-size: clamp(25px, 3.4vw, 33px); letter-spacing: -0.015em; margin: 0 0 
 .gallery .feat a { color: var(--accent); }
 .gallery .shot img { aspect-ratio: 16 / 10; object-fit: cover; object-position: center; }
 .gallery .wide .shot img { aspect-ratio: 16 / 7; object-position: 50% 42%; }
+.gallery .shot img.natural { aspect-ratio: auto; }
+
+/* themes: text left, image stack right */
+.themes { display: grid; grid-template-columns: minmax(0, 2fr) minmax(0, 3fr); gap: 36px; align-items: start; }
+.themes-text h3 { margin: 22px 0 6px; font-size: 16px; }
+.themes-text p, .themes-text li { color: var(--muted); font-size: 14.5px; }
+.themes-text p { margin: 0 0 8px; }
+.themes-text ul { margin: 0; padding-left: 18px; }
+.themes-text li { margin: 0 0 6px; }
+.theme-names { display: flex; flex-wrap: wrap; gap: 6px; }
+.theme-stack { display: grid; gap: 14px; }
+.theme-stack figure { position: relative; margin: 0; }
+.theme-stack .shot img { aspect-ratio: 27 / 10; object-fit: cover; object-position: left center; }
+.theme-stack .pair { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+.theme-stack .pair .shot img { aspect-ratio: 9 / 10; object-position: top center; }
+.theme-stack .chip { position: absolute; right: 10px; bottom: 10px; font: 600 11px/1.4 ui-monospace, monospace; letter-spacing: 0.04em; color: #fff; background: rgba(20, 20, 22, 0.72); padding: 3px 9px; border-radius: 999px; }
+
 
 /* quickstart steps */
 .steps { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px; }
@@ -201,10 +218,84 @@ h2 { font-size: clamp(25px, 3.4vw, 33px); letter-spacing: -0.015em; margin: 0 0 
 footer { margin-top: 20px; padding: 40px 0; color: var(--muted); font-size: 13.5px; border-top: 1px solid var(--line); }
 footer a { color: var(--accent); }
 
+/* quickstart tutorial: text left, illustration right */
+.before { color: var(--muted); font-size: 14px; max-width: 720px; margin: 22px 0 0; padding: 12px 14px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); }
+.tut { display: grid; grid-template-columns: minmax(0, 11fr) minmax(0, 10fr); gap: 44px; align-items: start; padding: 48px 0 8px; border-top: 1px solid var(--line); }
+.tut-text h2 { margin: 4px 0 12px; }
+.tut-text h3 { margin: 22px 0 6px; font-size: 16px; }
+.tut-text p, .tut-text li { color: var(--muted); font-size: 15px; }
+.tut-text ol, .tut-text ul { padding-left: 20px; margin: 8px 0; }
+.tut-text li { margin: 0 0 6px; }
+.tut-text b { color: var(--ink); font-weight: 600; }
+.tut-n { font-family: ui-monospace, monospace; font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--accent); margin: 0; display: flex; align-items: center; gap: 10px; }
+.tut-n span { width: 26px; height: 26px; border-radius: 6px; background: var(--accent); color: var(--accent-ink); display: grid; place-items: center; font-weight: 700; font-size: 13px; }
+.tut .codefig { margin: 14px 0; font-size: 12.5px; }
+.tut .codefig.prompt { color: #b9c1cf; white-space: pre-wrap; }
+.tut .get { margin-top: 16px; padding: 10px 12px; border-left: 2px solid var(--accent); background: var(--surface); border-radius: 0 6px 6px 0; font-size: 14px; }
+.tut-fig { margin: 0; position: sticky; top: 24px; }
+.tut-fig figcaption { color: var(--faint); font-size: 12.5px; margin-top: 10px; }
+.render { border-radius: 10px; overflow: hidden; background: #1e1e1e; border: 1px solid #2c2c2c; box-shadow: var(--glow); }
+.render img { display: block; width: 100%; height: auto; }
+.tweaks { padding-top: 10px; }
+.tweaks .sub { margin: 0 0 4px; }
+.tut.tweak { border-top: 1px dashed var(--line); padding-top: 30px; }
+.tweak-n { font-family: ui-monospace, monospace; font-size: 12px; color: var(--accent); margin: 0; }
+.tweak h3 { margin: 2px 0 6px; font-size: 17px; }
+
+/* hand-drawn mocks of Obsidian, labelled as illustrations by their captions */
+.mock { background: #1e1e1e; color: #dadada; border: 1px solid #2f2f2f; border-radius: 10px; overflow: hidden; box-shadow: var(--glow); font: 13px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+.mock + .mock { margin-top: 14px; }
+.mock-bar { display: flex; align-items: center; gap: 6px; padding: 8px 12px; background: #262626; border-bottom: 1px solid #2f2f2f; color: #8f8f8f; font-size: 11.5px; }
+.mock-bar i { width: 9px; height: 9px; border-radius: 50%; background: #444; }
+.mock-bar span { margin-left: 8px; }
+.mock-body { padding: 18px 20px 16px; }
+.mock-body.tight { padding: 10px 0 8px; overflow-x: auto; }
+.mock-title { font-size: 22px; font-weight: 700; color: #e6e6e6; margin: 0 0 12px; }
+.mock-title.small { font-size: 16px; margin-bottom: 4px; }
+.mock-props { border: 1px solid #2f2f2f; border-radius: 6px; padding: 6px 10px 8px; margin-bottom: 14px; }
+.mock-props-h { color: #8f8f8f; font-size: 11.5px; margin-bottom: 4px; }
+.mock-prop { display: grid; grid-template-columns: 90px 1fr; padding: 2px 0; }
+.mock-prop span { color: #8f8f8f; }
+.mock-prop b { font-weight: 400; color: #dadada; }
+.mock-text { margin: 0 0 6px; color: #c8c8c8; }
+.mock-text.dim, .mock .dim { color: #8f8f8f; }
+.mock-h { font-weight: 700; margin: 10px 0 4px; color: #e0e0e0; }
+.mock-toolbar { display: flex; gap: 14px; align-items: center; padding: 4px 14px 10px; color: #9a9a9a; font-size: 12px; border-bottom: 1px solid #2f2f2f; }
+.mock-toolbar b { color: #dadada; font-weight: 600; }
+.mock-toolbar em { font-style: normal; }
+.mock-toolbar span { margin-right: auto; }
+.mock-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+.mock-table th { text-align: left; color: #8f8f8f; font-weight: 500; padding: 7px 10px; border-bottom: 1px solid #2f2f2f; white-space: nowrap; }
+.mock-table td { padding: 6px 10px; border-bottom: 1px solid #262626; white-space: nowrap; max-width: 150px; overflow: hidden; text-overflow: ellipsis; }
+.mock-table td.lnk { color: #a68af9; }
+.mock-table td.num { text-align: right; }
+.mock-more { color: #8f8f8f; font-size: 12px; padding: 8px 12px 0; }
+.mock-search { border: 1px solid #3a3a3a; border-radius: 6px; padding: 6px 10px; color: #8f8f8f; margin-bottom: 8px; }
+.mock-list { list-style: none; margin: 0; padding: 0; }
+.mock-list li { padding: 5px 10px; border-radius: 5px; color: #c8c8c8; }
+.mock-list li.on { background: #3a3550; color: #fff; }
+.mock-field { display: flex; justify-content: space-between; gap: 12px; align-items: center; padding: 9px 0; border-top: 1px solid #2a2a2a; }
+.mock-field span { color: #dadada; }
+.mock-field small { display: block; color: #8f8f8f; font-size: 11px; }
+.mock-field b { font-weight: 400; border: 1px solid #3a3a3a; border-radius: 5px; padding: 3px 8px; color: #dadada; white-space: nowrap; font-size: 12px; }
+.mock-buttons { display: flex; justify-content: flex-end; gap: 8px; padding-top: 12px; }
+.mock-buttons em { font-style: normal; padding: 5px 12px; border-radius: 5px; background: #333; font-size: 12px; }
+.mock-buttons em.cta { background: #7852ee; color: #fff; }
+.mock-modal { max-width: 92%; margin-left: auto; }
+.mock-stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; margin: 6px 0 12px; }
+.mock-stats b { display: block; font-size: 21px; color: #e6e6e6; line-height: 1.1; }
+.mock-stats span { display: block; font-size: 11.5px; color: #c8c8c8; }
+.mock-stats small { display: block; font-size: 10.5px; color: #8f8f8f; }
+.mock-embed { margin: 6px 0 12px; border: 1px solid #2f2f2f; border-radius: 6px; overflow: hidden; }
+.mock-embed img { display: block; width: 100%; height: auto; }
+
 @media (max-width: 860px) {
+  .tut { grid-template-columns: minmax(0, 1fr); gap: 24px; }
+  .tut-fig { position: static; }
   .flow, .steps, .cards, .cards.three, .strip, .split { grid-template-columns: 1fr; }
   .strip.four { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .gallery { grid-template-columns: 1fr; }
+  .themes { grid-template-columns: 1fr; }
 }
 @media (max-width: 540px) {
   .strip.four { grid-template-columns: 1fr; }

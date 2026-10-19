@@ -10,6 +10,7 @@ import { env } from "node:process";
 import { fileURLToPath } from "node:url";
 import * as vega from "vega";
 import * as vl from "vega-lite";
+import * as vegaThemes from "vega-themes";
 import { describe, expect, it } from "vitest";
 import { defaultRows } from "../fixtures/rows";
 import { marketColumns, marketLabels, marketRows, marketsFixtureDir } from "../fixtures/markets";
@@ -74,6 +75,13 @@ const quietLogger = {
   },
 };
 
+/** AGATE_PREVIEW_THEME (previews only): a vega-themes name, or a path to a Vega config JSON such as a theme file. */
+function previewConfig(dark: boolean): Record<string, unknown> | undefined {
+  const theme = env.AGATE_PREVIEW_THEME;
+  if (theme) return (vegaThemes as unknown as Record<string, Record<string, unknown>>)[theme] ?? (JSON.parse(readFileSync(theme, "utf8")) as Record<string, unknown>);
+  return dark ? previewDark : undefined;
+}
+
 async function renderFixture(name: string): Promise<string> {
   const raw = JSON.parse(readFileSync(join(chartsDir, name), "utf8")) as Record<string, unknown>;
   const isVL = typeof raw.$schema === "string" && /vega-lite/.test(raw.$schema);
@@ -100,7 +108,7 @@ async function renderFixture(name: string): Promise<string> {
     spec = withInitialValues(spec, mode, name, rows);
   }
   if (spec.width === "container") spec = { ...spec, width: 500 }; // no DOM to measure
-  const config = dark ? previewDark : undefined;
+  const config = previewConfig(dark);
   const vgSpec = isVL ? vl.compile(spec as never, { logger: quietLogger, config: config as never }).spec : spec;
   const view = new vega.View(vega.parse(vgSpec, isVL ? undefined : config), { renderer: "none", loader, logger: quietLogger });
   const svg = await view.toSVG();

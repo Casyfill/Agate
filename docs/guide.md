@@ -165,6 +165,29 @@ Add `"cells": "cells"` next to `rowData` and Agate also hands the spec the view'
 - A spec that declares a signal (Vega) or param (Vega-Lite) named `agateDark` with a plain `value` gets `true` in dark mode. The horizon examples use it to reverse their colour ramp so small changes stay close to the background. In the Vega editor the spec's own default applies.
 - A spec that declares `agateColors` (a plain `value` object, used as the defaults outside Obsidian) gets the active theme's colours by role: `text`, `muted`, `faint`, `background`, `border`, `accent`, and the named colours `red`, `orange`, `yellow`, `green`, `cyan`, `blue`, `purple`, `pink`. Use them in expressions, e.g. `"color": {"expr": "agateColors.yellow"}` or a halo in `agateColors.background`. Charts re-render when the theme changes. The hike dashboard in `demo-vault/charts/` uses no other colours.
 
+### Textures: hatching and dots (SVG only)
+
+Vega fills with colours and gradients. For hatching, crosshatch or dots, declare textures under `usermeta.agate.textures` and use `url(#name)` wherever a colour goes, including a scale's `range`, so the legend shows them too:
+
+```json
+"usermeta": { "agate": { "textures": {
+  "hatch": { "orientation": "diagonal", "size": 6, "strokeWidth": 1.1, "stroke": "#b43a2c", "background": "#efcdc3" },
+  "cross": { "orientation": ["diagonal", "6/8"], "size": 6, "stroke": "#b43a2c" },
+  "dots":  { "type": "circles", "size": 6, "radius": 1.2, "fill": "#4a7fa0", "complement": true }
+} } },
+"encoding": { "color": { "field": "grade", "scale": { "domain": ["C", "D"], "range": ["url(#hatch)", "url(#cross)"] } } }
+```
+
+The options follow [textures.js](https://riccardoscalco.it/textures/) for its three kinds (`type`), without the library:
+
+- `lines` (the default): `orientation` is `"vertical"`, `"horizontal"`, `"diagonal"` or textures.js's `"0/8"` to `"7/8"`; an array draws several, so `["diagonal", "6/8"]` is a crosshatch. Also `size` (tile, px), `strokeWidth`, `stroke`, `background`.
+- `circles`: `radius`, `fill`, `background`, `size`, and `complement: true` for a staggered, denser grid.
+- `paths`: `d` is one of textures.js's shapes, `"squares"`, `"nylon"`, `"waves"`, `"woven"`, `"crosses"`, `"caps"` or `"hexagons"`, or your own SVG path for one tile, with `{s}` for the tile size (`"M 0,{s} L {s},0"`). Also `stroke`, `strokeWidth`, `fill`, `background`, `size`.
+
+Two more options work on every kind. `shapeRendering` is SVG's (`"crispEdges"` for sharp hairlines). `rough`, Agate's own, wobbles the pattern by up to that many pixels with SVG turbulence, for a hand-drawn, printed look; 1 to 2 is plenty.
+
+Textures work with the SVG renderer only. With the canvas renderer each one falls back to its `background` (or its stroke or fill colour), and the export menu's SVG and PNG don't include the patterns. Outside Agate, in the Vega editor, `url(#…)` fills come out empty. `demo-vault/charts/redlining-brooklyn.vl.json` draws the 1938 sheet's look this way: a street grid under each grade's colour, and ungraded land in crosshatch.
+
 ## 9. Images in tooltips
 
 A tooltip field titled `image` is drawn as a picture, and one titled `title` becomes the heading. Point it at a note property or formula that holds an image URL:

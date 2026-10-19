@@ -1,5 +1,13 @@
 /* Agate: Vega and Vega-Lite charts over Obsidian Bases */
 
+/* Holds a chart's texture <pattern>s; takes no space. */
+.agate-textures {
+  position: absolute;
+  width: 0;
+  height: 0;
+  overflow: hidden;
+}
+
 .agate-host {
   width: 100%;
 }

@@ -3,7 +3,7 @@
 // tests are stable. Hand-written parts (demo-vault/charts, Start here, Dashboard) are left alone.
 // Everything here is invented; the hike follows the Appalachian Trail in Georgia only roughly
 // and must not be used for navigation.
-import { mkdirSync, rmSync, writeFileSync, copyFileSync, existsSync, readFileSync } from "fs";
+import { mkdirSync, rmSync, writeFileSync, copyFileSync, existsSync, readFileSync, readdirSync } from "fs";
 import { dirname, join } from "path";
 
 const ROOT = new URL("../demo-vault/", import.meta.url).pathname;
@@ -516,6 +516,45 @@ for (const [name, date, end, lat, lon, outcome, phase, text] of battles) {
 const world = new URL("../demo-vault/tests/geo/world-110m.json", import.meta.url).pathname;
 mkdirSync(join(ROOT, "attachments/geo"), { recursive: true });
 if (existsSync(world)) copyFileSync(world, join(ROOT, "attachments/geo/world-110m.json"));
+// Hand-made map files live in tests/geo (this folder is rebuilt); see tests/geo/README.md.
+for (const f of ["brooklyn-holc.geojson", "nyc-boroughs.geojson"]) {
+  copyFileSync(new URL(`../demo-vault/tests/geo/${f}`, import.meta.url).pathname, join(ROOT, `attachments/geo/${f}`));
+}
+
+// The whole Gapminder table, for specs that read one CSV (charts/gapminder-bubble.vl.json).
+mkdirSync(join(ROOT, "attachments/dataviz"), { recursive: true });
+copyFileSync(new URL("../demo-vault/tests/data/gapminder.csv", import.meta.url).pathname, join(ROOT, "attachments/dataviz/gapminder.csv"));
+
+// --- Gapminder: one note and one CSV per country, from tests/data/gapminder.csv ------------------
+{
+  const text = readFileSync(new URL("../demo-vault/tests/data/gapminder.csv", import.meta.url).pathname, "utf8");
+  // Country names can hold commas ("Korea, Dem. Rep."), so split on commas outside quotes.
+  const cells = (line) => line.match(/("([^"]|"")*"|[^,]*)(,|$)/g).map((c) => c.replace(/,$/, "").replace(/^"|"$/g, "").replace(/""/g, '"')).slice(0, 6);
+  const byCountry = new Map();
+  for (const line of text.trim().split("\n").slice(1)) {
+    const [country, year, pop, continent, lifeExp, gdpPercap] = cells(line);
+    if (!byCountry.has(country)) byCountry.set(country, { continent, rows: [] });
+    byCountry.get(country).rows.push([year, pop, lifeExp, gdpPercap].join(","));
+  }
+  for (const [country, { continent, rows }] of byCountry) {
+    const csv = `attachments/gapminder/${country}.csv`;
+    write(csv, `year,pop,lifeExp,gdpPercap\n${rows.join("\n")}\n`);
+    note(`notes/3_resources/gapminder/${country}.md`, { type: "country", tags: ["dataviz/gapminder"], continent, data: csv }, `# ${country}\n\nGapminder figures for ${country}, 1952–2007, in [[${csv}]].`);
+  }
+}
+
+// --- hand-written notes, copied as they are (scripts/data/notes mirrors notes/) -----------------
+{
+  const src = new URL("./data/notes/", import.meta.url).pathname;
+  const copyTree = (rel) => {
+    for (const e of readdirSync(join(src, rel), { withFileTypes: true })) {
+      const r = join(rel, e.name);
+      if (e.isDirectory()) copyTree(r);
+      else write(join("notes", r), readFileSync(join(src, r), "utf8"));
+    }
+  };
+  copyTree("");
+}
 
 // --- Obsidian config: Bases on, Agate enabled, property types declared -----------------------------
 // Obsidian rewrites these as you use the vault (theme, plugins), so they are only seeded when
@@ -684,6 +723,10 @@ views:
       - property: started
         direction: ASC
     specFile: charts/reading-journey.vg.json
+  - type: agate
+    name: Genres
+    order: [file.name, genre, status]
+    specFile: charts/bars-genre.vl.json
   - type: table
     name: Shelf
     order: [file.name, author, genre, pages, started, finished, status, rating]
@@ -716,12 +759,41 @@ views:
     name: Sunburst
     order: [file.name, file.folder, file.size]
     specFile: charts/vault-sunburst.vg.json
+  - type: agate
+    name: Links
+    filters:
+      or:
+        - type == "meeting"
+        - type == "person"
+        - type == "project"
+        - type == "play"
+        - type == "boardgame"
+        - type == "trip"
+        - type == "place"
+    order: [file.name, type]
+    specFile: charts/vault-links.vg.json
   - type: table
     name: Largest files
     order: [file.name, file.folder, file.size]
     sort:
       - property: file.size
         direction: DESC
+`);
+base("Gapminder", `
+filters:
+  and:
+    - type == "country"
+views:
+  - type: agate
+    name: Wealth and health
+    order: [file.name, continent]
+    specFile: charts/gapminder.vl.json
+  - type: table
+    name: Countries
+    order: [file.name, continent, data]
+    groupBy:
+      property: continent
+      direction: ASC
 `);
 
 // --- area notes: one per area, written like notes someone keeps, with numbers from the data ----------
@@ -977,7 +1049,7 @@ const todos = (xs) => xs.map(([done, x]) => `- [${done ? "x" : " "}] ${x}`).join
       [
         "> [!figure] Fig. 1.",
         "> ![[Campaign 1812.base#Minard map]]",
-        "> *Carte figurative des pertes successives en hommes de l'Armée Française dans la campagne de Russie, 1812–1813*, after Charles Joseph Minard (1869). Gold, the army marching east from the Niemen; black, the retreat; the line below, the temperature on the way back. Hover the band for the number of men, click a battle to open its note.",
+        "> *Carte figurative des pertes successives en hommes de l'Armée Française dans la campagne de Russie, 1812–1813*, after Charles Joseph Minard (1869). Gold, the army marching east from the Niemen; black, the retreat; the line below, the temperature on the way back. Hover a battle for its note's properties, click it to open the note.",
         ">",
         "> Minard's scale was one millimetre of band for every 10,000 men. Here the band is fitted to the page, so it keeps his proportions rather than his millimetres.",
         ">",
@@ -1017,6 +1089,7 @@ const todos = (xs) => xs.map(([done, x]) => `- [${done ? "x" : " "}] ${x}`).join
         `The inbox has ${top.get("0_inbox") ?? 0} notes waiting. Triage on Friday.`,
       ])}`,
       `## Housekeeping\n\n${todos([[false, "Empty the inbox"], [false, "Merge the cooking resources into one note per cuisine"], [true, "Move trip legs into one note per trip"]])}`,
+      "## How notes link\n\nEvery note that links or is linked sits on the circle, grouped by folder; each link is bundled through the folder tree. Hover a note to light up its links.\n\n![[Vault.base#Links]]",
       "## Largest notes\n\n![[Vault.base#Largest files]]",
     ],
   });

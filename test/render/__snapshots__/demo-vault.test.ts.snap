@@ -60,3 +60,28 @@ exports[`demo vault charts > interview-stats.vl.json 1`] = `
   },
 ]
 `;
+
+exports[`demo vault charts > reading-stats.vl.json 1`] = `
+[
+  {
+    "label": "books finished",
+    "note": "of 26 started",
+    "value": "20",
+  },
+  {
+    "label": "pages read",
+    "note": "in finished books",
+    "value": "7,778",
+  },
+  {
+    "label": "days per book",
+    "note": "median, start to finish",
+    "value": "13",
+  },
+  {
+    "label": "pages abandoned",
+    "note": "in 4 books I put down",
+    "value": "3,434",
+  },
+]
+`;

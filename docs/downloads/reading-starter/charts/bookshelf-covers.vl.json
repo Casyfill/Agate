@@ -1,0 +1,294 @@
+{
+  "$schema": "https://vega.github.io/schema/vega-lite/v6.json",
+  "description": "Pages read per genre as a bookshelf: one block per book in the order I started them, its cover at the spine, books still being read with a rounded open end, abandoned ones hatched (an Agate texture, SVG renderer only). Hover for the book, click to open the note.",
+  "usermeta": {
+    "agate": {
+      "open": "click",
+      "textures": {
+        "abandoned": {
+          "orientation": "diagonal",
+          "size": 7,
+          "strokeWidth": 1.4,
+          "stroke": "#7a7a7a",
+          "background": "#2e2e2e"
+        }
+      }
+    }
+  },
+  "title": {
+    "text": "Where my reading time went",
+    "subtitle": "One block per book, by when I started it",
+    "anchor": "start"
+  },
+  "data": {
+    "name": "base"
+  },
+  "transform": [
+    {
+      "filter": "isValid(datum.note.genre)"
+    },
+    {
+      "calculate": "datum.note.genre",
+      "as": "genre"
+    },
+    {
+      "calculate": "datum.note.pages",
+      "as": "pages"
+    },
+    {
+      "calculate": "datum.note.status",
+      "as": "status"
+    },
+    {
+      "calculate": "datum.note.author",
+      "as": "author"
+    },
+    {
+      "calculate": "datum.file.name",
+      "as": "title"
+    },
+    {
+      "calculate": "datum.formula.cover",
+      "as": "cover"
+    },
+    {
+      "calculate": "toDate(datum.note.started)",
+      "as": "started"
+    },
+    {
+      "stack": "pages",
+      "groupby": [
+        "genre"
+      ],
+      "sort": [
+        {
+          "field": "started"
+        }
+      ],
+      "as": [
+        "x0",
+        "x1"
+      ]
+    },
+    {
+      "joinaggregate": [
+        {
+          "op": "sum",
+          "field": "pages",
+          "as": "total"
+        }
+      ],
+      "groupby": [
+        "genre"
+      ]
+    }
+  ],
+  "encoding": {
+    "y": {
+      "field": "genre",
+      "type": "nominal",
+      "title": null,
+      "sort": {
+        "field": "total",
+        "op": "max",
+        "order": "descending"
+      }
+    }
+  },
+  "layer": [
+    {
+      "transform": [
+        {
+          "filter": "datum.status !== 'reading'"
+        }
+      ],
+      "mark": {
+        "type": "bar",
+        "cornerRadius": 2,
+        "stroke": "#1e1e1e",
+        "strokeWidth": 1.5,
+        "cursor": "pointer"
+      },
+      "encoding": {
+        "x": {
+          "field": "x0",
+          "type": "quantitative",
+          "title": "Pages"
+        },
+        "x2": {
+          "field": "x1"
+        },
+        "color": {
+          "field": "status",
+          "type": "nominal",
+          "scale": {
+            "domain": [
+              "finished",
+              "reading",
+              "abandoned"
+            ],
+            "range": [
+              "#44cf6e",
+              "#027aff",
+              "url(#abandoned)"
+            ]
+          },
+          "legend": {
+            "orient": "bottom",
+            "title": null
+          }
+        },
+        "tooltip": [
+          {
+            "field": "title",
+            "title": "title"
+          },
+          {
+            "field": "cover",
+            "title": "image"
+          },
+          {
+            "field": "author",
+            "title": "Author"
+          },
+          {
+            "field": "pages",
+            "title": "Pages"
+          },
+          {
+            "field": "status",
+            "title": "Status"
+          }
+        ]
+      }
+    },
+    {
+      "transform": [
+        {
+          "filter": "datum.status === 'reading'"
+        }
+      ],
+      "mark": {
+        "type": "bar",
+        "cornerRadiusTopLeft": 2,
+        "cornerRadiusBottomLeft": 2,
+        "cornerRadiusTopRight": 18,
+        "cornerRadiusBottomRight": 18,
+        "stroke": "#1e1e1e",
+        "strokeWidth": 1.5,
+        "cursor": "pointer"
+      },
+      "encoding": {
+        "x": {
+          "field": "x0",
+          "type": "quantitative",
+          "title": "Pages"
+        },
+        "x2": {
+          "field": "x1"
+        },
+        "color": {
+          "field": "status",
+          "type": "nominal",
+          "scale": {
+            "domain": [
+              "finished",
+              "reading",
+              "abandoned"
+            ],
+            "range": [
+              "#44cf6e",
+              "#027aff",
+              "url(#abandoned)"
+            ]
+          },
+          "legend": {
+            "orient": "bottom",
+            "title": null
+          }
+        },
+        "tooltip": [
+          {
+            "field": "title",
+            "title": "title"
+          },
+          {
+            "field": "cover",
+            "title": "image"
+          },
+          {
+            "field": "author",
+            "title": "Author"
+          },
+          {
+            "field": "pages",
+            "title": "Pages"
+          },
+          {
+            "field": "status",
+            "title": "Status"
+          }
+        ]
+      }
+    },
+    {
+      "transform": [
+        {
+          "filter": "isValid(datum.cover)"
+        }
+      ],
+      "mark": {
+        "type": "image",
+        "width": 21,
+        "height": 31,
+        "align": "left",
+        "baseline": "middle",
+        "xOffset": 4,
+        "aspect": true
+      },
+      "encoding": {
+        "x": {
+          "field": "x0",
+          "type": "quantitative",
+          "title": "Pages"
+        },
+        "y": {
+          "field": "genre",
+          "type": "nominal",
+          "title": null,
+          "sort": {
+            "field": "total",
+            "op": "max",
+            "order": "descending"
+          },
+          "bandPosition": 0.5
+        },
+        "url": {
+          "field": "cover"
+        },
+        "tooltip": [
+          {
+            "field": "title",
+            "title": "title"
+          },
+          {
+            "field": "cover",
+            "title": "image"
+          },
+          {
+            "field": "author",
+            "title": "Author"
+          },
+          {
+            "field": "pages",
+            "title": "Pages"
+          },
+          {
+            "field": "status",
+            "title": "Status"
+          }
+        ]
+      }
+    }
+  ]
+}

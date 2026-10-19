@@ -11,6 +11,7 @@ import { join } from "node:path";
 import { env } from "node:process";
 import * as vega from "vega";
 import * as vl from "vega-lite";
+import * as vegaThemes from "vega-themes";
 import { describe, expect, it } from "vitest";
 import { expandRowData, rowDataDefs } from "../../src/core/data/rowdata";
 import { cellsDatasetName, tableCells } from "../../src/core/data/table";
@@ -41,6 +42,16 @@ const ROWS: Record<string, () => Row[]> = {
   "mood-beeswarm.vg.json": ofType("journal"),
   "reading-journey.vg.json": ofType("book"),
   "campaign-1812.vg.json": ofType("battle"),
+  // No base behind these two: the data is in the spec or a vault file. Any rows will do.
+  "dubois-furniture.vg.json": ofType("dataviz"),
+  "redlining-brooklyn.vl.json": ofType("dataviz"),
+  "theme-sampler.vl.json": ofType("boardgame", "play"),
+  "gapminder.vl.json": ofType("country"),
+  // Reads one CSV from the vault, no base behind it. Any rows will do.
+  "gapminder-bubble.vl.json": ofType("country"),
+  "bars-genre.vl.json": ofType("book"),
+  "reading-stats.vl.json": ofType("book"),
+  "vault-links.vg.json": ofType("meeting", "person", "project", "play", "boardgame", "trip", "place"),
   "vault-sunburst.vg.json": () => vaultRows((p) => p.startsWith("notes/"), undefined, vaultDir),
 };
 
@@ -103,7 +114,13 @@ async function render(name: string, rows: Row[]): Promise<{ svg: string; errors:
       return this;
     },
   };
-  const config = dark ? previewDark : undefined;
+  // AGATE_PREVIEW_THEME (previews only): a vega-themes name, or a path to a Vega config JSON such as a theme file.
+  const theme = env.AGATE_PREVIEW_THEME;
+  const config = theme
+    ? ((vegaThemes as unknown as Record<string, Record<string, unknown>>)[theme] ?? (JSON.parse(readFileSync(theme, "utf8")) as Record<string, unknown>))
+    : dark
+      ? previewDark
+      : undefined;
   const vg = isVL ? vl.compile(spec as never, { logger, config: config as never }).spec : spec;
   const view = new vega.View(vega.parse(vg, isVL ? undefined : (config as never)), { renderer: "none", loader, logger });
   const svg = await view.toSVG();

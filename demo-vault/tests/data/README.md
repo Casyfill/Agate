@@ -1,0 +1,2 @@
+- `sales.csv`: test fixture.
+- `gapminder.csv`: the Gapminder dataset as shipped by the `gapminder` R package (Jennifer Bryan): 142 countries, 1952–2007 every five years (data-raw/08_gap-every-five-years.tsv in github.com/jennybc/gapminder). Data from Gapminder (gapminder.org), CC BY 4.0. The demo-vault generator turns it into one note and one CSV per country.

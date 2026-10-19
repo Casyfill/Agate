@@ -1,0 +1,14 @@
+filters:
+  and:
+    - type == "country"
+views:
+  - type: agate
+    name: Wealth and health
+    order: [file.name, continent]
+    specFile: charts/gapminder.vl.json
+  - type: table
+    name: Countries
+    order: [file.name, continent, data]
+    groupBy:
+      property: continent
+      direction: ASC

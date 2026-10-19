@@ -1,0 +1,41 @@
+{
+  "$schema": "https://vega.github.io/schema/vega-lite/v6.json",
+  "description": "Theme sampler: board-game nights by month, stacked by winner, next to the shelf by complexity and length. It sets no colours or fonts of its own, so it shows whatever theme draws it. Base: notes with type boardgame or play.",
+  "data": { "name": "base" },
+  "transform": [{ "calculate": "datum.note.type", "as": "type" }],
+  "hconcat": [
+    {
+      "title": "Game nights",
+      "width": 300,
+      "height": 210,
+      "transform": [
+        { "filter": "datum.type === 'play'" },
+        { "calculate": "datum.note.winner || 'nobody'", "as": "winner" },
+        { "calculate": "toDate(datum.note.date)", "as": "d" }
+      ],
+      "mark": "bar",
+      "encoding": {
+        "x": { "timeUnit": "yearmonth", "field": "d", "type": "ordinal", "title": null, "axis": { "format": "%b", "labelAngle": 0 } },
+        "y": { "aggregate": "count", "title": "Plays" },
+        "color": { "field": "winner", "type": "nominal", "title": "Winner", "sort": "descending" }
+      }
+    },
+    {
+      "title": "The shelf",
+      "width": 220,
+      "height": 210,
+      "transform": [
+        { "filter": "datum.type === 'boardgame'" },
+        { "calculate": "datum.note.complexity", "as": "complexity" },
+        { "calculate": "datum.note.time", "as": "minutes" },
+        { "calculate": "datum.note.players", "as": "players" }
+      ],
+      "mark": "point",
+      "encoding": {
+        "x": { "field": "complexity", "type": "quantitative", "title": "Complexity", "scale": { "zero": false } },
+        "y": { "field": "minutes", "type": "quantitative", "title": "Minutes", "scale": { "type": "log" } },
+        "size": { "field": "players", "type": "quantitative", "legend": null, "scale": { "range": [30, 260] } }
+      }
+    }
+  ]
+}
