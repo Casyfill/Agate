@@ -229,7 +229,10 @@ footer a { color: var(--accent); }
 .tut-text b { color: var(--ink); font-weight: 600; }
 .tut-n { font-family: ui-monospace, monospace; font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--accent); margin: 0; display: flex; align-items: center; gap: 10px; }
 .tut-n span { width: 26px; height: 26px; border-radius: 6px; background: var(--accent); color: var(--accent-ink); display: grid; place-items: center; font-weight: 700; font-size: 13px; }
-.tut .codefig { margin: 14px 0; font-size: 12.5px; }
+.tut .codefig { margin: 14px 0; font-size: 12.5px; position: relative; padding-top: 34px; }
+.copy-bar { position: absolute; top: 7px; right: 8px; display: flex; gap: 6px; }
+.copy-btn { font: 600 11px/1 ui-monospace, monospace; color: #c7cedb; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.14); border-radius: 5px; padding: 5px 8px; cursor: pointer; }
+.copy-btn:hover { background: rgba(255,255,255,0.14); color: #fff; }
 .tut .codefig.prompt { color: #b9c1cf; white-space: pre-wrap; }
 .tut .get { margin-top: 16px; padding: 10px 12px; border-left: 2px solid var(--accent); background: var(--surface); border-radius: 0 6px 6px 0; font-size: 14px; }
 .tut-fig { margin: 0; position: sticky; top: 24px; }

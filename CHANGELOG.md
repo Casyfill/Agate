@@ -4,10 +4,18 @@ All notable changes to Agate. The format follows [Keep a Changelog](https://keep
 
 ## [Unreleased]
 
+### Added
+
+- Quickstart: every code snippet has a Copy button, and snippets from a spec also copy the whole spec (or base) as it is at that step.
+
 ### Changed
 
 - Editing specs goes through Obsidian: **Edit spec** on a chart and the commands **Edit the spec of the last chart** and **Edit a spec file** open the file in whatever Obsidian uses for it, split left of the chart; Agate recommends the [JSON Editor](https://community.obsidian.md/plugins/json-editor) community plugin. If nothing opens `.json`, a notice says what to install.
 - Settings: new **Editing specs** group (a link to the recommended plugin, and a toggle for Obsidian's Detect all file extensions so specs show in the file explorer); the theme settings moved into their own **Theme** group, below Data.
+
+### Fixed
+
+- Quickstart bookshelf specs: rows are 40px per genre (`"height": {"step": 40}`), so the cover thumbnails fit; the title no longer has a hard-coded light colour that vanished in light themes. Quickstart pictures are rendered at the specs' own height.
 
 ### Removed
 
