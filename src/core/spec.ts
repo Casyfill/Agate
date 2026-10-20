@@ -46,6 +46,31 @@ export function parseJsonOrYaml(text: string): unknown {
   return parseYaml(trimmed);
 }
 
+/**
+ * Why `text` is not a usable spec, or null when it is: it must parse (JSON, or YAML as
+ * parseJsonOrYaml allows) to an object. For text that looks like JSON the JSON error is
+ * reported, since it names the position.
+ */
+export function specTextError(text: string): string | null {
+  const trimmed = text.trim();
+  if (trimmed.length === 0) return "The spec is empty.";
+  let value: unknown;
+  try {
+    value = parseJsonOrYaml(trimmed);
+  } catch (err) {
+    if (trimmed.startsWith("{") || trimmed.startsWith("[")) {
+      try {
+        JSON.parse(trimmed);
+      } catch (jsonErr) {
+        return jsonErr instanceof Error ? jsonErr.message : String(jsonErr);
+      }
+    }
+    return err instanceof Error ? err.message.split("\n")[0] : String(err);
+  }
+  if (!value || typeof value !== "object" || Array.isArray(value)) return "A spec must be an object: { … }.";
+  return null;
+}
+
 export function isBareSpec(obj: unknown): obj is AnySpec {
   if (!obj || typeof obj !== "object" || Array.isArray(obj)) return false;
   const keys = Object.keys(obj);

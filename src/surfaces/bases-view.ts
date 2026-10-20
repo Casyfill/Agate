@@ -1,6 +1,8 @@
 import {
   BasesView,
   Notice,
+  setIcon,
+  type WorkspaceLeaf,
   type BasesAllOptions,
   type BasesPropertyId,
   type BasesViewConfig,
@@ -13,7 +15,8 @@ import { AgateRenderer } from "../core/render";
 import { describeEntry, groupsToRows } from "../core/data/bases";
 import { cellsDatasetName, tableCells } from "../core/data/table";
 import { edgesDatasetName, linkEdges, pathTree, treeDatasetName } from "../core/data/structure";
-import { detectMode, loadSpecFile, parseJsonOrYaml, referencedProperties } from "../core/spec";
+import { detectMode, loadSpecFile, parseJsonOrYaml, referencedProperties, resolveSpecFile } from "../core/spec";
+import { openSpecEditor } from "../ui/spec-editor";
 import type { AnySpec, ChartOptions, ResolvedSpec } from "../core/types";
 import { CHART_VIEW_ICON_ID } from "../chart-icon";
 import { inferPropertyTypes, type PropertyInfo } from "../core/recipes";
@@ -44,6 +47,11 @@ export class AgateBasesView extends BasesView {
     parentEl: HTMLElement,
   ) {
     super(controller);
+    parentEl.addClass("agate-bases-root");
+    // Outside the chart host, which the renderer empties on every render.
+    const edit = parentEl.createEl("button", { cls: "agate-edit-spec clickable-icon", attr: { "aria-label": "Edit spec" } });
+    setIcon(edit, "braces");
+    edit.addEventListener("click", () => void this.editSpec());
     this.containerEl = parentEl.createDiv("agate-bases-view");
     this.renderer = new AgateRenderer(this.containerEl, plugin.log, () => plugin.settings.debug);
   }
@@ -87,6 +95,34 @@ export class AgateBasesView extends BasesView {
     const rows = groupsToRows(this.data?.groupedData ?? [], ids);
     const properties = inferPropertyTypes(rows.slice(0, 300), ids, (id) => this.config.getDisplayName(id as BasesPropertyId));
     return { rows, properties };
+  }
+
+  /** Open this view's spec file in the spec editor, left of the chart. */
+  async editSpec(): Promise<void> {
+    const path = this.specFilePath();
+    if (!path) {
+      new Notice(
+        this.config.get("spec")
+          ? "Agate: this view uses an inline spec. Edit it in the view options, or save it as a file and pick that as the Spec file."
+          : "Agate: this view has no spec yet. Pick a recipe first.",
+      );
+      return;
+    }
+    const file = resolveSpecFile(this.app, path, null, this.plugin.settings.specFolder);
+    if (!file) {
+      new Notice(`Agate: spec file not found: ${path}`);
+      return;
+    }
+    await openSpecEditor(this.app, file, this.leaf());
+  }
+
+  /** The workspace leaf showing this view (a base's own tab, or the note embedding it). */
+  private leaf(): WorkspaceLeaf | null {
+    let found: WorkspaceLeaf | null = null;
+    this.app.workspace.iterateAllLeaves((l) => {
+      if (!found && l.view.containerEl.contains(this.containerEl)) found = l;
+    });
+    return found;
   }
 
   /** Pick a recipe, map its roles to this base's properties, write the spec and point this view at it. */
