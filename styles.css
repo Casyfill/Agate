@@ -146,40 +146,6 @@
   opacity: 0.7;
 }
 
-/* Spec editor pane */
-.agate-spec-editor {
-  display: flex;
-  flex-direction: column;
-  padding: 0;
-}
-.agate-spec-status {
-  padding: var(--size-4-1) var(--size-4-3);
-  font-size: var(--font-ui-smaller);
-  color: var(--text-muted);
-  border-bottom: 1px solid var(--background-modifier-border);
-}
-.agate-spec-status.is-error {
-  color: var(--text-error);
-}
-.agate-spec-text {
-  flex: 1;
-  width: 100%;
-  resize: none;
-  border: none;
-  border-radius: 0;
-  padding: var(--size-4-3);
-  background: var(--background-primary);
-  color: var(--text-normal);
-  font-family: var(--font-monospace);
-  font-size: var(--code-size);
-  line-height: 1.55;
-  tab-size: 2;
-  white-space: pre;
-}
-.agate-spec-text:focus {
-  box-shadow: none;
-}
-
 /* Bases view container */
 .agate-bases-view {
   padding: var(--size-4-3);

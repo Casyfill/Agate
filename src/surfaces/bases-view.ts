@@ -16,7 +16,7 @@ import { describeEntry, groupsToRows } from "../core/data/bases";
 import { cellsDatasetName, tableCells } from "../core/data/table";
 import { edgesDatasetName, linkEdges, pathTree, treeDatasetName } from "../core/data/structure";
 import { detectMode, loadSpecFile, parseJsonOrYaml, referencedProperties, resolveSpecFile } from "../core/spec";
-import { openSpecEditor } from "../ui/spec-editor";
+import { openSpecFile } from "../ui/open-spec";
 import type { AnySpec, ChartOptions, ResolvedSpec } from "../core/types";
 import { CHART_VIEW_ICON_ID } from "../chart-icon";
 import { inferPropertyTypes, type PropertyInfo } from "../core/recipes";
@@ -97,7 +97,7 @@ export class AgateBasesView extends BasesView {
     return { rows, properties };
   }
 
-  /** Open this view's spec file in the spec editor, left of the chart. */
+  /** Open this view's spec file in Obsidian, left of the chart. */
   async editSpec(): Promise<void> {
     const path = this.specFilePath();
     if (!path) {
@@ -113,7 +113,7 @@ export class AgateBasesView extends BasesView {
       new Notice(`Agate: spec file not found: ${path}`);
       return;
     }
-    await openSpecEditor(this.app, file, this.leaf());
+    await openSpecFile(this.app, file, this.leaf());
   }
 
   /** The workspace leaf showing this view (a base's own tab, or the note embedding it). */

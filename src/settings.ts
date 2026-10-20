@@ -2,6 +2,7 @@ import { App, PluginSettingTab, type SettingDefinitionItem } from "obsidian";
 import type AgatePlugin from "./main";
 import type { Renderer } from "./core/types";
 import { AGATE_ICON_ID } from "./icon";
+import { EDITOR_PLUGIN, editorPluginEnabled, opensInObsidian, setShowsAllFiles, showsAllFiles } from "./ui/open-spec";
 
 /** Vault-wide defaults (ADR-0001 D11). Per-chart options override these. */
 export interface AgateSettings {
@@ -68,34 +69,6 @@ export class AgateSettingTab extends PluginSettingTab {
 
     return [
       {
-        name: "Theme",
-        desc: "\"obsidian\" follows the active Obsidian theme and light/dark mode. The others are static Vega themes.",
-        control: { type: "dropdown", key: "theme", options: themeOptions, defaultValue: DEFAULT_SETTINGS.theme },
-      },
-      {
-        name: "Config overrides",
-        desc: 'A Vega config object (JSON or YAML) merged over the theme. Example: {"mark": {"color": "#e93147"}}',
-        aliases: ["vega config", "colors", "fonts"],
-        control: {
-          type: "textarea",
-          key: "configOverrides",
-          placeholder: '{ "axis": { "labelFontSize": 12 } }',
-          rows: 6,
-        },
-      },
-      {
-        name: "Theme file",
-        desc: "Optional vault path to a JSON/YAML Vega config, applied after the overrides above.",
-        control: { type: "file", key: "themeFile", placeholder: "agate/theme.json" },
-      },
-      {
-        name: "Generate a theme with an LLM",
-        desc: "Copies a prompt describing your current Obsidian theme and overrides. Paste it into any assistant, describe the look you want, and save the reply to the Theme file above.",
-        render: (setting) => {
-          setting.addButton((b) => b.setButtonText("Copy theme prompt").onClick(() => void this.plugin.copyThemePrompt()));
-        },
-      },
-      {
         type: "group",
         heading: "Rendering",
         items: [
@@ -158,6 +131,71 @@ export class AgateSettingTab extends PluginSettingTab {
             desc: "For API keys, e.g. a basemap token. A URL in a spec can contain {env:NAME}; Agate fills it from the OS environment when it fetches, desktop only. List each allowed variable with the one host it may be sent to, one per line: MAPTILER_KEY api.maptiler.com",
             aliases: ["api key", "token", "secret", "basemap"],
             control: { type: "textarea", key: "envHosts", placeholder: "MAPTILER_KEY api.maptiler.com", rows: 3 },
+          },
+        ],
+      },
+      {
+        type: "group",
+        heading: "Editing specs",
+        items: [
+          {
+            name: "Code editor",
+            desc: `The Edit spec button and commands open a spec file in Obsidian, beside its chart, and the chart redraws on every save. Obsidian has no JSON editor of its own: install the ${EDITOR_PLUGIN.name} community plugin (source and tree views, desktop and mobile).`,
+            aliases: ["json", "edit spec", "json editor", "code editor"],
+            render: (setting) => {
+              const ok = opensInObsidian(this.app, "json");
+              setting.addButton((b) =>
+                b
+                  .setButtonText(editorPluginEnabled(this.app) || ok ? "Installed" : `Get ${EDITOR_PLUGIN.name}`)
+                  .onClick(() => window.open(`obsidian://show-plugin?id=${EDITOR_PLUGIN.id}`)),
+              );
+            },
+          },
+          {
+            name: "Show spec files in the file explorer",
+            desc: "Obsidian's own Detect all file extensions (Settings → Files and links), so .json specs appear in the file explorer and the link picker.",
+            render: (setting) => {
+              const on = showsAllFiles(this.app);
+              if (on === null) {
+                setting.setDesc("Turn on Settings → Files and links → Detect all file extensions, so .json specs appear in the file explorer.");
+                return;
+              }
+              setting.addToggle((t) => t.setValue(on).onChange((v) => setShowsAllFiles(this.app, v)));
+            },
+          },
+        ],
+      },
+      {
+        type: "group",
+        heading: "Theme",
+        items: [
+          {
+            name: "Theme",
+            desc: "\"obsidian\" follows the active Obsidian theme and light/dark mode. The others are static Vega themes.",
+            control: { type: "dropdown", key: "theme", options: themeOptions, defaultValue: DEFAULT_SETTINGS.theme },
+          },
+          {
+            name: "Config overrides",
+            desc: 'A Vega config object (JSON or YAML) merged over the theme. Example: {"mark": {"color": "#e93147"}}',
+            aliases: ["vega config", "colors", "fonts"],
+            control: {
+              type: "textarea",
+              key: "configOverrides",
+              placeholder: '{ "axis": { "labelFontSize": 12 } }',
+              rows: 6,
+            },
+          },
+          {
+            name: "Theme file",
+            desc: "Optional vault path to a JSON/YAML Vega config, applied after the overrides above.",
+            control: { type: "file", key: "themeFile", placeholder: "agate/theme.json" },
+          },
+          {
+            name: "Generate a theme with an LLM",
+            desc: "Copies a prompt describing your current Obsidian theme and overrides. Paste it into any assistant, describe the look you want, and save the reply to the Theme file above.",
+            render: (setting) => {
+              setting.addButton((b) => b.setButtonText("Copy theme prompt").onClick(() => void this.plugin.copyThemePrompt()));
+            },
           },
         ],
       },

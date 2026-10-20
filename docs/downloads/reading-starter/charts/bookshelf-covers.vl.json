@@ -20,6 +20,9 @@
     "subtitle": "One block per book, by when I started it",
     "anchor": "start"
   },
+  "height": {
+    "step": 40
+  },
   "data": {
     "name": "base"
   },
