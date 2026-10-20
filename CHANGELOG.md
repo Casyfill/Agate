@@ -4,6 +4,15 @@ All notable changes to Agate. The format follows [Keep a Changelog](https://keep
 
 ## [Unreleased]
 
+### Changed
+
+- Editing specs goes through Obsidian: **Edit spec** on a chart and the commands **Edit the spec of the last chart** and **Edit a spec file** open the file in whatever Obsidian uses for it, split left of the chart; Agate recommends the [VSCode Editor](https://community.obsidian.md/plugins/vscode-editor) plugin (with `json` added to its extensions). If nothing opens `.json`, a notice says what to install.
+- Settings: new **Editing specs** group (a link to the recommended plugin, and a toggle for Obsidian's Detect all file extensions so specs show in the file explorer); the theme settings moved into their own **Theme** group, below Data.
+
+### Removed
+
+- Agate's own spec editor pane (0.2.0) and the **Edit spec in Agate** file menu item: a code editor plugin does the job better, with search.
+
 ## [0.2.0] - 2026-10-20
 
 ### Added

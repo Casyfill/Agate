@@ -8,7 +8,7 @@ import { AgateSettingTab, DEFAULT_SETTINGS, type AgateSettings } from "./setting
 import { createLogger, errorMessage, type Logger } from "./util/log";
 import { builtinThemes, composeConfig, materialize, themeColors, themeFonts } from "./core/theme";
 import { createVaultLoader, parseEnvHosts } from "./core/loader";
-import { EDITABLE_SPEC_EXTENSIONS, SPEC_EDITOR_VIEW, SpecEditorView, openSpecEditor } from "./ui/spec-editor";
+import { openSpecFile } from "./ui/open-spec";
 import { SpecFileModal } from "./ui/spec-file-modal";
 import { parseJsonOrYaml, resolveVaultFile } from "./core/spec";
 import { resolveChartOptions } from "./core/options";
@@ -64,19 +64,6 @@ export default class AgatePlugin extends Plugin {
 
     registerCodeBlocks(this);
 
-    this.registerView(SPEC_EDITOR_VIEW, (leaf) => new SpecEditorView(leaf));
-    this.registerEvent(
-      this.app.workspace.on("file-menu", (menu, file) => {
-        if (!(file instanceof TFile) || !EDITABLE_SPEC_EXTENSIONS.has(file.extension)) return;
-        menu.addItem((item) =>
-          item
-            .setTitle("Edit spec in Agate")
-            .setIcon("braces")
-            .onClick(() => void openSpecEditor(this.app, file)),
-        );
-      }),
-    );
-
     this.addCommand({
       id: "dump-first-row",
       name: "Debug: dump first Bases row of the last rendered chart to the console",
@@ -127,7 +114,7 @@ export default class AgatePlugin extends Plugin {
     this.addCommand({
       id: "edit-spec-file",
       name: "Edit a spec file",
-      callback: () => new SpecFileModal(this.app, (file) => void openSpecEditor(this.app, file)).open(),
+      callback: () => new SpecFileModal(this.app, (file) => void openSpecFile(this.app, file)).open(),
     });
 
     this.addCommand({

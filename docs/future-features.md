@@ -12,8 +12,6 @@ Ideas parked for after 0.1.0. Not commitments; reviewed when 0.1.0 ships. Each e
 
 **"Mimic" theme.** A Vega theme generated from the active Obsidian theme and regenerated on load and on theme change. The current `obsidian` theme already does the dynamic part (reads CSS variables at render time, re-renders on `css-change`). What "mimic" adds: a richer derivation (more variables sampled, a contrasting categorical palette built from the theme's accent and its named colours, light/dark-aware sequential ramps, fonts from the body text not just the interface), and a "Save as theme file" action that snapshots the generated config into the vault so it can be inspected, tweaked, and used as a static theme. Cost: small for the snapshot, medium for a palette derivation that looks good across community themes.
 
-**Spec editor, richer.** The spec pane is a plain text area. A CodeMirror editor (Obsidian ships CodeMirror 6; `@codemirror/commands` and `@codemirror/language` would be dev dependencies for types only) would add line numbers, bracket matching, JSON highlighting (`@codemirror/lang-json`, about 10 KB) and field completion from the base's properties. Also: an Edit spec button for `agate` code blocks with `spec:` files. Medium.
-
 ## Own suggestions
 
 **Export commands.** "Save chart as SVG/PNG" from a right-click on the chart or the command palette, independent of the vega-embed actions menu. Small; vega-embed already has the code path.

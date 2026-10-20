@@ -1,7 +1,7 @@
 import { FuzzySuggestModal, type App, type TFile } from "obsidian";
-import { EDITABLE_SPEC_EXTENSIONS } from "./spec-editor";
+import { SPEC_FILE_EXTENSIONS } from "./open-spec";
 
-/** Pick a JSON or YAML file in the vault to open in the spec editor. */
+/** Pick a JSON or YAML file in the vault to open beside the charts. */
 export class SpecFileModal extends FuzzySuggestModal<TFile> {
   constructor(
     app: App,
@@ -12,7 +12,7 @@ export class SpecFileModal extends FuzzySuggestModal<TFile> {
   }
 
   getItems(): TFile[] {
-    return this.app.vault.getFiles().filter((f) => EDITABLE_SPEC_EXTENSIONS.has(f.extension));
+    return this.app.vault.getFiles().filter((f) => SPEC_FILE_EXTENSIONS.has(f.extension));
   }
 
   getItemText(file: TFile): string {
