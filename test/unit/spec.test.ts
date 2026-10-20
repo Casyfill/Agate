@@ -3,6 +3,7 @@ import { FakeApp } from "obsidian";
 import {
   declaredDatasetNames,
   detectMode,
+  specTextError,
   ensureNamedData,
   isBareSpec,
   loadSpecFile,
@@ -187,5 +188,18 @@ describe("open on click (D12)", async () => {
     expect(notePathOf({ file: { path: "Ideas/A.md" } })).toBe("Ideas/A.md");
     expect(notePathOf({ group: "x" })).toBeNull();
     expect(notePathOf(null)).toBeNull();
+  });
+});
+
+describe("specTextError (spec editor)", () => {
+  it("accepts JSON and YAML objects", () => {
+    expect(specTextError('{"mark": "bar"}')).toBeNull();
+    expect(specTextError("mark: bar\nencoding: {}")).toBeNull();
+  });
+  it("names the JSON problem, and rejects empty text and non-objects", () => {
+    expect(specTextError('{"mark": "bar",\n  "encoding": {')).toMatch(/JSON|position|line/i);
+    expect(specTextError("   ")).toBe("The spec is empty.");
+    expect(specTextError("[1, 2]")).toMatch(/must be an object/);
+    expect(specTextError("just text")).toMatch(/must be an object/);
   });
 });
