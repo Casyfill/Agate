@@ -4,12 +4,17 @@ All notable changes to Agate. The format follows [Keep a Changelog](https://keep
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-10-20
+
 ### Added
 
+- `skills/agate-chart`: an Agent Skill for AI agents that work on vault files (Claude Code and similar). It covers rows and fields, `.base` files, code blocks and static charts, every `usermeta.agate` extra (open, rowData, cells, edges, tree, stats output, textures), basemaps and `{env:NAME}` keys, themes and `agateColors`, the thirteen recipes and worked examples, and a render check with Vega's command-line tools. A test keeps it in step with the code (keys, recipes, texture shapes, themes, linked files).
 - Quickstart: every code snippet has a Copy button, and snippets from a spec also copy the whole spec (or base) as it is at that step.
 
 ### Changed
 
+- **Copy prompt for an LLM** also explains step heights, `cells`, stats output, textures, `agateColors` and `{env:NAME}` keys.
+- README rewritten for users: what Agate does, install, ways to make charts, links to the website, guide and changelog; the reference material that duplicated the guide is gone.
 - Editing specs goes through Obsidian: **Edit spec** on a chart and the commands **Edit the spec of the last chart** and **Edit a spec file** open the file in whatever Obsidian uses for it, split left of the chart; Agate recommends the [JSON Editor](https://community.obsidian.md/plugins/json-editor) community plugin. If nothing opens `.json`, a notice says what to install.
 - Settings: new **Editing specs** group (a link to the recommended plugin, and a toggle for Obsidian's Detect all file extensions so specs show in the file explorer); the theme settings moved into their own **Theme** group, below Data.
 

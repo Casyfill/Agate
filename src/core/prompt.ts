@@ -95,15 +95,19 @@ Dates arrive as ISO strings (use "type": "temporal" or toDate()). Links arrive a
 ${env ? environmentSection(env) : ""}## Rules
 
 - Prefer Vega-Lite v${vlMajor} ("$schema": "https://vega.github.io/schema/vega-lite/v${vlMajor}.json"); use Vega v${vgMajor} ("https://vega.github.io/schema/vega/v${vgMajor}.json") only for layouts Vega-Lite lacks (force, tree, partition, custom geo).
-- Leave out "width" for a single Vega-Lite view (it fills the pane); give facets and concats explicit widths.
+- Leave out "width" for a single Vega-Lite view (it fills the pane); give facets and concats explicit widths. On a discrete y axis give marks room with a step height, e.g. "height": {"step": 40}.
 - Do not set "background" or colours for axes and text; the Obsidian theme supplies them.
 - Use "sort": null on a discrete axis to keep the Bases sort order.
 - Optional Agate extras go under "usermeta": {"agate": {...}}:
   - "open": "click" opens the note behind a clicked mark (marks whose datum has file.path);
   - "edges": "edges" adds a dataset of links between these notes ({source, target} as row indices, count);
   - "tree": "tree" adds the folder hierarchy (id, parent with root "/", depth, ancestors, size, count) for stratify;
-  - "rowData": {"name": "series", "from": "note.data"} loads a CSV/JSON path or URL from that property for every note into dataset "series", each record carrying its note's file/note/formula fields and rowIndex.
-- A Vega signal or Vega-Lite param named "agateDark" with a plain "value" is set to true in dark mode.
+  - "rowData": {"name": "series", "from": "note.data"} loads a CSV/JSON path or URL from that property for every note into dataset "series", each record carrying its note's file/note/formula fields and rowIndex;
+  - "cells": "cells" adds the view's visible properties (one record per note and column, with display name and text) for table layouts with a chart column;
+  - "output": "stats" shows the rows behind the first mark as big numbers in note text instead of a chart: each row needs "value" and "label" strings, optionally "note", "change" and "better": "down";
+  - "textures": {"hatch": {"orientation": "diagonal", "stroke": "#999", "background": "#eee"}} defines fill patterns used as "url(#hatch)" wherever a colour goes, scale ranges included (types "lines", "circles", "paths"; SVG renderer only).
+- A Vega signal or Vega-Lite param named "agateDark" with a plain "value" is set to true in dark mode; one named "agateColors" with an object "value" gets the theme's colours by role (text, muted, accent, red, yellow, blue, …), e.g. {"expr": "agateColors.accent"}.
+- Never put an API key in a URL: write {env:NAME} and the user allows that variable for its host in Agate's settings.
 
 Reply with the JSON spec only.`;
 }

@@ -19,6 +19,8 @@ The fastest way: open a base, add a view, set its layout to **Agate chart**. The
 - **Pick a recipe** lists ready-made charts (timeline, bars, headline numbers, scatter, histogram, line over time, calendar heatmap, folder sunburst, link graph, arc diagram, travel globe, sankey, beeswarm). Pick one and Agate asks which of the base's properties to use for each part ("When", "Colour by"), offering only properties of the right type, then writes the spec into your spec folder and points the view at it. The same picker is in the command palette: **New chart from recipe**.
 - **Copy prompt for an LLM** copies a description of this base (its properties and their types, three sample rows, how Agate passes data, the extras) to the clipboard. Paste it into any AI assistant, say what chart you want, and save the reply as a `.vl.json` file in your spec folder. If the chart errors, the error box has a **Copy error** button for the next round.
 
+- **With an AI agent that works on your vault files** (Claude Code and similar): copy the repository's `skills/agate-chart` folder into the agent's skills folder (for Claude Code, `~/.claude/skills/` or `.claude/skills/` in the vault). The skill teaches the agent Agate's conventions and every extra in this guide, and has it render the spec with Vega's command-line tools before handing it over.
+
 Your own recipes: set **Recipe folder** in Settings → Agate, and any spec in it with a `usermeta.agate.recipe` block joins the picker. `demo-vault/tests/charts/recipes/count-by-decade.vl.json` is a small example; the format is described in the architecture doc (D13).
 
 By hand:
