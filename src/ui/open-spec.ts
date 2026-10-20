@@ -4,7 +4,7 @@ import { Notice, Platform, type App, type TFile, type WorkspaceLeaf } from "obsi
 export const SPEC_FILE_EXTENSIONS = new Set(["json", "yaml", "yml"]);
 
 /** The code editor plugin the docs and settings recommend for spec files. Agate does not depend on it. */
-export const EDITOR_PLUGIN = { id: "vscode-editor", name: "VSCode Editor" };
+export const EDITOR_PLUGIN = { id: "json-editor", name: "JSON Editor" };
 
 /** Undocumented Obsidian internals, read defensively: every use has a fallback. */
 interface Internals {
@@ -43,7 +43,7 @@ export function setShowsAllFiles(app: App, on: boolean): void {
 export async function openSpecFile(app: App, file: TFile, chartLeaf?: WorkspaceLeaf | null): Promise<void> {
   if (!opensInObsidian(app, file.extension)) {
     new Notice(
-      `Agate: Obsidian can't open .${file.extension} files yet. Install the ${EDITOR_PLUGIN.name} plugin and add "${file.extension}" to its file extensions (Settings → Agate → Editing specs).`,
+      `Agate: Obsidian can't open .${file.extension} files yet. Install the ${EDITOR_PLUGIN.name} community plugin (Settings → Agate → Editing specs).`,
       12000,
     );
     return;

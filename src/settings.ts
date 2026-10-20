@@ -140,13 +140,13 @@ export class AgateSettingTab extends PluginSettingTab {
         items: [
           {
             name: "Code editor",
-            desc: `The Edit spec button and commands open a spec file in Obsidian, beside its chart, and the chart redraws on every save. Obsidian has no JSON editor of its own: install the ${EDITOR_PLUGIN.name} plugin (find and replace, works offline), then add "json" to its file extensions in its settings.`,
-            aliases: ["json", "edit spec", "vscode", "code editor"],
+            desc: `The Edit spec button and commands open a spec file in Obsidian, beside its chart, and the chart redraws on every save. Obsidian has no JSON editor of its own: install the ${EDITOR_PLUGIN.name} community plugin (source and tree views, desktop and mobile).`,
+            aliases: ["json", "edit spec", "json editor", "code editor"],
             render: (setting) => {
               const ok = opensInObsidian(this.app, "json");
               setting.addButton((b) =>
                 b
-                  .setButtonText(editorPluginEnabled(this.app) ? (ok ? "Installed" : "Installed: add json to its extensions") : `Get ${EDITOR_PLUGIN.name}`)
+                  .setButtonText(editorPluginEnabled(this.app) || ok ? "Installed" : `Get ${EDITOR_PLUGIN.name}`)
                   .onClick(() => window.open(`obsidian://show-plugin?id=${EDITOR_PLUGIN.id}`)),
               );
             },
