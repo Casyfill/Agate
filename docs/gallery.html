@@ -28,7 +28,7 @@
   <div class="hero narrow">
     <p class="eyebrow">gallery</p>
     <h1>Made with Agate.</h1>
-    <p class="lede">Every example is a real note in the demo vault: a plain Vega or Vega-Lite spec over ordinary notes. Each shows the Agate feature it leans on and links to its spec. Click a picture to see it larger.</p>
+    <p class="lede">Every example is a real note in the demo vault: a plain Vega or Vega-Lite spec over ordinary notes. Each shows the Agate feature it leans on and links to its spec, note and base in the repo. Click a picture to see it larger.</p>
   </div>
 
   <section>
@@ -40,6 +40,7 @@
         <h3>Minard's 1812, from battle notes</h3>
         <p>The army's path and width come from Minard's own figures; every battle is a note in a base, so adding one drops a mark on the map. Hover a battle for the note's date, outcome and phase, click it to open the note. The temperature on the retreat sits underneath, on the same scale.</p>
         <p class="feat"><b>feature:</b> layered maps · tooltips from note properties · open on click · <a href="https://github.com/Casyfill/Agate/blob/main/demo-vault/charts/campaign-1812.vg.json">campaign-1812.vg.json</a></p>
+        <p class="feat"><b>in the demo vault:</b> <a href="https://github.com/Casyfill/Agate/blob/main/demo-vault/notes/3_resources/history/Russian%20campaign%201812/Russian%20campaign%201812.md">note</a> · <a href="https://github.com/Casyfill/Agate/blob/main/demo-vault/bases/Campaign%201812.base">base</a> · <a href="https://github.com/Casyfill/Agate/tree/main/demo-vault/notes/3_resources/history/Russian%20campaign%201812/battles">battle notes</a></p>
       </figure>
 
       <figure>
@@ -48,6 +49,7 @@
         <h3>Du Bois, 1900</h3>
         <p>A static chart in a note, with no base behind it: the six figures sit in the spec, and a code block draws them. After W. E. B. Du Bois's portrait of the furniture owned by Black Georgians, 1875–1899, made for the 1900 Paris Exposition (<a href="https://www.loc.gov/item/2013650445/">the original</a>, Library of Congress). As in his plate, it is a bar chart wrapped into a spiral: each year's band starts at the top beside its label and runs clockwise, curling inward as it wraps, its length proportional to the value.</p>
         <p class="feat"><b>feature:</b> static charts in notes · any Vega spec · <a href="https://github.com/Casyfill/Agate/blob/main/demo-vault/charts/dubois-furniture.vg.json">dubois-furniture.vg.json</a></p>
+        <p class="feat"><b>in the demo vault:</b> <a href="https://github.com/Casyfill/Agate/blob/main/demo-vault/notes/3_resources/dataviz/Du%20Bois%20spiral.md">note</a> (no base)</p>
       </figure>
 
       <figure>
@@ -56,6 +58,7 @@
         <h3>Redlining in Brooklyn, 1938</h3>
         <p>The HOLC's "residential security" grades, A (best) to D (hazardous): the D zones were denied mortgage backing, the origin of "redlining". Drawn quietly after the original sheet, where the grades were printed over Hagstrom's street map: muted colours over a fine street grid, ungraded land in a light crosshatch, the HOLC's own grade words in quotes, in New York's Long Island state plane projection. Today's shoreline sits underneath for orientation. Both GeoJSON files live in the vault as ordinary files. Grades: Mapping Inequality, University of Richmond (CC-BY-NC); shoreline: NYC Department of City Planning.</p>
         <p class="feat"><b>feature:</b> vault files as data · SVG textures · <a href="https://github.com/Casyfill/Agate/blob/main/demo-vault/charts/redlining-brooklyn.vl.json">redlining-brooklyn.vl.json</a></p>
+        <p class="feat"><b>in the demo vault:</b> <a href="https://github.com/Casyfill/Agate/blob/main/demo-vault/notes/3_resources/dataviz/Redlining%20Brooklyn.md">note</a> (no base) · <a href="https://github.com/Casyfill/Agate/tree/main/demo-vault/attachments/geo">GeoJSON files</a></p>
       </figure>
 
       <figure>
@@ -64,6 +67,7 @@
         <h3>The wealth and health of nations</h3>
         <p>Hans Rosling's chart, 1952–2007: income per person against life expectancy, a bubble per country sized by population, with a year slider and faint trails behind. Every country is a note with its continent as a property and its own CSV, so filtering the base to one continent redraws the world. Data: Gapminder (CC BY 4.0).</p>
         <p class="feat"><b>feature:</b> per-note data · bound sliders · open on click · <a href="https://github.com/Casyfill/Agate/blob/main/demo-vault/charts/gapminder.vl.json">gapminder.vl.json</a></p>
+        <p class="feat"><b>in the demo vault:</b> <a href="https://github.com/Casyfill/Agate/blob/main/demo-vault/notes/3_resources/dataviz/Gapminder.md">note</a> · <a href="https://github.com/Casyfill/Agate/blob/main/demo-vault/bases/Gapminder.base">base</a> · <a href="https://github.com/Casyfill/Agate/tree/main/demo-vault/notes/3_resources/gapminder">country notes</a></p>
       </figure>
 
       <figure>
@@ -72,6 +76,7 @@
         <h3>How the vault links, bundled</h3>
         <p>Every note that links or is linked sits on the circle, grouped by folder; each link curves through the folder tree, so meetings bundle into people and projects, plays into games, trips into places. Hover a note to light up its links. Vega-Lite has no tree layout or bundled lines; full Vega does, and Agate hands it both the folder tree and the links.</p>
         <p class="feat"><b>feature:</b> the folder tree · links as edges · Vega-only layouts · <a href="https://github.com/Casyfill/Agate/blob/main/demo-vault/charts/vault-links.vg.json">vault-links.vg.json</a></p>
+        <p class="feat"><b>in the demo vault:</b> <a href="https://github.com/Casyfill/Agate/blob/main/demo-vault/notes/Vault%20review.md">note</a> · <a href="https://github.com/Casyfill/Agate/blob/main/demo-vault/bases/Vault.base">base</a> (Links view)</p>
       </figure>
 
       <figure>
@@ -80,6 +85,7 @@
         <h3>Trips on a globe you can spin</h3>
         <p>Trip notes list their stops; place notes carry coordinates. Every leg is a great circle on an orthographic globe you drag to rotate.</p>
         <p class="feat"><b>feature:</b> map projections · links between notes · <a href="https://github.com/Casyfill/Agate/blob/main/demo-vault/charts/travel-globe.vg.json">travel-globe.vg.json</a></p>
+        <p class="feat"><b>in the demo vault:</b> <a href="https://github.com/Casyfill/Agate/blob/main/demo-vault/notes/2_areas/travel/Travel.md">note</a> · <a href="https://github.com/Casyfill/Agate/blob/main/demo-vault/bases/Travel.base">base</a> · <a href="https://github.com/Casyfill/Agate/tree/main/demo-vault/notes/2_areas/travel/trips">trips</a> · <a href="https://github.com/Casyfill/Agate/tree/main/demo-vault/notes/2_areas/travel/places">places</a></p>
       </figure>
 
       <figure>
@@ -88,6 +94,7 @@
         <h3>The vault itself</h3>
         <p>A DaisyDisk-style sunburst of folders and files, arc length by bytes. Click a ring to zoom into a folder, the centre to go back up, a file to open it.</p>
         <p class="feat"><b>feature:</b> the folder tree · partition layout · open on click · <a href="https://github.com/Casyfill/Agate/blob/main/demo-vault/charts/vault-sunburst.vg.json">vault-sunburst.vg.json</a></p>
+        <p class="feat"><b>in the demo vault:</b> <a href="https://github.com/Casyfill/Agate/blob/main/demo-vault/notes/Vault%20review.md">note</a> · <a href="https://github.com/Casyfill/Agate/blob/main/demo-vault/bases/Vault.base">base</a> (Sunburst view)</p>
       </figure>
 
     </div>
