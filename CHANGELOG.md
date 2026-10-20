@@ -4,10 +4,16 @@ All notable changes to Agate. The format follows [Keep a Changelog](https://keep
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-10-20
+
 ### Added
 
 - Spec editor: **Edit spec** on a chart (hover, top right), the commands **Edit the spec of the last chart** and **Edit a spec file**, or **Edit spec in Agate** in a JSON/YAML file's menu open the spec in a pane left of the chart. It saves as you type while the spec parses, so the chart redraws beside it; otherwise the status line shows the parse error and nothing is saved. On phones it opens in a new tab.
 - Recipe **Headline numbers**: a row of big numbers as note text over the base (how many notes; total and average of a number; latest and first date; most common value). Every role is optional and only the mapped parts appear; uses the experimental stats output.
+
+### Changed
+
+- Docs gallery: every example links to its note, base and data in the demo vault, next to its spec.
 
 ## [0.1.0] - 2026-10-19
 
