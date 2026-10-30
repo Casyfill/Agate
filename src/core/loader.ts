@@ -33,6 +33,7 @@ export function parseEnvHosts(text: string): Map<string, string> {
 export function fillEnv(
   uri: string,
   allowed: Map<string, string>,
+  // eslint-disable-next-line no-undef -- Electron's Node global, absent on mobile (checked here).
   env: Record<string, string | undefined> | undefined = typeof process === "undefined" ? undefined : process.env,
 ): string {
   if (!uri.includes("{env:")) return uri;

@@ -46,6 +46,8 @@ export default defineConfig([
       "obsidianmd/rule-custom-message": "off",
       "obsidianmd/no-nodejs-modules": "off",
       "obsidianmd/no-global-this": "off",
+      // jsdom has no Obsidian createDiv/createSpan globals.
+      "obsidianmd/prefer-create-el": "off",
       "obsidianmd/ui/sentence-case": "off",
       "@typescript-eslint/no-unsafe-assignment": "off",
       "@typescript-eslint/no-unsafe-member-access": "off",
