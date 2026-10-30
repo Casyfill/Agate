@@ -148,6 +148,7 @@ export class Notice {
 export class Plugin extends Component {}
 export class PluginSettingTab {}
 export class Setting {}
+export class SecretComponent {}
 export const MarkdownRenderer = { render: async (): Promise<void> => {} };
 
 // --- Bases -------------------------------------------------------------------

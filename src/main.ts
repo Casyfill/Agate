@@ -7,7 +7,7 @@ import { version as vegaEmbedVersion } from "vega-embed";
 import { AgateSettingTab, DEFAULT_SETTINGS, type AgateSettings } from "./settings";
 import { createLogger, errorMessage, type Logger } from "./util/log";
 import { builtinThemes, composeConfig, materialize, themeColors, themeFonts } from "./core/theme";
-import { createVaultLoader, parseEnvHosts } from "./core/loader";
+import { createVaultLoader, parseSecretHosts } from "./core/loader";
 import { openSpecFile } from "./ui/open-spec";
 import { SpecFileModal } from "./ui/spec-file-modal";
 import { parseJsonOrYaml, resolveVaultFile } from "./core/spec";
@@ -163,6 +163,8 @@ export default class AgatePlugin extends Plugin {
   async loadSettings(): Promise<void> {
     const stored = (await this.loadData()) as Partial<AgateSettings> | null;
     this.settings = { ...DEFAULT_SETTINGS, ...(stored ?? {}) };
+    // Before 0.3.1 keys came from environment variables; that setting is gone.
+    delete (this.settings as Partial<AgateSettings> & { envHosts?: string }).envHosts;
   }
 
   async saveSettings(): Promise<void> {
@@ -235,7 +237,8 @@ export default class AgatePlugin extends Plugin {
       app: this.app,
       sourcePath,
       allowRemote: this.settings.allowRemote,
-      envHosts: parseEnvHosts(this.settings.envHosts),
+      secretHosts: parseSecretHosts(this.settings.secretHosts),
+      getSecret: (id) => this.app.secretStorage.getSecret(id),
       schemes: this.schemes,
     });
   }

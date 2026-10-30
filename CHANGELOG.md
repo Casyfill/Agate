@@ -6,6 +6,10 @@ All notable changes to Agate. The format follows [Keep a Changelog](https://keep
 
 ## [0.3.1] - 2026-10-30
 
+### Changed
+
+- **Breaking:** API keys come from Obsidian's secret storage, not environment variables. Write `{secret:name}` in a URL (was `{env:NAME}`), create the secret in Settings → Agate → **API keys**, and allow it for its host in **API keys in URLs** (was **Environment variables in URLs**; the old setting is dropped). No `launchctl`, no restart, and it works on mobile. A spec still using `{env:…}` is no longer filled in.
+
 ### Fixed
 
 - The Bases sort menu reorders a chart again: when the same notes come back in a different order, the chart is redrawn instead of updated in place (Vega kept groups in the order it first saw them, so `sort: null` bars ignored the new sort). Filter changes still update in place and keep selections.

@@ -6,7 +6,7 @@ You can't open Obsidian, but you can render the spec with Vega's own command-lin
    - `{"data": {"name": "base"}}` becomes `{"data": {"values": [ …3 to 10 rows… ]}}`, with rows shaped as in `data.md` (`{"file": {…}, "note": {…}, "formula": {…}}`), built from the notes' actual frontmatter.
    - Datasets from `rowData`, `cells`, `edges` or `tree`: inline a few records of the shape `extras.md` describes. In Vega specs, set `"values"` on the data entry with that name.
    - Remove `usermeta.agate.output` so a stats spec draws its fallback marks.
-   - Leave `{env:NAME}` URLs and remote tiles alone; image marks may fail to load offline, which is fine.
+   - Leave `{secret:name}` URLs and remote tiles alone; image marks may fail to load offline, which is fine.
 2. **Render it:**
    - Vega-Lite: `npx -y -p vega -p vega-lite vl2svg check.vl.json check.svg`
    - Vega: `npx -y -p vega -p vega-cli vg2svg check.vg.json check.svg`
@@ -16,4 +16,4 @@ You can't open Obsidian, but you can render the spec with Vega's own command-lin
    - `Unrecognized signal name` / `Undefined data set name` → a typo in a signal or dataset name.
 4. **Look at the SVG** if you can: marks should exist (`<path`, `<rect`, `<text` elements), and text should not read `undefined` or `NaN`.
 
-What this can't check: the Obsidian theme, textures (they need Agate's patterns), per-note loading, remote data, `{env:…}` keys, clicks. Say so when you hand over a chart that relies on them.
+What this can't check: the Obsidian theme, textures (they need Agate's patterns), per-note loading, remote data, `{secret:…}` keys, clicks. Say so when you hand over a chart that relies on them.

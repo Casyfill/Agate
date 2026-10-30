@@ -238,24 +238,24 @@ Tiles are remote images, so they load only when **Load remote data** is on.
 
 #### Providers that need an API key
 
-Don't write a key into a spec: it would travel with every copy of the spec. Keep it in an environment variable instead, and put a placeholder in the URL:
+Don't write a key into a spec: it would travel with every copy of the spec. Keep it in Obsidian's secret storage instead, and put a placeholder in the URL:
 
 ```json
-{ "calculate": "'https://api.maptiler.com/maps/outdoor-v2/256/' + tz + '/' + datum.x + '/' + datum.y + '.png?key={env:MAPTILER_KEY}'", "as": "url" }
+{ "calculate": "'https://api.maptiler.com/maps/outdoor-v2/256/' + tz + '/' + datum.x + '/' + datum.y + '.png?key={secret:maptiler}'", "as": "url" }
 ```
 
-1. Set the variable where Obsidian can see it, e.g. `export MAPTILER_KEY=…` in your shell profile. On macOS, Obsidian started from the Dock does not read the shell profile: run `launchctl setenv MAPTILER_KEY …` once (and again after a restart), or start Obsidian from a terminal.
-2. In **Settings → Agate → Environment variables in URLs**, allow it for the one host it may be sent to, one pair per line:
+1. In **Settings → Agate → API keys**, create a secret named `maptiler` and paste the key. Secret names are lowercase letters, digits and dashes. Another plugin's secret works too: pick it from the same list.
+2. In **API keys in URLs**, allow it for the one host it may be sent to, one pair per line:
 
    ```text
-   MAPTILER_KEY api.maptiler.com
+   maptiler api.maptiler.com
    ```
 
 3. Turn on **Load remote data**.
 
-Agate fills in `{env:NAME}` only when it makes the request, and only when the URL's host matches the host listed for that name. A spec someone shares with you therefore can't send your key anywhere else, and a name you haven't listed is never read. Keyed map tiles are fetched by Agate and handed to the chart as local `blob:` images, so the key doesn't appear in the chart's markup, an SVG export or an error message. The same placeholder works in a `data.url` or a per-note data URL.
+Agate fills in `{secret:name}` only when it makes the request, and only when the URL's host matches the host listed for that name. A spec someone shares with you therefore can't send your key anywhere else, and a name you haven't listed is never read. Keyed map tiles are fetched by Agate and handed to the chart as local `blob:` images, so the key doesn't appear in the chart's markup, an SVG export or an error message. The same placeholder works in a `data.url` or a per-note data URL.
 
-Environment variables are read on desktop only. On mobile a keyed URL fails with an error that names the variable, so give the spec a keyless fallback (the hike dashboard's `basemap` select) if the note is used there too.
+The key stays out of your vault files and Agate's settings file, so sync and git never carry it. Secret storage is kept per device: create the secret once on each device you use. Without it, a keyed URL fails with an error that names the secret, so give the spec a keyless fallback (the hike dashboard's `basemap` select) if the note is opened elsewhere.
 
 ## 11. Experimental: big numbers as note text
 

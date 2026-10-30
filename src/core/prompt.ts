@@ -107,7 +107,7 @@ ${env ? environmentSection(env) : ""}## Rules
   - "output": "stats" shows the rows behind the first mark as big numbers in note text instead of a chart: each row needs "value" and "label" strings, optionally "note", "change" and "better": "down";
   - "textures": {"hatch": {"orientation": "diagonal", "stroke": "#999", "background": "#eee"}} defines fill patterns used as "url(#hatch)" wherever a colour goes, scale ranges included (types "lines", "circles", "paths"; SVG renderer only).
 - A Vega signal or Vega-Lite param named "agateDark" with a plain "value" is set to true in dark mode; one named "agateColors" with an object "value" gets the theme's colours by role (text, muted, accent, red, yellow, blue, …), e.g. {"expr": "agateColors.accent"}.
-- Never put an API key in a URL: write {env:NAME} and the user allows that variable for its host in Agate's settings.
+- Never put an API key in a URL: write {secret:name} (a lowercase name such as maptiler); the user stores the key in Agate's settings and allows that name for its host.
 
 Reply with the JSON spec only.`;
 }

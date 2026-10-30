@@ -13,7 +13,7 @@ Charts that grow out of your notes. Agate is an Obsidian plugin that draws [Vega
 - **A chart is a Bases view.** Add an **Agate chart** view to any base. It appears wherever a base does: its own tab, embedded in a note (`![[Books.base#Ratings]]`), the sidebar, Canvas. The Bases toolbar's filter, sort and grouping drive the chart.
 - **Or a chart in a note**, with an ```` ```agate ```` code block: a spec file, rows from a base, or a self-contained spec.
 - **Full Vega and Vega-Lite**, so no option list to outgrow: maps and globes, networks of linked notes, folder sunbursts, timelines, sankeys, linked dashboards.
-- **More than a plain spec gets:** each note's own CSV or URL as data, the links between notes and the folder tree as datasets, headline numbers as note text, hatching and dot textures, map tiles under a route (with API keys kept in environment variables), click a mark to open its note.
+- **More than a plain spec gets:** each note's own CSV or URL as data, the links between notes and the folder tree as datasets, headline numbers as note text, hatching and dot textures, map tiles under a route (with API keys kept in Obsidian's secret storage), click a mark to open its note.
 - **Looks like your vault:** the `obsidian` theme follows your Obsidian theme and light/dark mode; Vega's stock themes and your own theme files are there too.
 
 ## Install

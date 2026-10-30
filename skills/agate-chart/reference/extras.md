@@ -94,15 +94,15 @@ Vega draws tiles itself as `image` marks placed by their corners in the same Web
 
 Keyless sources: `https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}` (satellite), `…/Elevation/World_Hillshade/MapServer/tile/{z}/{y}/{x}` (add `_Dark` for dark mode), `https://basemap.nationalmap.gov/arcgis/rest/services/USGSTopo/MapServer/tile/{z}/{y}/{x}`, `https://tile.opentopomap.org/{z}/{x}/{y}.png`. Keep an attribution line in the chart. Tiles are remote images: they load only with **Load remote data** on.
 
-## API keys: `{env:NAME}`
+## API keys: `{secret:name}`
 
-Never put a key in a spec. Put a placeholder in the URL; Agate fills it from the OS environment when it fetches (desktop only):
+Never put a key in a spec. Put a placeholder in the URL; Agate fills it from Obsidian's secret storage when it fetches:
 
 ```json
-{ "calculate": "'https://api.maptiler.com/maps/outdoor-v2/256/' + tz + '/' + datum.x + '/' + datum.y + '.png?key={env:MAPTILER_KEY}'", "as": "url" }
+{ "calculate": "'https://api.maptiler.com/maps/outdoor-v2/256/' + tz + '/' + datum.x + '/' + datum.y + '.png?key={secret:maptiler}'", "as": "url" }
 ```
 
-The user must (1) set the variable where Obsidian sees it (macOS: `launchctl setenv MAPTILER_KEY …`, then restart Obsidian), (2) allow it for its host in Settings → Agate → **Environment variables in URLs** (`MAPTILER_KEY api.maptiler.com`), (3) turn on **Load remote data**. A name is filled only for its listed host. Works in `data.url`, `rowData` URLs and image marks. On mobile it fails with an error naming the variable, so offer a keyless fallback (a `basemap` select param).
+Names are lowercase letters, digits and dashes. The user must (1) create the secret in Settings → Agate → **API keys**, (2) allow it for its host in **API keys in URLs** (`maptiler api.maptiler.com`), (3) turn on **Load remote data**. A name is filled only for its listed host. Works in `data.url`, `rowData` URLs and image marks. Secrets are per device; where one is missing the URL fails with an error naming it, so offer a keyless fallback (a `basemap` select param).
 
 ## Signals Agate sets
 
