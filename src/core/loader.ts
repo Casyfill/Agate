@@ -2,6 +2,7 @@ import { App, requestUrl, type RequestUrlResponse } from "obsidian";
 import { loader as vegaLoader, type Loader } from "vega";
 import { resolveVaultFile } from "./spec";
 import type { DataSchemeProvider } from "./types";
+import { errorMessage } from "../util/log";
 
 export interface LoaderDeps {
   app: App;
@@ -177,4 +178,21 @@ export function createVaultLoader(deps: LoaderDeps): Loader {
   };
 
   return base;
+}
+
+/**
+ * The loader, noting every failed load in `failures`. Vega catches a failed `data.url` and only
+ * warns, so without this a missing file draws an empty chart and says nothing.
+ */
+export function trackFailures(loader: Loader, failures: string[]): Loader {
+  const tracked = Object.create(loader) as Loader;
+  tracked.load = async (...args: Parameters<Loader["load"]>) => {
+    try {
+      return await loader.load(...args);
+    } catch (err) {
+      failures.push(errorMessage(err));
+      throw err;
+    }
+  };
+  return tracked;
 }
