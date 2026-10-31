@@ -19,9 +19,3 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
-
----
-
-Bundled third-party software, each under its own license (see node_modules/<name>/LICENSE
-at build time): vega, vega-lite, vega-embed, vega-themes and their dependencies (BSD-3-Clause).
-The test vault includes world-110m.json from the world-atlas package (ISC).

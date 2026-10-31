@@ -59,4 +59,4 @@ Open `demo-vault/` in Obsidian: the gallery's notes plus test notes under `tests
 
 ## License
 
-MIT. Vega, Vega-Lite and vega-embed are bundled under their own BSD-3-Clause licenses.
+MIT. Vega, Vega-Lite and vega-embed are bundled under their own BSD-3-Clause licenses; see [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
