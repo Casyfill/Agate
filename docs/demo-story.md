@@ -21,9 +21,9 @@ Each area gets one note in its folder, named like a person would name it, built 
 | Note | Main view | Secondary | Story it tells |
 |---|---|---|---|
 | `notes/2_areas/hiking/AT Georgia 2025/AT Georgia 2025.md` | Hike dashboard with a **basemap** and annotations (Blood Mountain high point, camps) | Day table (Bases core table) | Three days, 31 miles, the climb up Blood Mountain on day 3 |
-| `notes/2_areas/travel/Travel.md` | Globe, routes coloured by **Family / Work / Personal** | Countries map; trips timeline | Where the year went, and why |
-| `notes/2_areas/reading/Reading.md` | **Reading timeline**: one bar per book from start to finish, coloured by genre | **Sankey genre → status → rating**, linked to the timeline (hover a genre, both light up) | What I read when, how long it took, what I abandoned |
-| `notes/2_areas/boardgames/Board games.md` | Collection bubble chart, direct labels, no clipped legend | Who wins; game nights calendar | The group's favourites and the shelf of shame |
+| `notes/2_areas/travel/Travel.md` | Globe, routes colored by **Family / Work / Personal** | Countries map; trips timeline | Where the year went, and why |
+| `notes/2_areas/reading/Reading.md` | **Reading timeline**: one bar per book from start to finish, colored by genre | **Sankey genre → status → rating**, linked to the timeline (hover a genre, both light up) | What I read when, how long it took, what I abandoned |
+| `notes/2_areas/boardgames/Board games.md` | Collection bubble chart, direct labels, no clipped legend | Who wins; game nights calendar | The group's favorites and the shelf of shame |
 | `notes/1_projects/Projects.md` | Project timeline (Rust renamed "Rust 101 course") | People and projects graph | What's on, what's late, who's involved |
 | `notes/2_areas/work/Work.md` | Who I meet heatmap | Meeting load by week | Where the time goes |
 | `notes/journal/Journal.md` | Habit grid with mood line | Mood beeswarm | Streaks and slumps |
@@ -33,7 +33,7 @@ Each area becomes a travel/reading/etc. hub note: destinations become **travel n
 
 ## 3. Data changes
 
-- **Travel.** A note per trip (`notes/2_areas/travel/2025-07 Summer in Europe.md`) with `purpose: Family | Work | Personal`, `start`, `end`, `legs: [[[New York]], [[Reykjavik]], [[Berlin]], …]` (ordered list of place links) and `companions`. The globe draws consecutive legs; colour is `purpose`.
+- **Travel.** A note per trip (`notes/2_areas/travel/2025-07 Summer in Europe.md`) with `purpose: Family | Work | Personal`, `start`, `end`, `legs: [[[New York]], [[Reykjavik]], [[Berlin]], …]` (ordered list of place links) and `companions`. The globe draws consecutive legs; color is `purpose`.
 - **Reading.** Books get `started` and `finished` (or `abandoned`), so the timeline has real spans; about 25 books over two years, a few overlapping, two abandoned, one in progress.
 - **Projects.** "Learn Rust" → "Rust 101 course".
 - **Vault.** Sunburst root is `notes/` (the tree is built from `notes/` paths only; attachments and charts left out).
@@ -43,10 +43,10 @@ Each area becomes a travel/reading/etc. hub note: destinations become **travel n
 
 What makes those graphics read well, applied to every chart:
 
-- **Headline, dek, source line** inside the chart: bold 15–16 px headline that says the finding ("Blood Mountain was the day"), grey 12 px dek, 10 px source/notes line at the bottom.
+- **Headline, dek, source line** inside the chart: bold 15–16 px headline that says the finding ("Blood Mountain was the day"), gray 12 px dek, 10 px source/notes line at the bottom.
 - **Direct labels over legends.** Label lines and areas at their ends; a legend only when there is no room.
 - **Annotations.** One or two callouts per chart (thin leader line + short text): the high point, the longest book, the most-played game.
-- **Restraint.** Light or no gridlines, no axis domain lines, tabular numerals, sentence-case titles, one accent colour plus greys; categorical colour only when the category is the point.
+- **Restraint.** Light or no gridlines, no axis domain lines, tabular numerals, sentence-case titles, one accent color plus grays; categorical color only when the category is the point.
 - **Typography from the theme.** Charts use the note's font (Agate's `obsidian` theme already reads it), so a serif theme gives serif charts. Numbers in tabular figures.
 - **Size.** Charts designed for the note's readable line width (~700 px) and for mobile width, no horizontal scrolling.
 
@@ -61,7 +61,7 @@ A static basemap: a fixed view drawn once, no pan or zoom, from free tile source
 
 - Drawn by Vega itself: the spec computes which XYZ tiles cover the route at a fixed zoom and places them as `image` marks under the route, using the same Web Mercator projection, so the route, camps and the brush highlight sit exactly on the terrain. One renderer, no Leaflet.
 - Sources checked on 2026-10-07 (keyless, attribution required):
-  - **Esri World Hillshade** (grey relief) for light themes, **Esri World Hillshade Dark** for dark themes, switched by `agateDark`. Theme-neutral, reads as "print": the route and labels carry the colour.
+  - **Esri World Hillshade** (gray relief) for light themes, **Esri World Hillshade Dark** for dark themes, switched by `agateDark`. Theme-neutral, reads as "print": the route and labels carry the color.
   - **Esri World Topo Map** (soft green topo with contours and streams) as an alternative style, a signal in the spec.
   - OpenTopoMap works too but is busy for an editorial look; CARTO basemaps now require an API key (rejected).
 - Attribution line in the chart ("Basemap: Esri" plus sources), as the terms require.
@@ -75,7 +75,7 @@ Three looks, decided 2026-10-08. Each area note is designed for one (its `look` 
 |---|---|---|---|
 | elegant | Minimal, light; snippets `agate-demo` + `agate-elegant` (serif text) | Russian campaign 1812, Reading, Projects | Serif labels set in the spec, paper and ink tones (oxblood, navy, ochre, sage, plum), hairline grids, italic direct labels |
 | dark | Minimal, dark; snippet `agate-demo` | AT Georgia 2025, Travel, Journal | Satellite basemap by default in dark mode, glowing routes (a wide translucent stroke under each line), night globe, neon habit rows, gradient mood area |
-| colourful | AnuPpuccin, Mocha; snippet `agate-demo` | Board games, Work, Vault review | Catppuccin palette (Mocha in dark, Latte in light), rounded cells, direct labels with halos, pastel sunburst |
+| colorful | AnuPpuccin, Mocha; snippet `agate-demo` | Board games, Work, Vault review | Catppuccin palette (Mocha in dark, Latte in light), rounded cells, direct labels with halos, pastel sunburst |
 
 Every area note has the same shape: italic dek, a `[!stats]` callout (big numbers, styled by the snippet), an intro paragraph, the main base view, "What I noticed" bullets computed from the data with links to the notes behind them, a to-do list, then secondary views.
 

@@ -11,12 +11,12 @@
 
 ## Context
 
-Agate is an Obsidian plugin that renders Vega and Vega-Lite visualisations from data held in Obsidian Bases. The repository currently holds only `AGENTS.md` and `README.md`; this ADR fixes the architecture before the first line of code so that later work has something to be measured against.
+Agate is an Obsidian plugin that renders Vega and Vega-Lite visualizations from data held in Obsidian Bases. The repository currently holds only `AGENTS.md` and `README.md`; this ADR fixes the architecture before the first line of code so that later work has something to be measured against.
 
 Acceptance criteria for v0.1 (from `README.md`):
 
 1. Plugin code is set up and installable locally for testing.
-2. In-note and separate visualisations, Vega and Vega-Lite, from embedded code or a separate spec file.
+2. In-note and separate visualizations, Vega and Vega-Lite, from embedded code or a separate spec file.
 3. Specs can refer to data in Obsidian Bases; data is pulled before rendering.
 4. Tests and semver are set up.
 5. Docs exist: quickstart and API reference.
@@ -38,7 +38,7 @@ Verified against the Obsidian developer docs and `obsidian.d.ts` (API 1.10+; cur
 ### Decision drivers
 
 - Use only public Obsidian API. Internal `app.internalPlugins` access is off the table for v0.1; it breaks silently across releases.
-- One rendering path. Every surface (base view, embed, code block, later canvas) should end in the same renderer with the same data shape, so behaviour and bugs are shared.
+- One rendering path. Every surface (base view, embed, code block, later canvas) should end in the same renderer with the same data shape, so behavior and bugs are shared.
 - Specs should be portable. A Vega-Lite spec written for Agate should run unchanged in the Vega editor once the `base` dataset is swapped for inline values.
 - Small, testable core. Vega itself is heavy; Agate's own code should be thin adapters around it.
 - Leave room for add-ons without committing to their design now.
@@ -275,7 +275,7 @@ Two-way binding (a Vega selection narrowing the base's filters) is out of scope.
 
 Every rendering choice has a vault-level default in Agate's settings tab, so a user sets their look once rather than per chart. Resolution order, most specific wins:
 
-1. The spec's own `config` block (a spec that insists on its colours gets them).
+1. The spec's own `config` block (a spec that insists on its colors gets them).
 2. Per-chart options: Bases view options (D3, Surface A) or envelope keys (Surface B).
 3. Vault settings (this section).
 4. Agate's built-in defaults.
@@ -285,7 +285,7 @@ Settings (`settings.ts`, stored in `data.json`, migrated by a `settingsVersion` 
 | setting | default | notes |
 |---|---|---|
 | Theme | `obsidian` | `obsidian` is the dynamic theme from D5 (follows light/dark and the active community theme live). Also selectable: the static named themes bundled from `vega-themes` (`dark`, `quartz`, `vox`, `fivethirtyeight`, `ggplot2`, `latimes`, `urbaninstitute`, `googlecharts`, `powerbi`, `carbonwhite`, `carbong90`, …) and any theme registered through `api.registerTheme`. |
-| Config overrides | `{}` | A Vega `config` object (JSON or YAML in a text area) merged over the chosen theme with `vega.mergeConfig`. Fonts, axis colours, default mark colour, `background`, `padding`: anything Vega accepts. |
+| Config overrides | `{}` | A Vega `config` object (JSON or YAML in a text area) merged over the chosen theme with `vega.mergeConfig`. Fonts, axis colors, default mark color, `background`, `padding`: anything Vega accepts. |
 | Theme file | empty | Optional vault path to a JSON/YAML config, watched for changes, applied after Config overrides. Lets a theme live in the vault and sync with it. |
 | Default spec folder | empty | Tried when a spec path does not resolve like a link: `spec: ratings.vl.json` finds `<folder>/ratings.vl.json`. Added 2026-09-27. |
 | Renderer | `svg` | `svg` or `canvas`. |
@@ -300,7 +300,7 @@ The resolved config is computed once per render and passed to vega-embed as `con
 
 ### D12. Per-row data and table cells (added 2026-10-06)
 
-Small charts per note need data per note, and Bases formulas cannot fetch anything. Two spec-level declarations under `usermeta.agate` (Vega and Vega-Lite both carry `usermeta` untouched), so the behaviour travels with the spec file:
+Small charts per note need data per note, and Bases formulas cannot fetch anything. Two spec-level declarations under `usermeta.agate` (Vega and Vega-Lite both carry `usermeta` untouched), so the behavior travels with the spec file:
 
 - `rowData: {name, from, format?}` (or a list of them). For each base row, Agate reads property `from` (`note.data`, `formula.csv`), loads it through the D5 loader (vault path, link, scheme, or http(s) if allowed), parses it with `vega.read` (format from `format`, else the extension, else sniffed), and emits the records into dataset `name` with the parent's `file`, `note`, `formula`, `group` and `rowIndex` copied on. A list value becomes `{index, value}` records. Rows load in parallel (6 at a time); a failed row is logged and skipped, and only when every row fails does the chart show the error. Remote text is cached in memory for 10 minutes per URL, cleared by the "Refresh remote data" command. Records keep base row order.
 - `cells: "<name>"`. One record per row and visible property (`config.getOrder()`, display names from `getDisplayName`), with `rowIndex`, `column`, `property`, `label`, `value` and `text`. Lets a spec draw the view as a table whose columns follow the Properties menu, with a chart in one column. Bases view only; the code block has no Properties menu.
@@ -329,7 +329,7 @@ Rejected: a general chart wizard. The Vega GUI builders (Lyra, Voyager/Polestar)
 | M0 | Spike (timeboxed, ~2 days) | Throwaway branch proving: (a) `registerBasesView` + vega-embed renders inside a `.base` tab, an embed, and a ```` ```base ```` block, and toolbar filter changes update the chart without re-embed; (b) synthesized ```` ```base ```` from a code block via `MarkdownRenderer.render` works; (c) an interval brush and a tooltip behave in reading view, live preview, and a Canvas card, and `view.finalize()` gives a usable static mode; (d) a `geoshape` map loads TopoJSON from the vault through the loader; (e) bundle size and load time on desktop and mobile. Decides the D3 fallback, D10 defaults per surface, and `isDesktopOnly`. | risk reduction |
 | M1 | Skeleton | Tooling from D1 and D2, empty plugin loads, `test-vault/` with fixtures and `Checklist.md`, `install:local`, vitest with the `obsidian` mock, lint, CI on push, `docs/testing.md`. | AC1, AC4 |
 | M2 | Renderer core + code block + settings | `core/spec`, `render`, `theme`, `loader`; D11 settings tab and resolution chain; ```` ```agate ```` with inline or file spec and inline or vault-file data; error boxes; disposal test; Layer 2 snapshots. | AC2 |
-| M3 | Bases view | `AgateBasesView` with the options table from D3; `Value` mapping; dataset injection with View reuse; re-render on `onDataUpdated` and `css-change`; static mode. | AC3 (separate visualisations) |
+| M3 | Bases view | `AgateBasesView` with the options table from D3; `Value` mapping; dataset injection with View reuse; re-render on `onDataUpdated` and `css-change`; static mode. | AC3 (separate visualizations) |
 | M4 | Base reference from code blocks | `base:` / `view:` in the envelope via synthesis (or the fallback chosen in M0). | AC3 (in-note) |
 | M5 | API, docs, release | `AgateAPI` from D7 including the registry wrappers and `agate:ready`, quickstart, block and data-model reference, API reference, `CHANGELOG.md`, release workflow; full Layer 3 run; tag `0.1.0`. | AC5, AC6 |
 

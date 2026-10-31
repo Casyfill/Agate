@@ -75,14 +75,14 @@ In Vega-Lite's `aggregate`, a dotted field such as `note.pages` is read as one f
 "encoding": { "color": { "field": "note.status", "scale": { "domain": ["finished", "abandoned"], "range": ["#44cf6e", "url(#hatch)"] } } }
 ```
 
-Use `url(#name)` anywhere a colour goes, including scale ranges (the legend picks it up). Kinds, by `type`:
+Use `url(#name)` anywhere a color goes, including scale ranges (the legend picks it up). Kinds, by `type`:
 
 - `lines` (default): `orientation` `"vertical"`, `"horizontal"`, `"diagonal"`, or `"0/8"` to `"7/8"`; an array crosses them (`["diagonal", "6/8"]` is crosshatch). `size`, `strokeWidth`, `stroke`, `background`.
 - `circles`: `radius`, `fill`, `background`, `size`, `complement: true` for a staggered denser grid.
 - `paths`: `d` is `"squares"`, `"nylon"`, `"waves"`, `"woven"`, `"crosses"`, `"caps"`, `"hexagons"`, or a raw SVG path for one tile with `{s}` for the size.
 - Any kind: `shapeRendering` (`"crispEdges"`), `rough` (wobble in px, 1 to 2, for a hand-drawn look).
 
-SVG renderer only: with canvas each texture becomes its `background` colour. Exports and the online Vega editor don't show them. Example: `demo-vault/charts/redlining-brooklyn.vl.json` (a street grid under each grade colour, crosshatch for ungraded land).
+SVG renderer only: with canvas each texture becomes its `background` color. Exports and the online Vega editor don't show them. Example: `demo-vault/charts/redlining-brooklyn.vl.json` (a street grid under each grade color, crosshatch for ungraded land).
 
 ## Basemaps: map tiles under your marks
 
@@ -106,5 +106,5 @@ Names are lowercase letters, digits and dashes. The user must (1) create the sec
 
 ## Signals Agate sets
 
-- `agateDark`: declare a Vega signal or Vega-Lite param `{"name": "agateDark", "value": false}`; Agate sets it to true in dark mode. Use it to flip a colour ramp or pick a dark tile set.
-- `agateColors`: declare `{"name": "agateColors", "value": {…defaults…}}`; Agate fills it with the theme's colours (`reference/look.md`).
+- `agateDark`: declare a Vega signal or Vega-Lite param `{"name": "agateDark", "value": false}`; Agate sets it to true in dark mode. Use it to flip a color ramp or pick a dark tile set.
+- `agateColors`: declare `{"name": "agateColors", "value": {…defaults…}}`; Agate fills it with the theme's colors (`reference/look.md`).

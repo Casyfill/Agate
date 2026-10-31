@@ -23,13 +23,13 @@ Two things about the mock matter when writing tests. The `Value` mocks keep the 
 
 What is covered: block parsing and the bare-spec versus envelope decision, mode detection, dataset injection helpers, the property scan, vault path resolution and spec loading (`spec.test.ts`); the full `Value` to JSON table and row assembly including `group` (`bases.test.ts`); the D11 option precedence (`options.test.ts`); the ```` ```base ```` synthesis including error cases and a YAML round trip (`synthesize.test.ts`); the loader's vault, relative, scheme, remote-blocked and remote-allowed paths (`loader.test.ts`); theme derivation from CSS variables under jsdom and config merging (`theme.test.ts`).
 
-`src/surfaces/*`, `src/core/render.ts`, `src/main.ts` and `src/settings.ts` are not unit-tested: they are thin over Obsidian's DOM helpers and vega-embed. Logic that belongs to them but does not need Obsidian is extracted (`core/options.ts`, `core/synthesize.ts`) and tested there. When adding behaviour to a surface, put the decision in `core/` and test it.
+`src/surfaces/*`, `src/core/render.ts`, `src/main.ts` and `src/settings.ts` are not unit-tested: they are thin over Obsidian's DOM helpers and vega-embed. Logic that belongs to them but does not need Obsidian is extracted (`core/options.ts`, `core/synthesize.ts`) and tested there. When adding behavior to a surface, put the decision in `core/` and test it.
 
 ## Layer 2: headless renders (`test/render/specs.test.ts`)
 
 Every spec in `demo-vault/tests/charts/` is compiled (Vega-Lite → Vega where needed), given rows in the D4 shape from `test/fixtures/rows.ts` the way the plugin injects them, and rendered to SVG by real Vega with a loader that reads the vault directory. Assertions: at least one shape drawn, no "Infinite extent" warnings (rows must be present on the first run), and a snapshot of the SVG (or a hash for the world map). Snapshots live in `test/render/__snapshots__/`.
 
-A snapshot diff means one of: the spec changed (expected, update with `npx vitest run -u`), the fixture rows changed, or Agate's spec preprocessing (`ensureNamedData`, `withInitialValues`) changed behaviour. Vega and Vega-Lite upgrades also move snapshots; review the diff, then update.
+A snapshot diff means one of: the spec changed (expected, update with `npx vitest run -u`), the fixture rows changed, or Agate's spec preprocessing (`ensureNamedData`, `withInitialValues`) changed behavior. Vega and Vega-Lite upgrades also move snapshots; review the diff, then update.
 
 Adding a fixture spec to `demo-vault/tests/charts/` adds it to this suite automatically. Specs that need a dataset other than `base`, or a data file outside the vault directory, need a case in the test.
 

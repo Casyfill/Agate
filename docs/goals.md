@@ -5,7 +5,7 @@ The acceptance criteria Agate was started against, moved here from the README wh
 ## Acceptance criteria (0.1.0)
 
 1. Plugin code is set up. Plugin can be installed locally for testing.
-2. Plugin allows in-note or separate Vega-based visualisations, both Vega and Vega-Lite, using embedded code or separate-file spec JSON.
+2. Plugin allows in-note or separate Vega-based visualizations, both Vega and Vega-Lite, using embedded code or separate-file spec JSON.
 3. Specs can refer to data in Obsidian Bases; data is pulled before rendering.
 4. There are tests and semver set up for the code.
 5. There are docs, including a quickstart guide and API reference.
@@ -13,13 +13,13 @@ The acceptance criteria Agate was started against, moved here from the README wh
 
 ## Secondary goals
 
-1. Static (or interactive) visualisation is supported in Canvas.
+1. Static (or interactive) visualization is supported in Canvas.
 2. Dataview as a dynamic input: investigated and dropped on 2026-09-26 (see `future-features.md`).
 3. (Truncated in the original; never recovered.)
 
 ## Release and launch goals (agreed 2026-10-12, not started)
 
-The criteria above are about the plugin working. These are about people seeing it. They run in order; each step feeds the next. `demo-story.md` holds the detailed brief for steps 1–2 and gets updated to match this section (Projects → Interview prep, colourful → whimsical).
+The criteria above are about the plugin working. These are about people seeing it. They run in order; each step feeds the next. `demo-story.md` holds the detailed brief for steps 1–2 and gets updated to match this section (Projects → Interview prep, colorful → whimsical).
 
 ### R1. One vault, two jobs (done 2026-10-12, ADR-0002)
 
@@ -63,5 +63,5 @@ Posts to draw attention once R3 is live: LinkedIn, Reddit (r/ObsidianMD, possibl
 
 1. Interview prep notes: where are the existing ones, and how much can be public as is (company names, dates, grades)?
 2. Basemap provider and plan: which one, and is a paid key for screenshots alone worth it, given the public vault falls back to keyless tiles anyway?
-3. Whimsical: which Obsidian theme carries it (AnuPpuccin from the old "colourful" plan, or something else)?
+3. Whimsical: which Obsidian theme carries it (AnuPpuccin from the old "colorful" plan, or something else)?
 4. Is this release 0.1.0, and does community-plugin submission belong in it?

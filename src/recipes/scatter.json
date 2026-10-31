@@ -6,7 +6,7 @@
       "recipe": {
         "id": "scatter",
         "name": "Scatter plot",
-        "description": "Two numbers against each other, one point per note; optional colour and size.",
+        "description": "Two numbers against each other, one point per note; optional color and size.",
         "roles": {
           "x": {
             "label": "Horizontal",
@@ -22,7 +22,7 @@
             ]
           },
           "colour": {
-            "label": "Colour by",
+            "label": "Color by",
             "types": [
               "text",
               "boolean"

@@ -21,7 +21,7 @@
             ]
           },
           "colour": {
-            "label": "Colour by",
+            "label": "Color by",
             "types": [
               "text",
               "boolean"

@@ -2,7 +2,9 @@
 
 # Agate
 
-Charts that grow out of your notes. Agate is an Obsidian plugin that draws [Vega](https://vega.github.io/vega/) and [Vega-Lite](https://vega.github.io/vega-lite/) charts from [Bases](https://help.obsidian.md/bases): a base picks the notes, their properties become the data, and the chart follows as you add notes, change a value or filter the view.
+Agate brings [Vega](https://vega.github.io/vega/) and [Vega-Lite](https://vega.github.io/vega-lite/) visualizations to Obsidian. Create charts from Bases views that follow your notes, filters, and groups, or define your own visualizations in an agate code block.
+
+Start with a ready-made chart, then customize it as needed—from simple comparisons to maps, timelines, networks, and dashboards.
 
 ![A base of battle notes next to Minard's 1812 map drawn from them](docs/site/hero.jpg)
 
@@ -10,15 +12,24 @@ Charts that grow out of your notes. Agate is an Obsidian plugin that draws [Vega
 
 ## What it does
 
-- **A chart is a Bases view.** Add an **Agate chart** view to any base. It appears wherever a base does: its own tab, embedded in a note (`![[Books.base#Ratings]]`), the sidebar, Canvas. The Bases toolbar's filter, sort and grouping drive the chart.
-- **Or a chart in a note**, with an ```` ```agate ```` code block: a spec file, rows from a base, or a self-contained spec.
-- **Full Vega and Vega-Lite**, so no option list to outgrow: maps and globes, networks of linked notes, folder sunbursts, timelines, sankeys, linked dashboards.
-- **More than a plain spec gets:** each note's own CSV or URL as data, the links between notes and the folder tree as datasets, headline numbers as note text, hatching and dot textures, map tiles under a route (with API keys kept in Obsidian's secret storage), click a mark to open its note.
+- **Chart as a Bases view.** Add an **Agate chart** view to any base. It appears wherever a base does: its own tab, embedded in a note (`![[Books.base#Ratings]]`), the sidebar, Canvas. The Bases toolbar's filter, sort and grouping drive the chart.
+- **Charts in a note**, with an ```` ```agate ```` or ```` ```vega ```` code blocks: a spec file, rows from a base, or a self-contained spec.
+- **Full suppport for Vega and Vega-Lite specs**, so no option list to outgrow: maps and globes, networks of linked notes, folder sunbursts, timelines, sankeys, linked dashboards.
+- **Extras on top of plain Vega:**
+  - **Per-note data.** A note can point to its own CSV, JSON or URL, e.g. a time series for each stock or city note ([guide](docs/guide.md#6-per-note-external-data)).
+  - **Your vault as data.** Links between notes and the folder tree are datasets, so you can draw link graphs, arc diagrams, sunbursts and treemaps that follow the base's filter ([guide](docs/guide.md#10-gallery-structure-maps-flows)).
+  - **Click to open.** Clicking a point, bar or node opens its note.
+  - **Big numbers.** Live totals and averages shown as note text instead of a chart ([guide](docs/guide.md#11-experimental-big-numbers-as-note-text)).
+  - **Map tiles under your marks**, with API keys kept in Obsidian's secret storage ([guide](docs/guide.md#basemaps-under-a-route)).
+  - **Hatched and dotted fills** for print-style charts ([guide](docs/guide.md#textures-hatching-and-dots-svg-only)).
 - **Looks like your vault:** the `obsidian` theme follows your Obsidian theme and light/dark mode; Vega's stock themes and your own theme files are there too.
+- **Built with LLMs in mind**. Everything can be bult manually. Or, you can leverage any LLM (all of them know vega stack) to create visualization - or tailor a custom theme; 
 
 ## Install
 
-In Obsidian: Settings → Community plugins → Browse, search for **Agate**, install and enable it. Needs Obsidian 1.13 or later with the core Bases plugin on. Before the listing is live, or to try a pre-release, install it with [BRAT](https://github.com/TfTHacker/obsidian42-brat) (add `Casyfill/Agate`), or copy `main.js`, `manifest.json` and `styles.css` from the [latest release](https://github.com/Casyfill/Agate/releases) into `.obsidian/plugins/agate/`.
+In Obsidian: Settings → Community plugins → Browse, search for **Agate**, install and enable it. Needs Obsidian 1.13 or later with the core Bases plugin on. Works on desktop and mobile.
+
+To try a beta, add `Casyfill/Agate` in [BRAT](https://github.com/TfTHacker/obsidian42-brat).
 
 Then follow the [quickstart](https://casyfill.github.io/Agate/quickstart.html): 26 book notes to a bookshelf chart in about fifteen minutes. The [guide](docs/guide.md) covers everything else.
 

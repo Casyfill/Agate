@@ -1,6 +1,6 @@
 ---
 name: agate-chart
-description: Build charts for the Agate Obsidian plugin, which draws Vega and Vega-Lite specs over Obsidian Bases. Use when asked to chart, plot, map or visualise notes in an Obsidian vault, to write or fix an Agate spec (.vl.json, .vg.json) or a .base view that uses one, or to add headline numbers, maps with basemaps, hatching textures, networks, per-note data or a chart in a note.
+description: Build charts for the Agate Obsidian plugin, which draws Vega and Vega-Lite specs over Obsidian Bases. Use when asked to chart, plot, map or visualize notes in an Obsidian vault, to write or fix an Agate spec (.vl.json, .vg.json) or a .base view that uses one, or to add headline numbers, maps with basemaps, hatching textures, networks, per-note data or a chart in a note.
 ---
 
 # Building Agate charts
@@ -23,7 +23,7 @@ Agate draws a Vega or Vega-Lite spec over the notes an Obsidian base picks. The 
 - **Types:** dates arrive as ISO strings (use `"type": "temporal"` or `toDate()`); links as `"[[...]]"` strings or paths; lists as arrays; numbers as numbers.
 - **Prefer a base formula** for per-note calculations (age, decade, a URL built from an ISBN): it shows in the Bases table too and keeps the spec short.
 - **Size:** leave out `width` for a single Vega-Lite view; it fills the pane. Give facets and concats an explicit `width`. Give a discrete y axis a step height when marks need room: `"height": {"step": 40}`.
-- **Look:** do not set `background`, font or axis and text colours; the Obsidian theme supplies them. For colours that follow the theme, use `agateColors` (`reference/look.md`).
+- **Look:** do not set `background`, font or axis and text colors; the Obsidian theme supplies them. For colors that follow the theme, use `agateColors` (`reference/look.md`).
 - **Order:** `"sort": null` on a discrete axis keeps the order the Bases Sort menu gives.
 - **Clicks:** `"usermeta": {"agate": {"open": "click"}}` opens the note behind a clicked mark (marks whose datum carries `file.path`).
 - **Tooltips:** a tooltip field titled `"title"` becomes the heading; one titled `"image"` with an image URL is drawn as a picture.
@@ -56,6 +56,6 @@ Plus: map tiles under a route (basemaps), API keys from Obsidian's secret storag
 ## Don't
 
 - Don't inline rows in the real spec, or set `width` on a single Vega-Lite view.
-- Don't hard-code colours for text, axes or backgrounds.
+- Don't hard-code colors for text, axes or backgrounds.
 - Don't write an API key into a spec; use `{secret:name}` (`reference/extras.md`).
 - Don't invent `usermeta.agate` keys; only the ones above exist.

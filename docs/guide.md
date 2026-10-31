@@ -1,14 +1,14 @@
 # Agate user guide
 
-> Draft, 2026-10-06. Not reviewed. Section numbers and examples may change before 0.1.0.
-
 Agate draws Vega and Vega-Lite charts from Obsidian Bases. Bases decides which notes are in, in what order and grouped how; Agate turns those notes into rows and hands them to a Vega spec. This guide covers getting a first chart on screen, building your own, working quickly, and the less obvious features: per-note external data, table layouts, dark mode and images in tooltips.
 
 ## 1. Install
 
 Agate needs Obsidian 1.13 or newer with the Bases core plugin turned on.
 
-Until Agate is in the community directory, install it with [BRAT](https://github.com/TfTHacker/obsidian42-brat): Settings → BRAT → Add beta plugin → `Casyfill/Agate`. Or download `main.js`, `manifest.json` and `styles.css` from a GitHub release into `<vault>/.obsidian/plugins/agate/` and enable Agate under Community plugins.
+Install it from the directory: Settings → Community plugins → Browse, search for **Agate**, install and enable it.
+
+To try a beta before it ships, use [BRAT](https://github.com/TfTHacker/obsidian42-brat): Settings → BRAT → Add beta plugin → `Casyfill/Agate`.
 
 To try everything in this guide without touching your own vault, open the repo's `demo-vault/` as a vault and start with `Start here.md` (examples for every surface are in `tests/`).
 
@@ -16,7 +16,7 @@ To try everything in this guide without touching your own vault, open the repo's
 
 The fastest way: open a base, add a view, set its layout to **Agate chart**. The empty view offers two buttons.
 
-- **Pick a recipe** lists ready-made charts (timeline, bars, headline numbers, scatter, histogram, line over time, calendar heatmap, folder sunburst, link graph, arc diagram, travel globe, sankey, beeswarm). Pick one and Agate asks which of the base's properties to use for each part ("When", "Colour by"), offering only properties of the right type, then writes the spec into your spec folder and points the view at it. The same picker is in the command palette: **New chart from recipe**.
+- **Pick a recipe** lists ready-made charts (timeline, bars, headline numbers, scatter, histogram, line over time, calendar heatmap, folder sunburst, link graph, arc diagram, travel globe, sankey, beeswarm). Pick one and Agate asks which of the base's properties to use for each part ("When", "Color by"), offering only properties of the right type, then writes the spec into your spec folder and points the view at it. The same picker is in the command palette: **New chart from recipe**.
 - **Copy prompt for an LLM** copies a description of this base (its properties and their types, three sample rows, how Agate passes data, the extras) to the clipboard. Paste it into any AI assistant, say what chart you want, and save the reply as a `.vl.json` file in your spec folder. If the chart errors, the error box has a **Copy error** button for the next round.
 
 - **With an AI agent that works on your vault files** (Claude Code and similar): copy the repository's `skills/agate-chart` folder into the agent's skills folder (for Claude Code, `~/.claude/skills/` or `.claude/skills/` in the vault). The skill teaches the agent Agate's conventions and every extra in this guide, and has it render the spec with Vega's command-line tools before handing it over.
@@ -85,7 +85,7 @@ view: Table
 
 The first is a bare spec. The second adds inline rows. The third pulls rows from a base's query, reusing that view's filters and property order; it renders a hidden Bases view underneath, which is why the Bases toolbar shows above such charts.
 
-## 4. Building a new visualisation
+## 4. Building a new visualization
 
 The fastest path is to start from something that already works and change it in small steps.
 
@@ -106,7 +106,7 @@ Things that trip people up:
 
 - Set **Default spec folder** (Settings → Agate) to `charts`. Then `spec: ratings.vl.json` finds `charts/ratings.vl.json` from any note.
 - Write one spec, use it in many views. The same file can back a filtered view, a grouped one and an embed in a daily note; Bases handles the differences.
-- Set the look once: the `obsidian` theme follows your Obsidian theme and light/dark mode. Use **Config overrides** for vault-wide tweaks (fonts, a mark colour) instead of repeating them in every spec.
+- Set the look once: the `obsidian` theme follows your Obsidian theme and light/dark mode. Use **Config overrides** for vault-wide tweaks (fonts, a mark color) instead of repeating them in every spec.
 - Per-chart overrides (theme, renderer, interactive, export menu) live in the view options of a base, or as envelope keys in a block.
 - In Canvas, dragging the card beats dragging inside the chart. Prefer hover tooltips over brushes there, or set `interactive: false` for a static picture.
 - Turn on **Export menu** when you want SVG/PNG out of a chart.
@@ -146,7 +146,7 @@ Dataset `series` now holds every loaded record of every row, and each record car
 
 The format comes from the extension (`.csv`, `.tsv`, `.json`); otherwise Agate sniffs the text. Override with `"format": {"type": "csv"}` in the `rowData` entry.
 
-### Behaviour worth knowing
+### Behavior worth knowing
 
 - Remote URLs are off by default; nothing leaves your machine until you turn on **Load remote data**.
 - Responses are cached in memory for 10 minutes. **Agate: Refresh remote data and re-render charts** clears the cache.
@@ -159,17 +159,17 @@ The worked example is `demo-vault/tests/Markets`: twelve notes, one per FRED ser
 
 Add `"cells": "cells"` next to `rowData` and Agate also hands the spec the view's visible properties: one record per note and column, with the display name, the value and its text. The spec can then lay out text columns that follow the Bases Properties menu (show, hide, reorder) and give the rest of the width to a chart. `charts/horizon-table.vg.json` is the template.
 
-## 8. Theme, dark mode and colour
+## 8. Theme, dark mode and color
 
-- Theme `obsidian` derives fonts, text colours, gridlines and a category palette from your Obsidian theme, and redraws when you switch light/dark.
-- Theme `instrument` is `obsidian` redrawn as a monochrome readout, after the demo vault's hike dashboard: the theme's monospace font, ink-coloured marks and small filled dots, no axis lines or ticks, dotted grids, numeric y labels inside the plot, axis titles as small labels above each plot, and the accent for selections. It suits dense time series and small multiples; pick it per chart (the view's **Theme** option) or vault-wide.
+- Theme `obsidian` derives fonts, text colors, gridlines and a category palette from your Obsidian theme, and redraws when you switch light/dark.
+- Theme `instrument` is `obsidian` redrawn as a monochrome readout, after the demo vault's hike dashboard: the theme's monospace font, ink-colored marks and small filled dots, no axis lines or ticks, dotted grids, numeric y labels inside the plot, axis titles as small labels above each plot, and the accent for selections. It suits dense time series and small multiples; pick it per chart (the view's **Theme** option) or vault-wide.
 - The other themes are Vega's stock themes, most with a fixed white background.
-- A spec that declares a signal (Vega) or param (Vega-Lite) named `agateDark` with a plain `value` gets `true` in dark mode. The horizon examples use it to reverse their colour ramp so small changes stay close to the background. In the Vega editor the spec's own default applies.
-- A spec that declares `agateColors` (a plain `value` object, used as the defaults outside Obsidian) gets the active theme's colours by role: `text`, `muted`, `faint`, `background`, `border`, `accent`, and the named colours `red`, `orange`, `yellow`, `green`, `cyan`, `blue`, `purple`, `pink`. Use them in expressions, e.g. `"color": {"expr": "agateColors.yellow"}` or a halo in `agateColors.background`. Charts re-render when the theme changes. The hike dashboard in `demo-vault/charts/` uses no other colours.
+- A spec that declares a signal (Vega) or param (Vega-Lite) named `agateDark` with a plain `value` gets `true` in dark mode. The horizon examples use it to reverse their color ramp so small changes stay close to the background. In the Vega editor the spec's own default applies.
+- A spec that declares `agateColors` (a plain `value` object, used as the defaults outside Obsidian) gets the active theme's colors by role: `text`, `muted`, `faint`, `background`, `border`, `accent`, and the named colors `red`, `orange`, `yellow`, `green`, `cyan`, `blue`, `purple`, `pink`. Use them in expressions, e.g. `"color": {"expr": "agateColors.yellow"}` or a halo in `agateColors.background`. Charts re-render when the theme changes. The hike dashboard in `demo-vault/charts/` uses no other colors.
 
 ### Textures: hatching and dots (SVG only)
 
-Vega fills with colours and gradients. For hatching, crosshatch or dots, declare textures under `usermeta.agate.textures` and use `url(#name)` wherever a colour goes, including a scale's `range`, so the legend shows them too:
+Vega fills with colors and gradients. For hatching, crosshatch or dots, declare textures under `usermeta.agate.textures` and use `url(#name)` wherever a color goes, including a scale's `range`, so the legend shows them too:
 
 ```json
 "usermeta": { "agate": { "textures": {
@@ -188,7 +188,7 @@ The options follow [textures.js](https://riccardoscalco.it/textures/) for its th
 
 Two more options work on every kind. `shapeRendering` is SVG's (`"crispEdges"` for sharp hairlines). `rough`, Agate's own, wobbles the pattern by up to that many pixels with SVG turbulence, for a hand-drawn, printed look; 1 to 2 is plenty.
 
-Textures work with the SVG renderer only. With the canvas renderer each one falls back to its `background` (or its stroke or fill colour), and the export menu's SVG and PNG don't include the patterns. Outside Agate, in the Vega editor, `url(#…)` fills come out empty. `demo-vault/charts/redlining-brooklyn.vl.json` draws the 1938 sheet's look this way: a street grid under each grade's colour, and ungraded land in crosshatch.
+Textures work with the SVG renderer only. With the canvas renderer each one falls back to its `background` (or its stroke or fill color), and the export menu's SVG and PNG don't include the patterns. Outside Agate, in the Vega editor, `url(#…)` fills come out empty. `demo-vault/charts/redlining-brooklyn.vl.json` draws the 1938 sheet's look this way: a street grid under each grade's color, and ungraded land in crosshatch.
 
 ## 9. Images in tooltips
 
