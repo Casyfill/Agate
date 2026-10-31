@@ -68,13 +68,17 @@ export default class AgatePlugin extends Plugin {
       id: "dump-first-row",
       name: "Debug: dump first Bases row of the last rendered chart to the console",
       callback: () => {
+        if (!this.settings.debug) {
+          new Notice("Agate: turn on debug logging first, then run this again.");
+          return;
+        }
         const view = this.lastBasesView?.deref();
         if (!view) {
           new Notice("Agate: no Agate chart has rendered from a base yet.");
           return;
         }
         view.dumpFirstRow();
-        new Notice("Agate: dumped to the developer console (Cmd/Ctrl+Shift+I).");
+        new Notice("Agate: dumped to the developer console (Cmd/Ctrl+Shift+I), at the Verbose level.");
       },
     });
 

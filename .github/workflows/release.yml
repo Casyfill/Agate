@@ -11,6 +11,9 @@ on:
 
 permissions:
   contents: write
+  # Build provenance attestations for the release assets (actions/attest-build-provenance).
+  id-token: write
+  attestations: write
 
 jobs:
   release:
@@ -31,6 +34,13 @@ jobs:
           tag="${GITHUB_REF#refs/tags/}"
           version=$(node -p "require('./manifest.json').version")
           test "$tag" = "$version" || { echo "tag $tag != manifest version $version"; exit 1; }
+      - name: Attest build provenance
+        uses: actions/attest-build-provenance@v2
+        with:
+          subject-path: |
+            main.js
+            manifest.json
+            styles.css
       - name: Create release
         uses: softprops/action-gh-release@v2
         with:

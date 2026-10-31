@@ -79,14 +79,14 @@ export class AgateBasesView extends BasesView {
     const entry = groups.flatMap((g) => g.entries)[0];
     const log = this.plugin.log;
     if (!entry) {
-      log.info("dump: the view has no rows");
+      log.debug("dump: the view has no rows");
       return;
     }
     const props = [...new Set<BasesPropertyId>([...this.config.getOrder(), ...(this.allProperties ?? [])])];
-    log.info("dump: view", this.config.name, "entry", entry.file.path);
-    log.info("dump: allProperties", this.allProperties, "order", this.config.getOrder());
-    log.info("dump: value shapes", describeEntry(entry, props));
-    log.info("dump: converted row", groupsToRows([groups[0]], props).slice(0, 1)[0]);
+    log.debug("dump: view", this.config.name, "entry", entry.file.path);
+    log.debug("dump: allProperties", this.allProperties, "order", this.config.getOrder());
+    log.debug("dump: value shapes", describeEntry(entry, props));
+    log.debug("dump: converted row", groupsToRows([groups[0]], props).slice(0, 1)[0]);
   }
 
   /** Every property of the base as rows, plus their inferred types, for recipes and the LLM prompt (D13). */

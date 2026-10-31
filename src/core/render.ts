@@ -167,6 +167,7 @@ export class AgateRenderer {
         if (gen !== this.generation) return;
         this.chartEl.empty();
         this.chartEl.addClass("agate-stats");
+        markStatsHosts(this.chartEl, true);
         for (const s of stats) {
           const cell = this.chartEl.createDiv({ cls: "agate-stat" });
           const top = cell.createDiv({ cls: "agate-stat-top" });
@@ -182,6 +183,7 @@ export class AgateRenderer {
         this.showLoadFailures(failures);
         return;
       }
+      markStatsHosts(this.chartEl, false);
 
       const embedOptions: EmbedOptions = {
         mode: resolved.mode,
@@ -366,5 +368,16 @@ export class AgateRenderer {
     if (!this.isDebug()) return;
     window.__agateViews = (window.__agateViews ?? 0) + delta;
     this.log.debug("live views:", window.__agateViews);
+  }
+}
+
+/**
+ * Mark the base block, embed or view around a stats chart, so styles.css can drop the Bases
+ * header and fixed height there. A class instead of `:has()`, which makes the browser
+ * re-check selectors across the whole document on every DOM change.
+ */
+function markStatsHosts(el: HTMLElement, on: boolean): void {
+  for (let p = el.parentElement; p; p = p.parentElement) {
+    if (p.matches(".block-language-base, .bases-embed, .agate-bases-view")) p.toggleClass("agate-has-stats", on);
   }
 }
