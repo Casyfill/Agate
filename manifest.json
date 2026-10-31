@@ -1,7 +1,7 @@
 {
   "id": "agate",
   "name": "Agate",
-  "version": "0.4.0",
+  "version": "0.4.1",
   "minAppVersion": "1.13.0",
   "description": "Draw Vega and Vega-Lite charts from your Bases views and notes.",
   "author": "Philipp Kats",
