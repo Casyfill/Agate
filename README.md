@@ -10,6 +10,21 @@ Start with a ready-made chart, then customize it as needed—from simple compari
 
 **[Website](https://casyfill.github.io/Agate/) · [Quickstart](https://casyfill.github.io/Agate/quickstart.html) · [Gallery](https://casyfill.github.io/Agate/gallery.html) · [Guide](docs/guide.md) · [Changelog](CHANGELOG.md)**
 
+## What would you chart?
+
+If your notes have properties, you already have the data. A few ideas, from sensible to slightly obsessive:
+
+- **Learning.** One note per practice problem, with a score before and after reading up. See which topics are getting better and which you keep avoiding.
+- **Board games.** Which games on the shelf actually get played, how long a "quick game" really takes, and who keeps winning.
+- **Reading.** Pages per month, ratings by genre, and the books you started in March and never finished.
+- **Work and side projects.** Which meetings eat your Tuesdays, and how many side projects are "in progress" (all of them).
+- **Recipes.** Cooking time against how often you actually make a dish, and the cuisine you keep saving but never cook.
+- **D&D campaigns.** Sessions, NPCs and factions as linked notes: who knows whom, who betrayed whom, and the party's route across the map.
+- **Travel.** Give place notes coordinates and link them from trip notes, and your trips become routes on a globe you can spin ([gallery](https://casyfill.github.io/Agate/gallery.html)).
+- **History.** Battle notes with dates, places and outcomes, drawn as Minard's map of Napoleon's 1812 campaign. That's the picture above.
+- **Habits and mood.** A daily note with a few numbers adds up to a year of streaks and slumps.
+- **The vault itself.** How your notes link to each other, and which folders take up the most space.
+
 ## What it does
 
 - **Chart as a Bases view.** Add an **Agate chart** view to any base. It appears wherever a base does: its own tab, embedded in a note (`![[Books.base#Ratings]]`), the sidebar, Canvas. The Bases toolbar's filter, sort and grouping drive the chart.
