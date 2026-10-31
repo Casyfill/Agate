@@ -4,7 +4,7 @@ All notable changes to Agate. The format follows [Keep a Changelog](https://keep
 
 ## [Unreleased]
 
-## [0.3.1] - 2026-10-30
+## [0.4.0] - 2026-10-30
 
 ### Changed
 

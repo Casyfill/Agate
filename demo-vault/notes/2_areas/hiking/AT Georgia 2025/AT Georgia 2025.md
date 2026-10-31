@@ -4,7 +4,7 @@ look: dark
 tags: [hub, area/hiking, trip]
 cssclasses: [agate-area]
 ---
-# AT Georgia 2025
+ # AT Georgia 2025
 
 *Springer Mountain to Neel Gap, three days in October 2025.*
 
