@@ -4,6 +4,14 @@ All notable changes to Agate. The format follows [Keep a Changelog](https://keep
 
 ## [Unreleased]
 
+## [0.4.1] - 2026-10-30
+
+### Changed
+
+- The plugin description in `manifest.json` is an action statement and no longer names Obsidian, as the community directory requires.
+- `LICENSE` is the plain MIT text, so GitHub recognises it; the notes on bundled third-party licenses moved to `THIRD_PARTY_NOTICES.md`.
+- README: a Network use section (nothing is fetched by default; what Load remote data and API keys do) and install from the community directory.
+
 ## [0.4.0] - 2026-10-30
 
 ### Changed
