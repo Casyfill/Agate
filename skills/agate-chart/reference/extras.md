@@ -102,7 +102,7 @@ Never put a key in a spec. Put a placeholder in the URL; Agate fills it from Obs
 { "calculate": "'https://api.maptiler.com/maps/outdoor-v2/256/' + tz + '/' + datum.x + '/' + datum.y + '.png?key={secret:maptiler}'", "as": "url" }
 ```
 
-Names are lowercase letters, digits and dashes. The user must (1) create the secret in Settings → Agate → **API keys**, (2) allow it for its host in **API keys in URLs** (`maptiler api.maptiler.com`), (3) turn on **Load remote data**. A name is filled only for its listed host. Works in `data.url`, `rowData` URLs and image marks. Secrets are per device; where one is missing the URL fails with an error naming it, so offer a keyless fallback (a `basemap` select param).
+Names are lowercase letters, digits and dashes. The user must (1) create the secret in Settings → Agate → Advanced → **API keys**, (2) allow it for its host in **API keys in URLs** (`maptiler api.maptiler.com`), (3) turn on **Load remote data**. A name is filled only for its listed host. Works in `data.url`, `rowData` URLs and image marks. Secrets are per device; where one is missing the URL fails with an error naming it, so offer a keyless fallback (a `basemap` select param).
 
 ## Signals Agate sets
 

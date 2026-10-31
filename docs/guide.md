@@ -244,7 +244,7 @@ Don't write a key into a spec: it would travel with every copy of the spec. Keep
 { "calculate": "'https://api.maptiler.com/maps/outdoor-v2/256/' + tz + '/' + datum.x + '/' + datum.y + '.png?key={secret:maptiler}'", "as": "url" }
 ```
 
-1. In **Settings → Agate → API keys**, create a secret named `maptiler` and paste the key. Secret names are lowercase letters, digits and dashes. Another plugin's secret works too: pick it from the same list.
+1. In **Settings → Agate → Advanced → API keys**, create a secret named `maptiler` and paste the key. Secret names are lowercase letters, digits and dashes. Another plugin's secret works too: pick it from the same list.
 2. In **API keys in URLs**, allow it for the one host it may be sent to, one pair per line:
 
    ```text

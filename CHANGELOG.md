@@ -8,7 +8,7 @@ All notable changes to Agate. The format follows [Keep a Changelog](https://keep
 
 ### Changed
 
-- **Breaking:** API keys come from Obsidian's secret storage, not environment variables. Write `{secret:name}` in a URL (was `{env:NAME}`), create the secret in Settings → Agate → **API keys**, and allow it for its host in **API keys in URLs** (was **Environment variables in URLs**; the old setting is dropped). No `launchctl`, no restart, and it works on mobile. A spec still using `{env:…}` is no longer filled in.
+- **Breaking:** API keys come from Obsidian's secret storage, not environment variables. Write `{secret:name}` in a URL (was `{env:NAME}`), create the secret in Settings → Agate → Advanced → **API keys**, and allow it for its host in **API keys in URLs** just below (was **Environment variables in URLs**; the old setting is dropped). No `launchctl`, no restart, and it works on mobile. A spec still using `{env:…}` is no longer filled in.
 
 ### Fixed
 

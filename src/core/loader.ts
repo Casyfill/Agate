@@ -38,10 +38,10 @@ export function fillSecrets(uri: string, allowed: Map<string, string>, getSecret
   const host = new URL(uri.replace(SECRET_RE, "x")).host.toLowerCase();
   return uri.replace(SECRET_RE, (_, name: string) => {
     const want = allowed.get(name);
-    if (!want) throw new Error(`{secret:${name}} is not allowed: add "${name} ${host}" to Agate settings → API keys in URLs.`);
+    if (!want) throw new Error(`{secret:${name}} is not allowed: add "${name} ${host}" to Agate settings → Advanced → API keys in URLs.`);
     if (want !== host) throw new Error(`{secret:${name}} is allowed for ${want} only, not ${host}.`);
     const value = getSecret(name);
-    if (!value) throw new Error(`No secret named "${name}": create it in Agate settings → API keys in URLs.`);
+    if (!value) throw new Error(`No secret named "${name}": create it in Agate settings → Advanced → API keys.`);
     return encodeURIComponent(value);
   });
 }
