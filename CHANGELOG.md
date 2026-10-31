@@ -4,6 +4,15 @@ All notable changes to Agate. The format follows [Keep a Changelog](https://keep
 
 ## [Unreleased]
 
+## [0.4.2] - 2026-10-30
+
+### Changed
+
+- The console stays quiet: Debug logging writes at the Verbose level (`console.debug`), and the debug dump command needs Debug logging on. Agate no longer writes info lines.
+- Stats views drop the Bases header with a class Agate sets on their container, instead of CSS `:has()`, which is slow on large pages.
+- Releases carry GitHub build provenance attestations for `main.js`, `manifest.json` and `styles.css`.
+- Added `CONTRIBUTING.md`.
+
 ## [0.4.1] - 2026-10-30
 
 ### Changed

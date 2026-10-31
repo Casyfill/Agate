@@ -15,7 +15,7 @@ Goal: answer the five questions from ADR-0001 M0 with evidence, not impressions.
 - [x] Round 2: **Ratings** spec now has `sort: null`, so the Bases sort menu (toolbar → Sort → rating) should reorder the bars. Vega-Lite otherwise sorts discrete axes alphabetically.
 - [x] `tests/Surfaces/4 Base embed`: all three embeds render in reading view and in live preview.
 - [x] `tests/Surfaces/5 Base block`: renders; editing the filter in the block updates the chart.
-- [x] Round 2: console (debug on) now prints `[agate] first entry …` as a normal log line (it was console.debug, hidden by DevTools' default level). Expand it and result (2026-09-26): instanceof works (ctor names minified); rating/pages/age/decade → numbers, tags → array, strings → strings, dates → parseable strings, group set. D4 confirmed.
+- [x] Round 2: console (debug on) now prints `[agate] first entry …` as a Verbose-level line since 0.4.2 (turn on Verbose in DevTools; it was console.debug, hidden by DevTools' default level). Expand it and result (2026-09-26): instanceof works (ctor names minified); rating/pages/age/decade → numbers, tags → array, strings → strings, dates → parseable strings, group set. D4 confirmed.
 
 ## (b) Synthesized ```base from an agate block
 

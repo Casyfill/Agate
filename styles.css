@@ -114,13 +114,13 @@
 
 /* A base block or embed showing stats is a line of numbers, not a database view: no title or
    toolbar above it, and no fixed view height around it. */
-.block-language-base:has(.agate-stats) .bases-header,
-.bases-embed:has(.agate-stats) .bases-header {
+.block-language-base.agate-has-stats .bases-header,
+.bases-embed.agate-has-stats .bases-header {
   display: none;
 }
-.block-language-base:has(.agate-stats) .bases-view,
-.bases-embed:has(.agate-stats) .bases-view,
-.agate-bases-view:has(.agate-stats) {
+.block-language-base.agate-has-stats .bases-view,
+.bases-embed.agate-has-stats .bases-view,
+.agate-bases-view.agate-has-stats {
   height: auto;
   min-height: 0;
   padding: 0;
