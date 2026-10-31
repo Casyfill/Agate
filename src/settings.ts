@@ -1,4 +1,4 @@
-import { App, PluginSettingTab, type SettingDefinitionItem } from "obsidian";
+import { App, PluginSettingTab, SecretComponent, type SettingDefinitionItem } from "obsidian";
 import type AgatePlugin from "./main";
 import type { Renderer } from "./core/types";
 import { AGATE_ICON_ID } from "./icon";
@@ -22,8 +22,8 @@ export interface AgateSettings {
   interactive: boolean;
   datasetName: string;
   allowRemote: boolean;
-  /** `NAME host` lines: which OS environment variables `{env:NAME}` in a URL may use, and for which host. */
-  envHosts: string;
+  /** `name host` lines: which secrets `{secret:name}` in a URL may use, and for which host. */
+  secretHosts: string;
   /** Also claim the ```vega and ```vega-lite block languages. Needs a reload; clashes with obsidian-vega. */
   codeBlockAliases: boolean;
   debug: boolean;
@@ -41,7 +41,7 @@ export const DEFAULT_SETTINGS: AgateSettings = {
   interactive: true,
   datasetName: "base",
   allowRemote: false,
-  envHosts: "",
+  secretHosts: "",
   codeBlockAliases: false,
   debug: false,
 };
@@ -126,12 +126,6 @@ export class AgateSettingTab extends PluginSettingTab {
             aliases: ["network", "urls"],
             control: { type: "toggle", key: "allowRemote", defaultValue: DEFAULT_SETTINGS.allowRemote },
           },
-          {
-            name: "Environment variables in URLs",
-            desc: "For API keys, e.g. a basemap token. A URL in a spec can contain {env:NAME}; Agate fills it from the OS environment when it fetches, desktop only. List each allowed variable with the one host it may be sent to, one per line: MAPTILER_KEY api.maptiler.com",
-            aliases: ["api key", "token", "secret", "basemap"],
-            control: { type: "textarea", key: "envHosts", placeholder: "MAPTILER_KEY api.maptiler.com", rows: 3 },
-          },
         ],
       },
       {
@@ -203,6 +197,20 @@ export class AgateSettingTab extends PluginSettingTab {
         type: "group",
         heading: "Advanced",
         items: [
+          {
+            name: "API keys",
+            desc: "Keys live in Obsidian's secret storage, not in your vault or Agate's settings file. Pick an existing secret or create one here (a lowercase name such as maptiler), then allow it below.",
+            aliases: ["api key", "token", "secret", "basemap", "keychain"],
+            render: (setting) => {
+              setting.addComponent((el) => new SecretComponent(this.app, el));
+            },
+          },
+          {
+            name: "API keys in URLs",
+            desc: "A URL in a spec can contain {secret:name}; Agate fills it in when it fetches. List each allowed secret with the one host it may be sent to, one per line: maptiler api.maptiler.com",
+            aliases: ["api key", "token", "secret", "basemap"],
+            control: { type: "textarea", key: "secretHosts", placeholder: "maptiler api.maptiler.com", rows: 3 },
+          },
           {
             name: "Also handle ```vega and ```vega-lite blocks",
             desc: "Takes effect after reloading Obsidian. Conflicts with the obsidian-vega plugin if both are enabled.",

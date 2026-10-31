@@ -1,3 +1,4 @@
+import { setIcon } from "obsidian";
 import vegaEmbed, { type EmbedOptions, type Result } from "vega-embed";
 import type { Config } from "vega";
 import type { Loader } from "vega";
@@ -8,10 +9,12 @@ import {
   ensureNamedData,
   notePathOf,
   openOnEvent,
+  orderChanged,
   withInitialValues,
   withSignalValues,
 } from "./spec";
 import { errorMessage, type Logger } from "../util/log";
+import { trackFailures } from "./loader";
 import { quietAriaLabels } from "./aria";
 import { themeColors } from "./theme";
 import { containerSignals, isBounce } from "./resize";
@@ -56,6 +59,17 @@ function environmentSignals(): Record<string, unknown> {
 /** Page-unique prefix for each chart's texture ids. */
 let textureCharts = 0;
 
+/** Title, message and a Copy button: the error box, also used inside the load-failure popover. */
+function fillErrorBox(box: HTMLElement, title: string, message: string): void {
+  box.createDiv({ cls: "agate-error-title", text: title });
+  box.createEl("pre", { cls: "agate-error-message", text: message });
+  const copy = box.createEl("button", { cls: "agate-error-copy", text: "Copy error" });
+  copy.addEventListener("click", () => {
+    // Pasted into an LLM together with the spec, this is usually enough to get a fix.
+    void navigator.clipboard.writeText(`Agate (Vega) error:\n${message}`).then(() => copy.setText("Copied"));
+  });
+}
+
 function stopBubbling(evt: Event): void {
   evt.stopPropagation();
 }
@@ -75,6 +89,7 @@ declare global {
 export class AgateRenderer {
   private result: Result | null = null;
   private embedKey = "";
+  private lastDatasets: Record<string, Row[]> = {};
   private chartEl: HTMLElement | null = null;
   private resizeObserver: ResizeObserver | null = null;
   private ariaObserver: MutationObserver | null = null;
@@ -108,9 +123,11 @@ export class AgateRenderer {
     ]);
 
     // Same spec, same look: a data update is enough (never for static charts, which are finalized).
-    if (this.result && options.interactive && key === this.embedKey) {
+    const reordered = Object.entries(input.datasets).some(([name, rows]) => orderChanged(this.lastDatasets[name] ?? [], rows));
+    if (this.result && options.interactive && key === this.embedKey && !reordered) {
       try {
         await this.setData(input.datasets);
+        this.lastDatasets = input.datasets;
       } catch (err) {
         this.showError(err);
       }
@@ -121,6 +138,8 @@ export class AgateRenderer {
     this.hostEl.empty();
     this.chartEl = this.hostEl.createDiv({ cls: "agate-chart" });
 
+    const failures: string[] = [];
+    const loader = trackFailures(input.loader, failures);
     try {
       let spec = cloneSpec(resolved.spec);
       const datasetNames = Object.keys(input.datasets);
@@ -144,7 +163,7 @@ export class AgateRenderer {
 
       // Experimental: a stats spec renders as HTML numbers, not as a chart.
       if (isStatsSpec(resolved.spec)) {
-        const stats = await computeStats(spec, resolved.mode, input.config, input.loader);
+        const stats = await computeStats(spec, resolved.mode, input.config, loader);
         if (gen !== this.generation) return;
         this.chartEl.empty();
         this.chartEl.addClass("agate-stats");
@@ -160,6 +179,7 @@ export class AgateRenderer {
           cell.createDiv({ cls: "agate-stat-label", text: s.label });
           if (s.note) cell.createDiv({ cls: "agate-stat-note", text: s.note });
         }
+        this.showLoadFailures(failures);
         return;
       }
 
@@ -170,7 +190,7 @@ export class AgateRenderer {
         actions: options.actions
           ? { export: true, source: true, compiled: false, editor: false }
           : false,
-        loader: input.loader,
+        loader,
         hover: options.interactive,
         downloadFileName: "agate-chart",
       };
@@ -196,7 +216,9 @@ export class AgateRenderer {
       }
       this.result = result;
       this.embedKey = key;
+      this.lastDatasets = input.datasets;
       this.bumpCounter(+1);
+      this.showLoadFailures(failures);
 
       const declared = new Set(declaredDatasetNames(spec, resolved.mode));
       const missing = datasetNames.filter((n) => !declared.has(n));
@@ -279,16 +301,36 @@ export class AgateRenderer {
   showError(err: unknown): void {
     this.destroyView();
     this.hostEl.empty();
-    const box = this.hostEl.createDiv({ cls: "agate-error" });
-    box.createDiv({ cls: "agate-error-title", text: "Agate could not render this chart" });
-    const message = errorMessage(err);
-    box.createEl("pre", { cls: "agate-error-message", text: message });
-    const copy = box.createEl("button", { cls: "agate-error-copy", text: "Copy error" });
-    copy.addEventListener("click", () => {
-      // Pasted into an LLM together with the spec, this is usually enough to get a fix.
-      void navigator.clipboard.writeText(`Agate (Vega) error:\n${message}`).then(() => copy.setText("Copied"));
-    });
+    fillErrorBox(this.hostEl.createDiv({ cls: "agate-error" }), "Agate could not render this chart", errorMessage(err));
     this.log.warn("render error:", err);
+  }
+
+  /**
+   * Some data failed to load but the rest of the chart may still be useful (a route without its
+   * basemap), so keep it and add an error icon: the message on hover, a copyable box on click or tap.
+   */
+  private showLoadFailures(failures: string[]): void {
+    if (failures.length === 0) return;
+    const messages = [...new Set(failures)];
+    const title = messages.length === 1 ? "1 data source failed to load" : `${messages.length} data sources failed to load`;
+    const message = messages.join("\n");
+    const button = this.hostEl.createEl("button", {
+      cls: "agate-load-failed clickable-icon",
+      attr: { "aria-label": `${title}: ${message}`, "aria-expanded": "false" },
+    });
+    setIcon(button, "alert-circle");
+    let box: HTMLElement | null = null;
+    button.addEventListener("click", () => {
+      if (box) {
+        box.remove();
+        box = null;
+      } else {
+        box = this.hostEl.createDiv({ cls: "agate-error agate-load-failed-details" });
+        fillErrorBox(box, title, message);
+      }
+      button.setAttr("aria-expanded", String(box !== null));
+    });
+    this.log.warn("data failed to load:", messages);
   }
 
   destroy(): void {
@@ -316,6 +358,7 @@ export class AgateRenderer {
       this.bumpCounter(-1);
     }
     this.embedKey = "";
+    this.lastDatasets = {};
     this.chartEl = null;
   }
 

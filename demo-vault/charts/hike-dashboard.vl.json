@@ -877,7 +877,8 @@
             "stroke": {
               "expr": "agateColors.background"
             },
-            "strokeWidth": 1
+            "strokeWidth": 1,
+            "aria": false
           },
           "encoding": {
             "longitude": {
@@ -906,7 +907,33 @@
               },
               "value": 0
             }
-          }
+          },
+          "transform": [
+            {
+              "filter": {
+                "or": [
+                  {
+                    "or": [
+                      {
+                        "param": "hoverMap",
+                        "empty": false
+                      },
+                      {
+                        "param": "hoverProfile",
+                        "empty": false
+                      }
+                    ]
+                  },
+                  {
+                    "field": "lon",
+                    "equal": {
+                      "expr": "lonX[0]"
+                    }
+                  }
+                ]
+              }
+            }
+          ]
         }
       ]
     },
@@ -1077,7 +1104,8 @@
                 "strokeWidth": 1,
                 "color": {
                   "expr": "agateColors.accent"
-                }
+                },
+                "aria": false
               },
               "encoding": {
                 "x": {
@@ -1102,7 +1130,33 @@
                   },
                   "value": 0
                 }
-              }
+              },
+              "transform": [
+                {
+                  "filter": {
+                    "or": [
+                      {
+                        "or": [
+                          {
+                            "param": "hoverMap",
+                            "empty": false
+                          },
+                          {
+                            "param": "hoverProfile",
+                            "empty": false
+                          }
+                        ]
+                      },
+                      {
+                        "field": "lon",
+                        "equal": {
+                          "expr": "lonX[0]"
+                        }
+                      }
+                    ]
+                  }
+                }
+              ]
             },
             {
               "mark": {
@@ -1111,7 +1165,8 @@
                 "size": 36,
                 "color": {
                   "expr": "agateColors.accent"
-                }
+                },
+                "aria": false
               },
               "encoding": {
                 "x": {
@@ -1140,10 +1195,60 @@
                   },
                   "value": 0
                 }
-              }
+              },
+              "transform": [
+                {
+                  "filter": {
+                    "or": [
+                      {
+                        "or": [
+                          {
+                            "param": "hoverMap",
+                            "empty": false
+                          },
+                          {
+                            "param": "hoverProfile",
+                            "empty": false
+                          }
+                        ]
+                      },
+                      {
+                        "field": "lon",
+                        "equal": {
+                          "expr": "lonX[0]"
+                        }
+                      }
+                    ]
+                  }
+                }
+              ]
             },
             {
               "transform": [
+                {
+                  "filter": {
+                    "or": [
+                      {
+                        "or": [
+                          {
+                            "param": "hoverMap",
+                            "empty": false
+                          },
+                          {
+                            "param": "hoverProfile",
+                            "empty": false
+                          }
+                        ]
+                      },
+                      {
+                        "field": "lon",
+                        "equal": {
+                          "expr": "lonX[0]"
+                        }
+                      }
+                    ]
+                  }
+                },
                 {
                   "calculate": "format(datum.ele_ft, ',.0f') + ' ft · ' + lower(utcFormat(datum.tl, '%a %-I:%M%p'))",
                   "as": "lab"
@@ -1159,7 +1264,8 @@
                 "fontWeight": 600,
                 "color": {
                   "expr": "agateColors.accent"
-                }
+                },
+                "aria": false
               },
               "encoding": {
                 "x": {
@@ -1458,7 +1564,8 @@
                 "strokeWidth": 1,
                 "color": {
                   "expr": "agateColors.accent"
-                }
+                },
+                "aria": false
               },
               "encoding": {
                 "x": {
@@ -1490,7 +1597,33 @@
                   },
                   "value": 0
                 }
-              }
+              },
+              "transform": [
+                {
+                  "filter": {
+                    "or": [
+                      {
+                        "or": [
+                          {
+                            "param": "hoverMap",
+                            "empty": false
+                          },
+                          {
+                            "param": "hoverProfile",
+                            "empty": false
+                          }
+                        ]
+                      },
+                      {
+                        "field": "lon",
+                        "equal": {
+                          "expr": "lonX[0]"
+                        }
+                      }
+                    ]
+                  }
+                }
+              ]
             },
             {
               "mark": {
@@ -1499,7 +1632,8 @@
                 "size": 36,
                 "color": {
                   "expr": "agateColors.accent"
-                }
+                },
+                "aria": false
               },
               "encoding": {
                 "x": {
@@ -1535,10 +1669,60 @@
                   },
                   "value": 0
                 }
-              }
+              },
+              "transform": [
+                {
+                  "filter": {
+                    "or": [
+                      {
+                        "or": [
+                          {
+                            "param": "hoverMap",
+                            "empty": false
+                          },
+                          {
+                            "param": "hoverProfile",
+                            "empty": false
+                          }
+                        ]
+                      },
+                      {
+                        "field": "lon",
+                        "equal": {
+                          "expr": "lonX[0]"
+                        }
+                      }
+                    ]
+                  }
+                }
+              ]
             },
             {
               "transform": [
+                {
+                  "filter": {
+                    "or": [
+                      {
+                        "or": [
+                          {
+                            "param": "hoverMap",
+                            "empty": false
+                          },
+                          {
+                            "param": "hoverProfile",
+                            "empty": false
+                          }
+                        ]
+                      },
+                      {
+                        "field": "lon",
+                        "equal": {
+                          "expr": "lonX[0]"
+                        }
+                      }
+                    ]
+                  }
+                },
                 {
                   "calculate": "format(datum.mph, '.1f') + ' mph · ' + lower(utcFormat(datum.tl, '%a %-I:%M%p'))",
                   "as": "lab"
@@ -1554,7 +1738,8 @@
                 "fontWeight": 600,
                 "color": {
                   "expr": "agateColors.accent"
-                }
+                },
+                "aria": false
               },
               "encoding": {
                 "x": {
@@ -1705,7 +1890,8 @@
                 "strokeWidth": 1,
                 "color": {
                   "expr": "agateColors.accent"
-                }
+                },
+                "aria": false
               },
               "encoding": {
                 "x": {
@@ -1737,7 +1923,33 @@
                   },
                   "value": 0
                 }
-              }
+              },
+              "transform": [
+                {
+                  "filter": {
+                    "or": [
+                      {
+                        "or": [
+                          {
+                            "param": "hoverMap",
+                            "empty": false
+                          },
+                          {
+                            "param": "hoverProfile",
+                            "empty": false
+                          }
+                        ]
+                      },
+                      {
+                        "field": "lon",
+                        "equal": {
+                          "expr": "lonX[0]"
+                        }
+                      }
+                    ]
+                  }
+                }
+              ]
             },
             {
               "mark": {
@@ -1746,7 +1958,8 @@
                 "size": 36,
                 "color": {
                   "expr": "agateColors.accent"
-                }
+                },
+                "aria": false
               },
               "encoding": {
                 "x": {
@@ -1782,10 +1995,60 @@
                   },
                   "value": 0
                 }
-              }
+              },
+              "transform": [
+                {
+                  "filter": {
+                    "or": [
+                      {
+                        "or": [
+                          {
+                            "param": "hoverMap",
+                            "empty": false
+                          },
+                          {
+                            "param": "hoverProfile",
+                            "empty": false
+                          }
+                        ]
+                      },
+                      {
+                        "field": "lon",
+                        "equal": {
+                          "expr": "lonX[0]"
+                        }
+                      }
+                    ]
+                  }
+                }
+              ]
             },
             {
               "transform": [
+                {
+                  "filter": {
+                    "or": [
+                      {
+                        "or": [
+                          {
+                            "param": "hoverMap",
+                            "empty": false
+                          },
+                          {
+                            "param": "hoverProfile",
+                            "empty": false
+                          }
+                        ]
+                      },
+                      {
+                        "field": "lon",
+                        "equal": {
+                          "expr": "lonX[0]"
+                        }
+                      }
+                    ]
+                  }
+                },
                 {
                   "calculate": "format(datum.hr, '.0f') + ' bpm · ' + lower(utcFormat(datum.tl, '%a %-I:%M%p'))",
                   "as": "lab"
@@ -1801,7 +2064,8 @@
                 "fontWeight": 600,
                 "color": {
                   "expr": "agateColors.accent"
-                }
+                },
+                "aria": false
               },
               "encoding": {
                 "x": {
@@ -2058,7 +2322,8 @@
                 "strokeWidth": 1,
                 "color": {
                   "expr": "agateColors.accent"
-                }
+                },
+                "aria": false
               },
               "encoding": {
                 "x": {
@@ -2090,7 +2355,33 @@
                   },
                   "value": 0
                 }
-              }
+              },
+              "transform": [
+                {
+                  "filter": {
+                    "or": [
+                      {
+                        "or": [
+                          {
+                            "param": "hoverMap",
+                            "empty": false
+                          },
+                          {
+                            "param": "hoverProfile",
+                            "empty": false
+                          }
+                        ]
+                      },
+                      {
+                        "field": "lon",
+                        "equal": {
+                          "expr": "lonX[0]"
+                        }
+                      }
+                    ]
+                  }
+                }
+              ]
             },
             {
               "mark": {
@@ -2099,7 +2390,8 @@
                 "size": 36,
                 "color": {
                   "expr": "agateColors.accent"
-                }
+                },
+                "aria": false
               },
               "encoding": {
                 "x": {
@@ -2135,10 +2427,60 @@
                   },
                   "value": 0
                 }
-              }
+              },
+              "transform": [
+                {
+                  "filter": {
+                    "or": [
+                      {
+                        "or": [
+                          {
+                            "param": "hoverMap",
+                            "empty": false
+                          },
+                          {
+                            "param": "hoverProfile",
+                            "empty": false
+                          }
+                        ]
+                      },
+                      {
+                        "field": "lon",
+                        "equal": {
+                          "expr": "lonX[0]"
+                        }
+                      }
+                    ]
+                  }
+                }
+              ]
             },
             {
               "transform": [
+                {
+                  "filter": {
+                    "or": [
+                      {
+                        "or": [
+                          {
+                            "param": "hoverMap",
+                            "empty": false
+                          },
+                          {
+                            "param": "hoverProfile",
+                            "empty": false
+                          }
+                        ]
+                      },
+                      {
+                        "field": "lon",
+                        "equal": {
+                          "expr": "lonX[0]"
+                        }
+                      }
+                    ]
+                  }
+                },
                 {
                   "calculate": "format(datum.sun, '.0f') + '° · ' + lower(utcFormat(datum.tl, '%a %-I:%M%p')) + (datum.cloud_pct > 50 ? ' · cloudy' : '')",
                   "as": "lab"
@@ -2154,7 +2496,8 @@
                 "fontWeight": 600,
                 "color": {
                   "expr": "agateColors.accent"
-                }
+                },
+                "aria": false
               },
               "encoding": {
                 "x": {
@@ -2396,7 +2739,8 @@
                     "strokeWidth": 1,
                     "color": {
                       "expr": "agateColors.accent"
-                    }
+                    },
+                    "aria": false
                   },
                   "encoding": {
                     "x": {
@@ -2428,7 +2772,33 @@
                       },
                       "value": 0
                     }
-                  }
+                  },
+                  "transform": [
+                    {
+                      "filter": {
+                        "or": [
+                          {
+                            "or": [
+                              {
+                                "param": "hoverMap",
+                                "empty": false
+                              },
+                              {
+                                "param": "hoverProfile",
+                                "empty": false
+                              }
+                            ]
+                          },
+                          {
+                            "field": "lon",
+                            "equal": {
+                              "expr": "lonX[0]"
+                            }
+                          }
+                        ]
+                      }
+                    }
+                  ]
                 },
                 {
                   "mark": {
@@ -2437,7 +2807,8 @@
                     "size": 36,
                     "color": {
                       "expr": "agateColors.accent"
-                    }
+                    },
+                    "aria": false
                   },
                   "encoding": {
                     "x": {
@@ -2473,10 +2844,60 @@
                       },
                       "value": 0
                     }
-                  }
+                  },
+                  "transform": [
+                    {
+                      "filter": {
+                        "or": [
+                          {
+                            "or": [
+                              {
+                                "param": "hoverMap",
+                                "empty": false
+                              },
+                              {
+                                "param": "hoverProfile",
+                                "empty": false
+                              }
+                            ]
+                          },
+                          {
+                            "field": "lon",
+                            "equal": {
+                              "expr": "lonX[0]"
+                            }
+                          }
+                        ]
+                      }
+                    }
+                  ]
                 },
                 {
                   "transform": [
+                    {
+                      "filter": {
+                        "or": [
+                          {
+                            "or": [
+                              {
+                                "param": "hoverMap",
+                                "empty": false
+                              },
+                              {
+                                "param": "hoverProfile",
+                                "empty": false
+                              }
+                            ]
+                          },
+                          {
+                            "field": "lon",
+                            "equal": {
+                              "expr": "lonX[0]"
+                            }
+                          }
+                        ]
+                      }
+                    },
                     {
                       "calculate": "format(datum.temp_f, '.0f') + '°F · ' + lower(utcFormat(datum.tl, '%a %-I:%M%p')) + (datum.precip_mm > 0 ? ' · rain' : '')",
                       "as": "lab"
@@ -2492,7 +2913,8 @@
                     "fontWeight": 600,
                     "color": {
                       "expr": "agateColors.accent"
-                    }
+                    },
+                    "aria": false
                   },
                   "encoding": {
                     "x": {

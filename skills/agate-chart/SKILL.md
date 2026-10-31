@@ -14,7 +14,7 @@ Agate draws a Vega or Vega-Lite spec over the notes an Obsidian base picks. The 
 3. **Write the spec file** in the vault's spec folder (often `charts/`), named `<what>.vl.json` (Vega-Lite) or `<what>.vg.json` (Vega). Follow the conventions below.
 4. **Wire it up.** Add an `agate` view to the base that points at the spec (`specFile:`), and if the user wants it in a note, embed it: `![[Books.base#View name]]`, or use an `agate` code block (`reference/data.md`).
 5. **Check it renders** before you hand it over (`reference/check.md`): a copy of the spec with a few real rows inlined must render with no errors and no `WARN` lines.
-6. **Tell the user** which files you created or changed, which view to open, and which Agate settings it needs (Load remote data for URLs and map tiles; Environment variables in URLs for API keys; the SVG renderer for textures).
+6. **Tell the user** which files you created or changed, which view to open, and which Agate settings it needs (Load remote data for URLs and map tiles; API keys and API keys in URLs for keyed URLs; the SVG renderer for textures).
 
 ## Conventions every spec follows
 
@@ -43,12 +43,12 @@ All of these are declared under `"usermeta": {"agate": {…}}`, which Vega ignor
 | `output: "stats"` | headline numbers shown as note text instead of a chart |
 | `textures` | hatching, dots and patterns usable as fills (SVG renderer) |
 
-Plus: map tiles under a route (basemaps), API keys from environment variables (`{env:NAME}` in URLs), the `agateDark` and `agateColors` signals, and themes. Read `reference/extras.md` and `reference/look.md` before using any of them.
+Plus: map tiles under a route (basemaps), API keys from Obsidian's secret storage (`{secret:name}` in URLs), the `agateDark` and `agateColors` signals, and themes. Read `reference/extras.md` and `reference/look.md` before using any of them.
 
 ## Reference files
 
 - `reference/data.md`: rows and fields, `.base` files, code blocks and embeds, static charts.
-- `reference/extras.md`: every `usermeta.agate` key, basemaps, `{env:NAME}` keys.
+- `reference/extras.md`: every `usermeta.agate` key, basemaps, `{secret:name}` keys.
 - `reference/look.md`: themes, theme files, `agateDark`, `agateColors`, textures, sizing.
 - `reference/examples.md`: the 13 built-in recipes and worked examples to start from.
 - `reference/check.md`: rendering a spec outside Obsidian to catch errors.
@@ -57,5 +57,5 @@ Plus: map tiles under a route (basemaps), API keys from environment variables (`
 
 - Don't inline rows in the real spec, or set `width` on a single Vega-Lite view.
 - Don't hard-code colours for text, axes or backgrounds.
-- Don't write an API key into a spec; use `{env:NAME}` (`reference/extras.md`).
+- Don't write an API key into a spec; use `{secret:name}` (`reference/extras.md`).
 - Don't invent `usermeta.agate` keys; only the ones above exist.

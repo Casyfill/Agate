@@ -38,7 +38,7 @@ Goal: answer the five questions from ADR-0001 M0 with evidence, not impressions.
 ## (d) Geo via vault loader
 
 - [x] `tests/Surfaces/7 Geo`: both maps render with country shapes.
-- [x] Console shows no loader errors. Rename `tests/geo/world-110m.json` temporarily → error box names the missing path. Rename back.
+- [x] Console shows no loader errors. Rename `tests/geo/world-110m.json` temporarily → an error icon top left of each map; its hover text and click box name the missing path. Rename back.
 
 ## (e) Size and load time
 

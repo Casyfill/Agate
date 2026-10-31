@@ -4,6 +4,18 @@ All notable changes to Agate. The format follows [Keep a Changelog](https://keep
 
 ## [Unreleased]
 
+## [0.3.1] - 2026-10-30
+
+### Changed
+
+- **Breaking:** API keys come from Obsidian's secret storage, not environment variables. Write `{secret:name}` in a URL (was `{env:NAME}`), create the secret in Settings → Agate → Advanced → **API keys**, and allow it for its host in **API keys in URLs** just below (was **Environment variables in URLs**; the old setting is dropped). No `launchctl`, no restart, and it works on mobile. A spec still using `{env:…}` is no longer filled in.
+
+### Fixed
+
+- The Bases sort menu reorders a chart again: when the same notes come back in a different order, the chart is redrawn instead of updated in place (Vega kept groups in the order it first saw them, so `sort: null` bars ignored the new sort). Filter changes still update in place and keep selections.
+- A data file or URL that fails to load no longer leaves a silently empty chart: the chart keeps what did load and shows an error icon top left, with the message on hover and a copyable error box on click or tap.
+- Lint passes with no warnings, ahead of the community directory submission: Obsidian's `prefer-create-el` rule is off for tests (jsdom has no `createDiv`), and the guarded Node `process` read in the URL loader is marked as intended.
+
 ## [0.3.0] - 2026-10-20
 
 ### Added

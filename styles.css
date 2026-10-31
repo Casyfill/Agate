@@ -9,6 +9,7 @@
 }
 
 .agate-host {
+  position: relative;
   width: 100%;
 }
 
@@ -218,6 +219,25 @@
 .agate-error-copy {
   margin-top: var(--size-4-2);
   font-size: var(--font-ui-smaller);
+}
+
+/* Some data failed to load: the chart stays, with an error icon top left (top right is Edit spec). */
+.agate-load-failed.clickable-icon {
+  position: absolute;
+  top: var(--size-4-1);
+  left: var(--size-4-1);
+  z-index: 2;
+  color: var(--text-error);
+}
+
+.agate-load-failed-details {
+  position: absolute;
+  top: calc(var(--size-4-1) + var(--icon-size) + var(--size-4-3));
+  left: var(--size-4-1);
+  z-index: 3;
+  max-width: min(40em, calc(100% - var(--size-4-2)));
+  margin: 0;
+  box-shadow: var(--shadow-s);
 }
 
 .agate-placeholder-hint {

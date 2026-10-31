@@ -1,5 +1,5 @@
 import { App, TFile, normalizePath, parseYaml } from "obsidian";
-import type { AgateEnvelope, AnySpec, Mode } from "./types";
+import type { AgateEnvelope, AnySpec, Mode, Row } from "./types";
 
 /** Top-level keys that mark a document as a bare Vega/Vega-Lite spec rather than an Agate envelope. */
 const SPEC_MARKERS = [
@@ -207,6 +207,22 @@ export function notePathOf(datum: unknown): string | null {
   const file = datum && typeof datum === "object" ? (datum as { file?: unknown }).file : undefined;
   const path = file && typeof file === "object" ? (file as { path?: unknown }).path : undefined;
   return typeof path === "string" && path.length > 0 ? path : null;
+}
+
+/**
+ * True when the rows both lists share come in a different order: a Bases sort change, which
+ * `view.data()` cannot show (Vega keeps groups in first-seen order), not a filter change.
+ * Rows without a note path (inline values, CSV) are never compared.
+ */
+export function orderChanged(prev: Row[], next: Row[]): boolean {
+  const a = prev.map(notePathOf);
+  const b = next.map(notePathOf);
+  if (a.includes(null) || b.includes(null)) return false;
+  const inA = new Set(a);
+  const inB = new Set(b);
+  const x = a.filter((p) => inB.has(p));
+  const y = b.filter((p) => inA.has(p));
+  return x.length !== y.length || x.some((p, i) => p !== y[i]);
 }
 
 /**

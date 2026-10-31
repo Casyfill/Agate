@@ -2,48 +2,46 @@ import { App, requestUrl, type RequestUrlResponse } from "obsidian";
 import { loader as vegaLoader, type Loader } from "vega";
 import { resolveVaultFile } from "./spec";
 import type { DataSchemeProvider } from "./types";
+import { errorMessage } from "../util/log";
 
 export interface LoaderDeps {
   app: App;
   sourcePath: string | null;
   allowRemote: boolean;
-  /** Which `{env:NAME}` placeholders may be filled, and for which host (see fillEnv). */
-  envHosts: Map<string, string>;
+  /** Which `{secret:name}` placeholders may be filled, and for which host (see fillSecrets). */
+  secretHosts: Map<string, string>;
+  /** Obsidian's secret storage lookup (`app.secretStorage.getSecret`). */
+  getSecret: (id: string) => string | null;
   schemes: Map<string, DataSchemeProvider>;
 }
 
 const SCHEME_RE = /^([a-z][a-z0-9+.-]*):/i;
-const ENV_RE = /\{env:([A-Za-z_][A-Za-z0-9_]*)\}/g;
+const SECRET_RE = /\{secret:([a-z0-9-]+)\}/g;
 
-/** The "Environment variables in URLs" setting: one `NAME host` pair per line, `#` starts a comment. */
-export function parseEnvHosts(text: string): Map<string, string> {
+/** The "API keys in URLs" setting: one `name host` pair per line, `#` starts a comment. */
+export function parseSecretHosts(text: string): Map<string, string> {
   const out = new Map<string, string>();
   for (const line of text.split("\n")) {
     const [name, host] = line.replace(/#.*/, "").trim().split(/\s+/);
-    if (name && host) out.set(name, host.toLowerCase());
+    if (name && host) out.set(name.toLowerCase(), host.toLowerCase());
   }
   return out;
 }
 
 /**
- * Fill `{env:NAME}` in a URL from the OS environment (desktop only), so an API key never
- * sits in a spec. A name is filled only when the user allowed it for this URL's host:
- * otherwise any shared spec could send the key to a server of its choosing.
+ * Fill `{secret:name}` in a URL from Obsidian's secret storage, so an API key never sits in a
+ * spec. A name is filled only when the user allowed it for this URL's host: otherwise any
+ * shared spec could send the key to a server of its choosing.
  */
-export function fillEnv(
-  uri: string,
-  allowed: Map<string, string>,
-  // eslint-disable-next-line no-undef -- Electron's Node global, absent on mobile (checked here).
-  env: Record<string, string | undefined> | undefined = typeof process === "undefined" ? undefined : process.env,
-): string {
-  if (!uri.includes("{env:")) return uri;
-  const host = new URL(uri.replace(ENV_RE, "x")).host.toLowerCase();
-  return uri.replace(ENV_RE, (_, name: string) => {
+export function fillSecrets(uri: string, allowed: Map<string, string>, getSecret: (id: string) => string | null): string {
+  if (!uri.includes("{secret:")) return uri;
+  const host = new URL(uri.replace(SECRET_RE, "x")).host.toLowerCase();
+  return uri.replace(SECRET_RE, (_, name: string) => {
     const want = allowed.get(name);
-    if (!want) throw new Error(`{env:${name}} is not allowed: add "${name} ${host}" to Agate settings → Environment variables in URLs.`);
-    if (want !== host) throw new Error(`{env:${name}} is allowed for ${want} only, not ${host}.`);
-    const value = env?.[name];
-    if (!value) throw new Error(`Environment variable ${name} is not set${env ? "" : " (they are read on desktop only)"}.`);
+    if (!want) throw new Error(`{secret:${name}} is not allowed: add "${name} ${host}" to Agate settings → Advanced → API keys in URLs.`);
+    if (want !== host) throw new Error(`{secret:${name}} is allowed for ${want} only, not ${host}.`);
+    const value = getSecret(name);
+    if (!value) throw new Error(`No secret named "${name}": create it in Agate settings → Advanced → API keys.`);
     return encodeURIComponent(value);
   });
 }
@@ -138,10 +136,10 @@ export function createVaultLoader(deps: LoaderDeps): Loader {
     if (/^https?:/i.test(uri) && !deps.allowRemote) {
       throw new Error(`Remote URL blocked: ${uri}. Enable "Load remote URLs" in Agate settings to allow it.`);
     }
-    if (uri.includes("{env:")) {
+    if (uri.includes("{secret:")) {
       // Fetch it here and hand Vega a blob: URL, so the key is not in the chart's DOM or an SVG export.
       // ponytail: blob URLs are never revoked (one per keyed tile per render); revoke on view finalize if memory shows up.
-      const res = await fetchRemoteResponse(fillEnv(uri, deps.envHosts), uri);
+      const res = await fetchRemoteResponse(fillSecrets(uri, deps.secretHosts, deps.getSecret), uri);
       const type = Object.entries(res.headers ?? {}).find(([k]) => k.toLowerCase() === "content-type")?.[1];
       return { href: URL.createObjectURL(new Blob([res.arrayBuffer], type ? { type } : {})) };
     }
@@ -158,7 +156,7 @@ export function createVaultLoader(deps: LoaderDeps): Loader {
             `Remote URL blocked: ${uri}. Enable "Load remote URLs" in Agate settings to allow it.`,
           );
         }
-        return fetchRemote(fillEnv(uri, deps.envHosts), uri);
+        return fetchRemote(fillSecrets(uri, deps.secretHosts, deps.getSecret), uri);
       }
       if (scheme === "data" || scheme === "blob") {
         return originalLoad(uri, options as never);
@@ -177,4 +175,21 @@ export function createVaultLoader(deps: LoaderDeps): Loader {
   };
 
   return base;
+}
+
+/**
+ * The loader, noting every failed load in `failures`. Vega catches a failed `data.url` and only
+ * warns, so without this a missing file draws an empty chart and says nothing.
+ */
+export function trackFailures(loader: Loader, failures: string[]): Loader {
+  const tracked = Object.create(loader) as Loader;
+  tracked.load = async (...args: Parameters<Loader["load"]>) => {
+    try {
+      return await loader.load(...args);
+    } catch (err) {
+      failures.push(errorMessage(err));
+      throw err;
+    }
+  };
+  return tracked;
 }
