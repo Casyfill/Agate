@@ -44,8 +44,6 @@ If your notes have properties, you already have the data. A few ideas, from sens
 
 In Obsidian: Settings → Community plugins → Browse, search for **Agate**, install and enable it. Needs Obsidian 1.13 or later with the core Bases plugin on. Works on desktop and mobile.
 
-To try a beta, add `Casyfill/Agate` in [BRAT](https://github.com/TfTHacker/obsidian42-brat).
-
 Then follow the [quickstart](https://casyfill.github.io/Agate/quickstart.html): 26 book notes to a bookshelf chart in about fifteen minutes. The [guide](docs/guide.md) covers everything else.
 
 ## Network use
