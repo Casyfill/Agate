@@ -18,9 +18,17 @@ Charts that grow out of your notes. Agate is an Obsidian plugin that draws [Vega
 
 ## Install
 
-Agate is not in the community plugin directory yet. Until it is, install it with [BRAT](https://github.com/TfTHacker/obsidian42-brat) (add `Casyfill/Agate`), or copy `main.js`, `manifest.json` and `styles.css` from the [latest release](https://github.com/Casyfill/Agate/releases) into `.obsidian/plugins/agate/` and enable Agate. Needs Obsidian 1.13 or later with the core Bases plugin on.
+In Obsidian: Settings → Community plugins → Browse, search for **Agate**, install and enable it. Needs Obsidian 1.13 or later with the core Bases plugin on. Before the listing is live, or to try a pre-release, install it with [BRAT](https://github.com/TfTHacker/obsidian42-brat) (add `Casyfill/Agate`), or copy `main.js`, `manifest.json` and `styles.css` from the [latest release](https://github.com/Casyfill/Agate/releases) into `.obsidian/plugins/agate/`.
 
 Then follow the [quickstart](https://casyfill.github.io/Agate/quickstart.html): 26 book notes to a bookshelf chart in about fifteen minutes. The [guide](docs/guide.md) covers everything else.
+
+## Network use
+
+Agate makes no network requests by default. Everything it draws comes from your vault.
+
+- **Load remote data** (off by default) lets a spec load data files and images from `http(s)` URLs: remote CSV or JSON, map tiles under a route, pictures in image marks. Agate fetches only the URLs written in your specs, from whichever service they name; it sends no other data and has no telemetry.
+- **API keys** (Advanced settings) are kept in Obsidian's secret storage and sent only to the one host you allow for each key.
+- Images inside tooltips are an exception: vega-tooltip shows them as ordinary `<img>` elements, so a spec that puts an image URL in a tooltip loads it on hover even with Load remote data off.
 
 ## Making charts
 
