@@ -4,6 +4,14 @@ All notable changes to Agate. The format follows [Keep a Changelog](https://keep
 
 ## [Unreleased]
 
+## [0.4.3] - 2026-10-31
+
+### Changed
+
+- US spelling throughout: recipe labels read "Color by", and the LLM prompts and docs say color, gray and visualize. Recipe parameter keys are unchanged, so saved charts keep working.
+- The plugin description in `manifest.json` names what Agate draws, from bar charts to maps and networks.
+- Docs: a rewritten README (use cases, extras, install from the community directory), a reworked [Why Agate](docs/why-agate.md) with an up-to-date comparison with other plugins, and draft banners dropped from the guide.
+
 ## [0.4.2] - 2026-10-30
 
 ### Changed

@@ -28,8 +28,8 @@ If your notes have properties, you already have the data. A few ideas, from sens
 ## What it does
 
 - **Chart as a Bases view.** Add an **Agate chart** view to any base. It appears wherever a base does: its own tab, embedded in a note (`![[Books.base#Ratings]]`), the sidebar, Canvas. The Bases toolbar's filter, sort and grouping drive the chart.
-- **Charts in a note**, with an ```` ```agate ```` or ```` ```vega ```` code blocks: a spec file, rows from a base, or a self-contained spec.
-- **Full suppport for Vega and Vega-Lite specs**, so no option list to outgrow: maps and globes, networks of linked notes, folder sunbursts, timelines, sankeys, linked dashboards.
+- **Charts in a note**, with an ```` ```agate ```` code block (or ```` ```vega ````, once enabled in settings): a spec file, rows from a base, or a self-contained spec.
+- **Full support for Vega and Vega-Lite specs**, so no option list to outgrow: maps and globes, networks of linked notes, folder sunbursts, timelines, sankeys, linked dashboards.
 - **Extras on top of plain Vega:**
   - **Per-note data.** A note can point to its own CSV, JSON or URL, e.g. a time series for each stock or city note ([guide](docs/guide.md#6-per-note-external-data)).
   - **Your vault as data.** Links between notes and the folder tree are datasets, so you can draw link graphs, arc diagrams, sunbursts and treemaps that follow the base's filter ([guide](docs/guide.md#10-gallery-structure-maps-flows)).
@@ -38,7 +38,7 @@ If your notes have properties, you already have the data. A few ideas, from sens
   - **Map tiles under your marks**, with API keys kept in Obsidian's secret storage ([guide](docs/guide.md#basemaps-under-a-route)).
   - **Hatched and dotted fills** for print-style charts ([guide](docs/guide.md#textures-hatching-and-dots-svg-only)).
 - **Looks like your vault:** the `obsidian` theme follows your Obsidian theme and light/dark mode; Vega's stock themes and your own theme files are there too.
-- **Built with LLMs in mind**. Everything can be bult manually. Or, you can leverage any LLM (all of them know vega stack) to create visualization - or tailor a custom theme; 
+- **Built with LLMs in mind.** Write everything by hand, or let an assistant do it: LLMs know Vega-Lite well, so any of them can create a chart or tailor a custom theme for you.
 
 ## Install
 
