@@ -3,7 +3,7 @@
   "name": "Agate",
   "version": "0.4.0",
   "minAppVersion": "1.13.0",
-  "description": "Vega and Vega-Lite charts over Obsidian Bases.",
+  "description": "Draw Vega and Vega-Lite charts from your Bases views and notes.",
   "author": "Philipp Kats",
   "authorUrl": "https://github.com/Casyfill",
   "isDesktopOnly": false
