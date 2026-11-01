@@ -1,13 +1,13 @@
 {
   "$schema": "https://vega.github.io/schema/vega/v6.json",
-  "description": "Beeswarm of daily notes: one dot per day on a timeline, rows by note.mood, colour by energy, size by hours slept. Dots never overlap (force layout). Click a dot to open that day.",
+  "description": "Beeswarm of daily notes: one dot per day on a timeline, rows by note.mood, color by energy, size by hours slept. Dots never overlap (force layout). Click a dot to open that day.",
   "usermeta": {
     "agate": {
       "open": "click",
       "recipe": {
         "id": "beeswarm",
         "name": "Beeswarm timeline",
-        "description": "One dot per note on a time axis, in rows by a property, never overlapping; colour and size from numbers. Built for daily notes with a mood or energy score.",
+        "description": "One dot per note on a time axis, in rows by a property, never overlapping; color and size from numbers. Built for daily notes with a mood or energy score.",
         "roles": {
           "date": {
             "label": "When",
@@ -32,7 +32,7 @@
             ]
           },
           "colour": {
-            "label": "Colour by (number)",
+            "label": "Color by (number)",
             "types": [
               "number"
             ],

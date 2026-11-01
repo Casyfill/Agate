@@ -3,7 +3,7 @@
   "name": "Agate",
   "version": "0.4.2",
   "minAppVersion": "1.13.0",
-  "description": "Draw Vega and Vega-Lite charts from your Bases views and notes.",
+  "description": "Visualize your notes and Bases with Vega and Vega-Lite, from simple bar charts to interactive maps, networks, and custom graphics.",
   "author": "Philipp Kats",
   "authorUrl": "https://github.com/Casyfill",
   "isDesktopOnly": false

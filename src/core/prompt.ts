@@ -76,7 +76,7 @@ export function buildChartPrompt(input: PromptInput): string {
 
 ## What I want
 
-<describe the chart here: what it should show, and anything about colours, size or interaction>
+<describe the chart here: what it should show, and anything about colors, size or interaction>
 
 ## Data
 
@@ -96,7 +96,7 @@ ${env ? environmentSection(env) : ""}## Rules
 
 - Prefer Vega-Lite v${vlMajor} ("$schema": "https://vega.github.io/schema/vega-lite/v${vlMajor}.json"); use Vega v${vgMajor} ("https://vega.github.io/schema/vega/v${vgMajor}.json") only for layouts Vega-Lite lacks (force, tree, partition, custom geo).
 - Leave out "width" for a single Vega-Lite view (it fills the pane); give facets and concats explicit widths. On a discrete y axis give marks room with a step height, e.g. "height": {"step": 40}.
-- Do not set "background" or colours for axes and text; the Obsidian theme supplies them.
+- Do not set "background" or colors for axes and text; the Obsidian theme supplies them.
 - Use "sort": null on a discrete axis to keep the Bases sort order.
 - Optional Agate extras go under "usermeta": {"agate": {...}}:
   - "open": "click" opens the note behind a clicked mark (marks whose datum has file.path);
@@ -105,8 +105,8 @@ ${env ? environmentSection(env) : ""}## Rules
   - "rowData": {"name": "series", "from": "note.data"} loads a CSV/JSON path or URL from that property for every note into dataset "series", each record carrying its note's file/note/formula fields and rowIndex;
   - "cells": "cells" adds the view's visible properties (one record per note and column, with display name and text) for table layouts with a chart column;
   - "output": "stats" shows the rows behind the first mark as big numbers in note text instead of a chart: each row needs "value" and "label" strings, optionally "note", "change" and "better": "down";
-  - "textures": {"hatch": {"orientation": "diagonal", "stroke": "#999", "background": "#eee"}} defines fill patterns used as "url(#hatch)" wherever a colour goes, scale ranges included (types "lines", "circles", "paths"; SVG renderer only).
-- A Vega signal or Vega-Lite param named "agateDark" with a plain "value" is set to true in dark mode; one named "agateColors" with an object "value" gets the theme's colours by role (text, muted, accent, red, yellow, blue, …), e.g. {"expr": "agateColors.accent"}.
+  - "textures": {"hatch": {"orientation": "diagonal", "stroke": "#999", "background": "#eee"}} defines fill patterns used as "url(#hatch)" wherever a color goes, scale ranges included (types "lines", "circles", "paths"; SVG renderer only).
+- A Vega signal or Vega-Lite param named "agateDark" with a plain "value" is set to true in dark mode; one named "agateColors" with an object "value" gets the theme's colors by role (text, muted, accent, red, yellow, blue, …), e.g. {"expr": "agateColors.accent"}.
 - Never put an API key in a URL: write {secret:name} (a lowercase name such as maptiler); the user stores the key in Agate's settings and allows that name for its host.
 
 Reply with the JSON spec only.`;
@@ -140,11 +140,11 @@ export function buildThemePrompt(input: ThemePromptInput): string {
 
 ## What I want
 
-<describe the look: mood, contrast, whether the background should be transparent or a colour, any fonts or accent to lean on>
+<describe the look: mood, contrast, whether the background should be transparent or a color, any fonts or accent to lean on>
 
 ## My Obsidian theme
 
-Match or tastefully complement these. Colours (role: value):
+Match or tastefully complement these. Colors (role: value):
 ${palette}
 
 Fonts: interface "${fonts.interface}", reading "${fonts.text}", monospace "${fonts.mono}"; base text size ${fonts.textSize}px.
@@ -163,12 +163,12 @@ ${overrides}
 }
 ## How Agate will use it
 
-I'll save your reply to the "Theme file" setting (\`${target}\`), where it applies to every chart in the vault. Unlike Agate's built-in dynamic \`obsidian\` theme, this file is a fixed snapshot: it will not re-derive from my theme when I switch light and dark, so pick colours that read on my background.
+I'll save your reply to the "Theme file" setting (\`${target}\`), where it applies to every chart in the vault. Unlike Agate's built-in dynamic \`obsidian\` theme, this file is a fixed snapshot: it will not re-derive from my theme when I switch light and dark, so pick colors that read on my background.
 
 ## Rules
 
 - Output a single Vega \`config\` object valid for Vega v${vgMajor}. No \`$schema\`, \`data\`, \`marks\` or top-level chart keys.
-- Set \`background\` (use "transparent" to sit on the Obsidian pane, or a colour if the look needs one).
+- Set \`background\` (use "transparent" to sit on the Obsidian pane, or a color if the look needs one).
 - Cover the usual keys: \`title\`, \`axis\` (labelColor, titleColor, domainColor, tickColor, gridColor, labelFont, titleFont, and label/title font sizes), \`legend\`, \`header\`, \`view\` (stroke "transparent"), \`mark\` (color), \`text\` (color), and \`range.category\` as an array of distinct, legible hues.
 - Prefer the \`font\` keys over hard-coding one weight; keep sizes proportional to the base text size above.
 

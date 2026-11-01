@@ -1,6 +1,6 @@
 {
   "$schema": "https://vega.github.io/schema/vega/v6.json",
-  "description": "DaisyDisk-style sunburst of the vault: rings are folder levels, arc length is bytes, hue follows the angle so a folder's contents share its colour and deeper rings get lighter. Click a folder to zoom in, click the centre to go up. Folder hierarchy from Agate's tree dataset (usermeta.agate.tree).",
+  "description": "DaisyDisk-style sunburst of the vault: rings are folder levels, arc length is bytes, hue follows the angle so a folder's contents share its color and deeper rings get lighter. Click a folder to zoom in, click the center to go up. Folder hierarchy from Agate's tree dataset (usermeta.agate.tree).",
   "usermeta": {
     "agate": {
       "tree": "tree",
@@ -37,7 +37,7 @@
     {
       "name": "maxDepth",
       "value": 4,
-      "description": "Rings shown below the centre.",
+      "description": "Rings shown below the center.",
       "bind": {
         "input": "range",
         "min": 1,

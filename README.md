@@ -2,23 +2,47 @@
 
 # Agate
 
-Charts that grow out of your notes. Agate is an Obsidian plugin that draws [Vega](https://vega.github.io/vega/) and [Vega-Lite](https://vega.github.io/vega-lite/) charts from [Bases](https://help.obsidian.md/bases): a base picks the notes, their properties become the data, and the chart follows as you add notes, change a value or filter the view.
+Agate brings [Vega](https://vega.github.io/vega/) and [Vega-Lite](https://vega.github.io/vega-lite/) visualizations to Obsidian. Create charts from Bases views that follow your notes, filters, and groups, or define your own visualizations in an agate code block.
+
+Start with a ready-made chart, then customize it as needed—from simple comparisons to maps, timelines, networks, and dashboards.
 
 ![A base of battle notes next to Minard's 1812 map drawn from them](docs/site/hero.jpg)
 
 **[Website](https://casyfill.github.io/Agate/) · [Quickstart](https://casyfill.github.io/Agate/quickstart.html) · [Gallery](https://casyfill.github.io/Agate/gallery.html) · [Guide](docs/guide.md) · [Changelog](CHANGELOG.md)**
 
+## What would you chart?
+
+If your notes have properties, you already have the data. A few ideas, from sensible to slightly obsessive:
+
+- **Learning.** One note per practice problem, with a score before and after reading up. See which topics are getting better and which you keep avoiding.
+- **Board games.** Which games on the shelf actually get played, how long a "quick game" really takes, and who keeps winning.
+- **Reading.** Pages per month, ratings by genre, and the books you started in March and never finished.
+- **Work and side projects.** Which meetings eat your Tuesdays, and how many side projects are "in progress" (all of them).
+- **Recipes.** Cooking time against how often you actually make a dish, and the cuisine you keep saving but never cook.
+- **D&D campaigns.** Sessions, NPCs and factions as linked notes: who knows whom, who betrayed whom, and the party's route across the map.
+- **Travel.** Give place notes coordinates and link them from trip notes, and your trips become routes on a globe you can spin ([gallery](https://casyfill.github.io/Agate/gallery.html)).
+- **History.** Battle notes with dates, places and outcomes, drawn as Minard's map of Napoleon's 1812 campaign. That's the picture above.
+- **Habits and mood.** A daily note with a few numbers adds up to a year of streaks and slumps.
+- **The vault itself.** How your notes link to each other, and which folders take up the most space.
+
 ## What it does
 
-- **A chart is a Bases view.** Add an **Agate chart** view to any base. It appears wherever a base does: its own tab, embedded in a note (`![[Books.base#Ratings]]`), the sidebar, Canvas. The Bases toolbar's filter, sort and grouping drive the chart.
-- **Or a chart in a note**, with an ```` ```agate ```` code block: a spec file, rows from a base, or a self-contained spec.
-- **Full Vega and Vega-Lite**, so no option list to outgrow: maps and globes, networks of linked notes, folder sunbursts, timelines, sankeys, linked dashboards.
-- **More than a plain spec gets:** each note's own CSV or URL as data, the links between notes and the folder tree as datasets, headline numbers as note text, hatching and dot textures, map tiles under a route (with API keys kept in Obsidian's secret storage), click a mark to open its note.
+- **Chart as a Bases view.** Add an **Agate chart** view to any base. It appears wherever a base does: its own tab, embedded in a note (`![[Books.base#Ratings]]`), the sidebar, Canvas. The Bases toolbar's filter, sort and grouping drive the chart.
+- **Charts in a note**, with an ```` ```agate ```` code block (or ```` ```vega ````, once enabled in settings): a spec file, rows from a base, or a self-contained spec.
+- **Full support for Vega and Vega-Lite specs**, so no option list to outgrow: maps and globes, networks of linked notes, folder sunbursts, timelines, sankeys, linked dashboards.
+- **Extras on top of plain Vega:**
+  - **Per-note data.** A note can point to its own CSV, JSON or URL, e.g. a time series for each stock or city note ([guide](docs/guide.md#6-per-note-external-data)).
+  - **Your vault as data.** Links between notes and the folder tree are datasets, so you can draw link graphs, arc diagrams, sunbursts and treemaps that follow the base's filter ([guide](docs/guide.md#10-gallery-structure-maps-flows)).
+  - **Click to open.** Clicking a point, bar or node opens its note.
+  - **Big numbers.** Live totals and averages shown as note text instead of a chart ([guide](docs/guide.md#11-experimental-big-numbers-as-note-text)).
+  - **Map tiles under your marks**, with API keys kept in Obsidian's secret storage ([guide](docs/guide.md#basemaps-under-a-route)).
+  - **Hatched and dotted fills** for print-style charts ([guide](docs/guide.md#textures-hatching-and-dots-svg-only)).
 - **Looks like your vault:** the `obsidian` theme follows your Obsidian theme and light/dark mode; Vega's stock themes and your own theme files are there too.
+- **Built with LLMs in mind.** Write everything by hand, or let an assistant do it: LLMs know Vega-Lite well, so any of them can create a chart or tailor a custom theme for you.
 
 ## Install
 
-In Obsidian: Settings → Community plugins → Browse, search for **Agate**, install and enable it. Needs Obsidian 1.13 or later with the core Bases plugin on. Before the listing is live, or to try a pre-release, install it with [BRAT](https://github.com/TfTHacker/obsidian42-brat) (add `Casyfill/Agate`), or copy `main.js`, `manifest.json` and `styles.css` from the [latest release](https://github.com/Casyfill/Agate/releases) into `.obsidian/plugins/agate/`.
+In Obsidian: Settings → Community plugins → Browse, search for **Agate**, install and enable it. Needs Obsidian 1.13 or later with the core Bases plugin on. Works on desktop and mobile.
 
 Then follow the [quickstart](https://casyfill.github.io/Agate/quickstart.html): 26 book notes to a bookshelf chart in about fifteen minutes. The [guide](docs/guide.md) covers everything else.
 

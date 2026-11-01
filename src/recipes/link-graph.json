@@ -1,6 +1,6 @@
 {
   "$schema": "https://vega.github.io/schema/vega/v6.json",
-  "description": "Force-directed graph of the notes in the base and the links between them (Agate's edges dataset). Colour is note.topic, size is links in and out. Hover a note to light up its neighbours; click to open it.",
+  "description": "Force-directed graph of the notes in the base and the links between them (Agate's edges dataset). Color is note.topic, size is links in and out. Hover a note to light up its neighbors; click to open it.",
   "usermeta": {
     "agate": {
       "edges": "edges",
@@ -8,10 +8,10 @@
       "recipe": {
         "id": "graph",
         "name": "Link graph",
-        "description": "The notes of the base and the links between them, force-directed. Size is links in and out; colour is a property you pick.",
+        "description": "The notes of the base and the links between them, force-directed. Size is links in and out; color is a property you pick.",
         "roles": {
           "colour": {
-            "label": "Colour by",
+            "label": "Color by",
             "types": [
               "text",
               "boolean"

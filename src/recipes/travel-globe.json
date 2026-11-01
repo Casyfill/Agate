@@ -64,7 +64,7 @@
             ]
           },
           "group": {
-            "label": "Colour routes by",
+            "label": "Color routes by",
             "types": [
               "text"
             ],
