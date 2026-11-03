@@ -4,6 +4,17 @@ All notable changes to Agate. The format follows [Keep a Changelog](https://keep
 
 ## [Unreleased]
 
+### Added
+
+- `auto` theme, the new default: the `obsidian` theme's fonts, text and grid, with a category palette made for the active Obsidian theme. Palettes for Nord, Catppuccin (Latte, Frappé, Macchiato, Mocha; also through AnuPpuccin), Gruvbox, Everforest, Rosé Pine (Dawn, Main, Moon), Solarized, Dracula, Tokyo Night, Atom and Flexoki, light and dark, matched by theme name or by Minimal's color scheme. Every palette is checked for contrast on its theme's background and for color-blind separation between neighboring series.
+- `eink` theme for e-ink readers and grayscale screens: four ink tones, ink outlines on filled marks, per-category point shapes, dotted grids, no transparency; colors follow the theme's text and background, so dark and sepia setups work. `auto` picks it for the Ink, MonoGray and Borozdov themes.
+- The default theme and unrecognized themes get a toned-down version of Obsidian's named colors under `auto`, led by the hue closest to the accent.
+
+### Changed
+
+- Vaults still on the old default theme (`obsidian`) move to `auto` once. Pick `obsidian` again in settings to keep the theme's named colors as they are.
+- The `obsidian` theme drops near-identical colors from its category palette, not only exact repeats, so the default theme's accent and purple no longer both appear.
+
 ## [0.4.3] - 2026-10-31
 
 ### Changed

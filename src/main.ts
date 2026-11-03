@@ -6,7 +6,8 @@ import { version as vegaLiteVersion } from "vega-lite";
 import { version as vegaEmbedVersion } from "vega-embed";
 import { AgateSettingTab, DEFAULT_SETTINGS, type AgateSettings } from "./settings";
 import { createLogger, errorMessage, type Logger } from "./util/log";
-import { builtinThemes, composeConfig, materialize, themeColors, themeFonts } from "./core/theme";
+import { builtinThemes, composeConfig, domThemeContext, materialize, themeColors, themeFonts } from "./core/theme";
+import type { ResolvedPalette, ThemeContext } from "./core/palettes";
 import { createVaultLoader, parseSecretHosts } from "./core/loader";
 import { openSpecFile } from "./ui/open-spec";
 import { SpecFileModal } from "./ui/spec-file-modal";
@@ -36,7 +37,11 @@ export default class AgatePlugin extends Plugin {
   api!: AgateAPI;
 
   /** Registries fed by settings and by the API (ADR-0001 D7). */
-  readonly themes: Map<string, ThemeSource> = builtinThemes();
+  readonly themes: Map<string, ThemeSource> = builtinThemes(
+    () => this.themeContext(),
+    (p) => this.notePalette(p),
+  );
+  private lastPalette = "";
   readonly schemes: Map<string, DataSchemeProvider> = new Map();
   readonly preprocessors: SpecPreprocessor[] = [];
 
@@ -167,6 +172,10 @@ export default class AgatePlugin extends Plugin {
   async loadSettings(): Promise<void> {
     const stored = (await this.loadData()) as Partial<AgateSettings> | null;
     this.settings = { ...DEFAULT_SETTINGS, ...(stored ?? {}) };
+    // 0.5.0 made `auto` the default theme. Settings files store every key, so a vault that never
+    // touched the theme says "obsidian"; move those over once. Picking obsidian again sticks.
+    if (stored && (stored.settingsVersion ?? 1) < 2 && stored.theme === "obsidian") this.settings.theme = "auto";
+    this.settings.settingsVersion = DEFAULT_SETTINGS.settingsVersion;
     // Before 0.3.1 keys came from environment variables; that setting is gone.
     delete (this.settings as Partial<AgateSettings> & { envHosts?: string }).envHosts;
   }
@@ -198,6 +207,20 @@ export default class AgatePlugin extends Plugin {
 
   // --- shared chart services (used by both surfaces and the API) ----------
 
+  /** Active community theme ("" for the default theme), body classes and mode, for the `auto` theme. */
+  themeContext(): ThemeContext {
+    // Neither is in Obsidian's public API; both have held the theme name for years. Missing → default palette.
+    const app = this.app as unknown as { customCss?: { theme?: unknown }; vault: { getConfig?: (key: string) => unknown } };
+    const raw = app.customCss?.theme ?? app.vault.getConfig?.("cssTheme");
+    return { ...domThemeContext(), name: typeof raw === "string" ? raw : "" };
+  }
+
+  private notePalette(p: ResolvedPalette): void {
+    if (p.variant === this.lastPalette) return;
+    this.lastPalette = p.variant;
+    this.log.debug(`auto theme palette: ${p.variant}`);
+  }
+
   themeNames(): string[] {
     return [...this.themes.keys()];
   }
@@ -209,7 +232,7 @@ export default class AgatePlugin extends Plugin {
 
   /** Theme, then vault config overrides, then the vault theme file. */
   async resolveConfig(themeName: string): Promise<Config> {
-    const theme = materialize(this.themes.get(themeName) ?? this.themes.get("obsidian"));
+    const theme = materialize(this.themes.get(themeName) ?? this.themes.get("auto"));
     let overrides: Config | undefined;
     if (this.settings.configOverrides.trim()) {
       try {

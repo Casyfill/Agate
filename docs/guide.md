@@ -106,7 +106,7 @@ Things that trip people up:
 
 - Set **Default spec folder** (Settings → Agate) to `charts`. Then `spec: ratings.vl.json` finds `charts/ratings.vl.json` from any note.
 - Write one spec, use it in many views. The same file can back a filtered view, a grouped one and an embed in a daily note; Bases handles the differences.
-- Set the look once: the `obsidian` theme follows your Obsidian theme and light/dark mode. Use **Config overrides** for vault-wide tweaks (fonts, a mark color) instead of repeating them in every spec.
+- Set the look once: the default `auto` theme follows your Obsidian theme and light/dark mode. Use **Config overrides** for vault-wide tweaks (fonts, a mark color) instead of repeating them in every spec.
 - Per-chart overrides (theme, renderer, interactive, export menu) live in the view options of a base, or as envelope keys in a block.
 - In Canvas, dragging the card beats dragging inside the chart. Prefer hover tooltips over brushes there, or set `interactive: false` for a static picture.
 - Turn on **Export menu** when you want SVG/PNG out of a chart.
@@ -161,7 +161,11 @@ Add `"cells": "cells"` next to `rowData` and Agate also hands the spec the view'
 
 ## 8. Theme, dark mode and color
 
-- Theme `obsidian` derives fonts, text colors, gridlines and a category palette from your Obsidian theme, and redraws when you switch light/dark.
+Setup, every built-in theme, and which Obsidian themes `auto` recognizes: [Themes](themes.md).
+
+- Theme `auto`, the default, reads fonts, text colors and gridlines from your Obsidian theme and picks a category palette made for it: Nord, Catppuccin (all four flavors, also through AnuPpuccin), Gruvbox, Everforest, Rosé Pine (Dawn, Main, Moon), Solarized, Dracula, Tokyo Night, Atom and Flexoki, matched by theme name or, in Minimal, by the color scheme you picked in Style Settings. Each palette uses the theme's own colors, stepped where one is too faint for its background, and ordered so neighboring series stay apart for color-blind readers. The default theme and any other theme get a toned-down version of Obsidian's named colors, starting with the hue closest to your accent. Charts redraw when you switch theme or light/dark.
+- Theme `obsidian` derives fonts, text colors, gridlines and a category palette from your Obsidian theme's own named colors (`--color-red` and friends), as they are. Pick it when your theme sets those colors with care and `auto` does not know it.
+- Theme `eink` is for e-ink readers and grayscale screens, where hue carries nothing and mid grays and transparency get dithered into fuzz. It draws everything in your theme's ink (its text color) on its paper (its background): category colors become four gray tones ordered so neighbors differ most, bars, slices and areas get ink outlines so even the lightest tone keeps an edge, points are filled and take a different shape per category, lines are 2px, grids are dotted, and nothing is transparent. Four tones is what e-ink panels keep apart reliably; for more series add a `shape` or `strokeDash` encoding or facet the chart. `auto` uses it for the [Ink](https://community.obsidian.md/themes/ink) e-ink theme and the grayscale MonoGray and Borozdov themes.
 - Theme `instrument` is `obsidian` redrawn as a monochrome readout, after the demo vault's hike dashboard: the theme's monospace font, ink-colored marks and small filled dots, no axis lines or ticks, dotted grids, numeric y labels inside the plot, axis titles as small labels above each plot, and the accent for selections. It suits dense time series and small multiples; pick it per chart (the view's **Theme** option) or vault-wide.
 - The other themes are Vega's stock themes, most with a fixed white background.
 - A spec that declares a signal (Vega) or param (Vega-Lite) named `agateDark` with a plain `value` gets `true` in dark mode. The horizon examples use it to reverse their color ramp so small changes stay close to the background. In the Vega editor the spec's own default applies.
@@ -280,7 +284,7 @@ Two things to know. In Vega-Lite's `aggregate`, a field written `note.rating` is
 | Bars in alphabetical order | Missing `"sort": null` on the discrete axis. |
 | "Remote URL blocked" | Turn on **Load remote data**. |
 | `net::ERR_…` in a per-row error | Network or proxy problem; open the URL from the message in a browser. |
-| White box in dark mode | The vault theme is a stock Vega theme; switch to `obsidian`. |
+| White box in dark mode | The vault theme is a stock Vega theme; switch to `auto`. |
 | Chart did not pick up a spec edit | Inline specs are not watched; move it to a file, or reopen the note. |
 
 ## 13. Further reading

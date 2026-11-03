@@ -163,7 +163,7 @@ ${overrides}
 }
 ## How Agate will use it
 
-I'll save your reply to the "Theme file" setting (\`${target}\`), where it applies to every chart in the vault. Unlike Agate's built-in dynamic \`obsidian\` theme, this file is a fixed snapshot: it will not re-derive from my theme when I switch light and dark, so pick colors that read on my background.
+I'll save your reply to the "Theme file" setting (\`${target}\`), where it applies to every chart in the vault. Unlike Agate's built-in dynamic \`auto\` and \`obsidian\` themes, this file is a fixed snapshot: it will not re-derive from my theme when I switch light and dark, so pick colors that read on my background.
 
 ## Rules
 

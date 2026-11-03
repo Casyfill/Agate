@@ -37,7 +37,7 @@ If your notes have properties, you already have the data. A few ideas, from sens
   - **Big numbers.** Live totals and averages shown as note text instead of a chart ([guide](docs/guide.md#11-experimental-big-numbers-as-note-text)).
   - **Map tiles under your marks**, with API keys kept in Obsidian's secret storage ([guide](docs/guide.md#basemaps-under-a-route)).
   - **Hatched and dotted fills** for print-style charts ([guide](docs/guide.md#textures-hatching-and-dots-svg-only)).
-- **Looks like your vault:** the `obsidian` theme follows your Obsidian theme and light/dark mode; Vega's stock themes and your own theme files are there too.
+- **Looks like your vault:** the `auto` theme follows your Obsidian theme and light/dark mode, with chart colors made for popular themes (Minimal's color schemes, Catppuccin, Nord, Gruvbox and more, see [Themes](docs/themes.md)); Vega's stock themes and your own theme files are there too.
 - **Built with LLMs in mind.** Write everything by hand, or let an assistant do it: LLMs know Vega-Lite well, so any of them can create a chart or tailor a custom theme for you.
 
 ## Install

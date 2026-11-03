@@ -4,7 +4,9 @@
 
 The theme is chosen outside the spec: vault-wide in Settings → Agate → Theme, or per chart with the view's **Theme** option (or `theme:` in a code block). Leave theme choices to the user; write specs that work in any theme.
 
-- `obsidian` (default): reads the Obsidian theme's fonts, text colors, grid and a category palette, and redraws on light/dark switch.
+- `auto` (default): the `obsidian` theme's fonts, text colors and grid, with a category palette made for the active Obsidian theme (Nord, Catppuccin, Gruvbox, Everforest, Rosé Pine, Solarized, Dracula, Tokyo Night, Atom, Flexoki, and Minimal's color schemes), or a calm default led by the accent for the default and other themes. Redraws on light/dark switch.
+- `obsidian`: reads the Obsidian theme's fonts, text colors, grid and uses its named colors as the category palette, as they are.
+- `eink`: for e-ink and grayscale screens. Everything in the theme's ink on its paper: four gray tones, ink outlines on bars, slices and areas, filled points with distinct shapes per category, dotted grids, no opacity. With more than four series add a `shape` or `strokeDash` encoding, or facet. `auto` picks it for the Ink, MonoGray and Borozdov themes.
 - `instrument`: `obsidian` redrawn as a monochrome readout (monospace, ink-colored marks and small dots, dotted grids, labels inside the plot). Suits dense time series and small multiples.
 - Vega's stock themes: `excel`, `fivethirtyeight`, `ggplot2`, `googlecharts`, `latimes`, `powerbi`, `quartz`, `urbaninstitute`, `vox`, `dark`, `carbonwhite`, `carbong10`, `carbong90`, `carbong100`. Most have a fixed white background.
 - A **theme file**: a Vega `config` object (JSON or YAML) in the vault, set in Settings → Agate → Theme file, merged over the chosen theme. Example: `demo-vault/charts/themes/du-bois.json`. **Config overrides** in settings take a small config for one or two tweaks.

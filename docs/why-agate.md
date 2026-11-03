@@ -48,7 +48,7 @@ The University of Washington's Interactive Data Lab started Vega in 2013, and th
 A spec keeps three things separate: where the rows come from (`data`), how fields turn into marks (`mark`, `encoding`, `transform`), and how it all looks (`config`, or a theme). Broadly, it's the split between HTML, JavaScript and CSS on a web page, and it means each part changes without touching the others:
 
 - Same chart, different data: point a spec at another base and it draws your trips instead of your books.
-- Same chart, different look: Agate's `obsidian` theme restyles every chart to match your vault and its light or dark mode; switch to one of Vega's stock themes, or your own, in one setting.
+- Same chart, different look: Agate's `auto` theme restyles every chart to match your vault and its light or dark mode; switch to one of Vega's stock themes, or your own, in one setting.
 - Same data, different chart: a bar chart becomes a dot plot or a heatmap by changing the mark and an encoding or two.
 
 ### Plain files that assistants already know

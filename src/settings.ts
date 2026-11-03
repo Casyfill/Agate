@@ -6,8 +6,8 @@ import { EDITOR_PLUGIN, editorPluginEnabled, opensInObsidian, setShowsAllFiles, 
 
 /** Vault-wide defaults (ADR-0001 D11). Per-chart options override these. */
 export interface AgateSettings {
-  settingsVersion: 1;
-  /** Theme name: `obsidian` (dynamic), a vega-themes name, or one registered through the API. */
+  settingsVersion: 2;
+  /** Theme name: `auto` or `obsidian` (dynamic), a vega-themes name, or one registered through the API. */
   theme: string;
   /** Vega `config` object as JSON or YAML text, merged over the theme. */
   configOverrides: string;
@@ -30,8 +30,8 @@ export interface AgateSettings {
 }
 
 export const DEFAULT_SETTINGS: AgateSettings = {
-  settingsVersion: 1,
-  theme: "obsidian",
+  settingsVersion: 2,
+  theme: "auto",
   configOverrides: "",
   themeFile: "",
   specFolder: "",
@@ -165,7 +165,7 @@ export class AgateSettingTab extends PluginSettingTab {
         items: [
           {
             name: "Theme",
-            desc: "\"obsidian\" follows the active Obsidian theme and light/dark mode. The others are static Vega themes.",
+            desc: "\"auto\" uses chart colors made for your Obsidian theme (Nord, Catppuccin, Gruvbox, Rosé Pine, Minimal's color schemes, …), or a calm default led by your accent color. \"obsidian\" takes the theme's own named colors as they are. \"eink\" draws in grays, outlines and shapes for e-ink and grayscale screens. All of these follow light/dark mode; the others are static Vega themes.",
             control: { type: "dropdown", key: "theme", options: themeOptions, defaultValue: DEFAULT_SETTINGS.theme },
           },
           {
