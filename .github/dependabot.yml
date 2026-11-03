@@ -1,0 +1,33 @@
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+    open-pull-requests-limit: 5
+    groups:
+      # vega, vega-lite, vega-embed and vega-themes move together; review them as one PR.
+      vega:
+        patterns: ["vega*"]
+      dev-tooling:
+        dependency-type: development
+        update-types: [minor, patch]
+    ignore:
+      # The obsidian typings track manifest.json minAppVersion; bump both by hand together.
+      - dependency-name: obsidian
+      # Node 22 is the CI and engines target; skip @types/node majors until that changes.
+      - dependency-name: "@types/node"
+        update-types: ["version-update:semver-major"]
+    commit-message:
+      prefix: deps
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: monthly
+    groups:
+      actions:
+        patterns: ["*"]
+    commit-message:
+      prefix: ci
