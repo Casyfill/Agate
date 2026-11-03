@@ -110,6 +110,17 @@ export default class AgatePlugin extends Plugin {
     });
 
     this.addCommand({
+      id: "paste-chart-spec",
+      name: "Paste chart spec from the clipboard (into the last chart view)",
+      checkCallback: (checking) => {
+        const view = this.lastBasesView?.deref();
+        if (!view) return false;
+        if (!checking) void view.pasteSpecFromClipboard();
+        return true;
+      },
+    });
+
+    this.addCommand({
       id: "edit-chart-spec",
       name: "Edit the spec of the last chart (beside it)",
       checkCallback: (checking) => {

@@ -21,7 +21,11 @@ import type { AnySpec, ChartOptions, ResolvedSpec } from "../core/types";
 import { CHART_VIEW_ICON_ID } from "../chart-icon";
 import { inferPropertyTypes, type PropertyInfo } from "../core/recipes";
 import { buildChartPrompt } from "../core/prompt";
-import { RecipeSuggestModal } from "../ui/recipe-modal";
+import { RecipeSuggestModal, writeUnique } from "../ui/recipe-modal";
+import { checkPastedSpec, pastedFileName, type PasteCheck } from "../core/paste";
+import { PasteSpecModal } from "../ui/paste-spec-modal";
+import { renderInspiration } from "../ui/inspiration";
+import { errorMessage } from "../util/log";
 import type { Row } from "../core/types";
 
 export const AGATE_VIEW_TYPE = "agate";
@@ -150,7 +154,46 @@ export class AgateBasesView extends BasesView {
       env: this.plugin.promptEnvironment(),
     });
     await navigator.clipboard.writeText(text);
-    new Notice("Agate: chart prompt copied. Paste it into your assistant, describe the chart, and save the reply as a spec file.");
+    new Notice("Agate: chart prompt copied. Paste it into your assistant, describe the chart at the end, then copy its reply and press the paste button.");
+  }
+
+  /**
+   * Save an assistant's reply as this view's spec (D13, the return trip of the prompt): read the
+   * clipboard, check the spec compiles and fits this base, write it to a new file in the spec
+   * folder and point the view at it. Anything doubtful, or an unreadable clipboard, opens a modal.
+   */
+  async pasteSpecFromClipboard(): Promise<void> {
+    let text = "";
+    try {
+      text = await navigator.clipboard.readText();
+    } catch {
+      /* mobile or denied: the modal takes a manual paste */
+    }
+    const { properties } = this.chartContext();
+    const propertyIds = properties.map((p) => p.id);
+    const datasetName = this.plugin.resolveOptions(this.readChartOptions()).dataset;
+    const folder = this.plugin.settings.specFolder || "charts";
+    const check = (t: string): PasteCheck => checkPastedSpec({ text: t, propertyIds, datasetName });
+    const suggestName = (c: PasteCheck): string => (c.spec && c.mode ? pastedFileName(c.spec, c.mode) : "chart.vl.json");
+    const save = async (spec: AnySpec, fileName: string): Promise<void> => {
+      try {
+        const path = await writeUnique(this.app, folder, fileName, JSON.stringify(spec, null, 2) + "\n");
+        const previous = this.specFilePath();
+        this.config.set("specFile", path);
+        this.scheduleRender();
+        new Notice(`Agate: saved ${path}${previous ? ` (${previous} is unchanged)` : ""}.`);
+      } catch (err) {
+        new Notice(`Agate: ${errorMessage(err)}`);
+        throw err;
+      }
+    };
+
+    const result = check(text);
+    if (result.spec && result.errors.length === 0 && result.warnings.length === 0) {
+      await save(result.spec, suggestName(result)).catch(() => undefined);
+      return;
+    }
+    new PasteSpecModal(this.app, text, { check, suggestName, folder, save }).open();
   }
 
   private specFilePath(): string | null {
@@ -281,10 +324,13 @@ export class AgateBasesView extends BasesView {
     recipe.addEventListener("click", () => void this.openRecipePicker());
     const prompt = actions.createEl("button", { text: "Copy prompt for an LLM" });
     prompt.addEventListener("click", () => void this.copyChartPrompt());
+    const paste = actions.createEl("button", { text: "Paste spec" });
+    paste.addEventListener("click", () => void this.pasteSpecFromClipboard());
     box.createDiv({
       cls: "agate-placeholder-hint",
-      text: "A recipe asks which of this base's properties to use and writes the spec for you. The prompt describes this base for any AI assistant. Or set a Spec file in the view options (chevron next to the view name).",
+      text: "A recipe asks which of this base's properties to use and writes the spec for you. The prompt describes this base for any AI assistant; copy its reply and use Paste spec to save it here. Or set a Spec file in the view options (chevron next to the view name).",
     });
+    renderInspiration(box);
   }
 }
 
