@@ -4,15 +4,45 @@ filters:
 views:
   - type: agate
     name: Cold score
-    order: [file.name, date, domain, topic, initial, readup, final]
+    order:
+      - file.name
+      - date
+      - domain
+      - topic
+      - initial
+      - readup
+      - final
     specFile: charts/interview-cold-score.vl.json
   - type: agate
     name: By domain
-    order: [file.name, date, domain, question_id, initial, final]
+    order:
+      - file.name
+      - date
+      - domain
+      - question_id
+      - initial
+      - final
     specFile: charts/interview-domains.vl.json
   - type: table
     name: Attempts
-    order: [file.name, date, domain, topic, level, initial, readup, final]
+    order:
+      - file.name
+      - date
+      - domain
+      - topic
+      - level
+      - initial
+      - readup
+      - final
     sort:
       - property: date
         direction: DESC
+  - type: agate
+    name: View
+    specFile: charts/chart.vl.json
+  - type: agate
+    name: View 2
+    specFile: charts/performance-by-domain.vl.json
+  - type: agate
+    name: View 3
+    specFile: charts/performance-by-domain 2.vl.json

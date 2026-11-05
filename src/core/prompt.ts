@@ -1,5 +1,6 @@
 import type { Row } from "./types";
 import type { PropertyInfo } from "./recipes";
+import { getProperty } from "./data/rowdata";
 
 /**
  * "Copy chart prompt" (ADR-0001 D13): everything an LLM needs to write a working Agate spec
@@ -42,6 +43,42 @@ function environmentSection(env: PromptEnvironment): string {
 `;
 }
 
+const TOP = 5;
+const short = (v: unknown): string => {
+  const t = typeof v === "string" ? v : JSON.stringify(v);
+  return JSON.stringify(t.length > 40 ? `${t.slice(0, 39)}…` : t);
+};
+
+/** One line on what a property holds across all rows: range for numbers and dates, most common values otherwise. */
+export function summarizeProperty(p: PropertyInfo, rows: Row[]): string {
+  const values = rows.map((r) => getProperty(r, p.id));
+  const present = values.filter((v) => v !== null && v !== undefined && v !== "");
+  const empty = values.length - present.length;
+  const parts: string[] = [];
+  if (p.type === "number") {
+    const nums = present.filter((v): v is number => typeof v === "number");
+    if (nums.length > 0) parts.push(`${nums.reduce((a, b) => Math.min(a, b))} to ${nums.reduce((a, b) => Math.max(a, b))}`);
+  } else if (p.type === "date") {
+    const dates = present.filter((v): v is string => typeof v === "string").sort();
+    if (dates.length > 0) parts.push(`${dates[0]} to ${dates[dates.length - 1]}`);
+  }
+  if (p.type !== "number" && p.type !== "date") {
+    const items = p.type === "list" ? present.flatMap((v): unknown[] => (Array.isArray(v) ? (v as unknown[]) : [v])) : present;
+    const counts = new Map<string, number>();
+    for (const v of items) {
+      const k = short(v);
+      counts.set(k, (counts.get(k) ?? 0) + 1);
+    }
+    if (counts.size > 0) {
+      const top = [...counts].sort((a, b) => b[1] - a[1]).slice(0, TOP);
+      const more = counts.size > TOP ? ", …" : "";
+      parts.push(`${counts.size} distinct${p.type === "list" ? " items" : ""}: ${top.map(([k, c]) => `${k} ×${c}`).join(", ")}${more}`);
+    }
+  }
+  if (empty > 0) parts.push(`empty in ${empty}`);
+  return parts.join("; ");
+}
+
 /** Keep only the properties that are listed, so a sample row is small and on topic. */
 function trimRow(row: Row, ids: Set<string>): Row {
   const out: Row = {};
@@ -69,7 +106,10 @@ export function buildChartPrompt(input: PromptInput): string {
   const n = Math.min(input.samples ?? 3, rows.length);
   const ids = new Set(properties.map((p) => p.id));
   const props = properties
-    .map((p) => `- \`${p.id}\` (${p.type ?? "empty"})${p.label && p.label !== p.id ? `, shown as "${p.label}"` : ""}`)
+    .map((p) => {
+      const summary = summarizeProperty(p, rows);
+      return `- \`${p.id}\` (${p.type ?? "empty"})${p.label && p.label !== p.id ? `, shown as "${p.label}"` : ""}${summary ? `: ${summary}` : ""}`;
+    })
     .join("\n");
   const samples = rows
     .slice(0, n)
@@ -102,13 +142,17 @@ Dates arrive as ISO strings (use "type": "temporal" or toDate()). Links arrive a
   - "textures": {"hatch": {"orientation": "diagonal", "stroke": "#999", "background": "#eee"}} defines fill patterns used as "url(#hatch)" wherever a color goes, scale ranges included (types "lines", "circles", "paths"; SVG renderer only).
 - A Vega signal or Vega-Lite param named "agateDark" with a plain "value" is set to true in dark mode; one named "agateColors" with an object "value" gets the theme's colors by role (text, muted, accent, red, yellow, blue, …), e.g. {"expr": "agateColors.accent"}.
 - Never put an API key in a URL: write {secret:name} (a lowercase name such as maptiler); the user stores the key in Agate's settings and allows that name for its host.
+- Known traps:
+  - In an arc chart that also encodes "radius", Vega-Lite stacks "theta" separately for each radius value, so wedges overlap. Compute the angles yourself (a window row_number as the end, minus one as the start), then use "theta" for the end and "theta2" for the start with "stack": null.
+  - Leave out "padAngle", "cornerRadius" and similar decoration unless I ask for it.
+- Before replying, check that every field you use is listed under "Properties in this base" (or made by your own transforms), and that the chart would draw marks with the sample rows.
 - Reply with one complete, valid JSON spec (no comments, no trailing commas) in a single \`\`\`json code block, and nothing else.
 
 ${env ? environmentSection(env) : ""}## My data
 
 Base view "${viewName}", ${rows.length} notes, as the dataset \`${datasetName}\`. Reference it as \`{"data": {"name": "${datasetName}"}}\` (Vega-Lite) or a data entry \`{"name": "${datasetName}"}\` (Vega).
 
-Properties in this base:
+Properties in this base, summarized over all ${rows.length} notes:
 ${props}
 
 Sample rows:
