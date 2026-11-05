@@ -1,0 +1,95 @@
+<!doctype html><html><head><meta charset="utf-8">
+<style>
+@font-face{font-family:Oswald;font-weight:500;src:url(node_modules/@fontsource/oswald/files/oswald-latin-500-normal.woff2)}
+@font-face{font-family:Oswald;font-weight:700;src:url(node_modules/@fontsource/oswald/files/oswald-latin-700-normal.woff2)}
+@font-face{font-family:Oswald;font-weight:400;src:url(node_modules/@fontsource/oswald/files/oswald-latin-400-normal.woff2)}
+@font-face{font-family:Barlow Condensed;font-weight:500;src:url(node_modules/@fontsource/barlow-condensed/files/barlow-condensed-latin-500-normal.woff2)}
+@font-face{font-family:Barlow Condensed;font-weight:700;src:url(node_modules/@fontsource/barlow-condensed/files/barlow-condensed-latin-700-normal.woff2)}
+@font-face{font-family:Plex Mono;font-weight:400;src:url(node_modules/@fontsource/ibm-plex-mono/files/ibm-plex-mono-latin-400-normal.woff2)}
+@font-face{font-family:Plex Mono;font-weight:600;src:url(node_modules/@fontsource/ibm-plex-mono/files/ibm-plex-mono-latin-600-normal.woff2)}
+@font-face{font-family:Space Grotesk;font-weight:400;src:url(node_modules/@fontsource/space-grotesk/files/space-grotesk-latin-400-normal.woff2)}
+@font-face{font-family:Space Grotesk;font-weight:700;src:url(node_modules/@fontsource/space-grotesk/files/space-grotesk-latin-700-normal.woff2)}
+body{margin:0;background:#fff}
+</style>
+<script src="node_modules/vega/build/vega.min.js"></script>
+<script src="node_modules/vega-lite/build/vega-lite.min.js"></script>
+<script src="data.js"></script></head><body><div id="out"></div>
+<script>
+const NAMES=['reading','plotted','plottedDark'];
+function hatchDefs(fg,bg){return `<defs>
+<pattern id="h1" width="5" height="5" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="5" height="5" fill="${bg}"/><line x1="0" y1="0" x2="0" y2="5" stroke="${fg}" stroke-width="1.1"/></pattern>
+<pattern id="h2" width="4" height="4" patternUnits="userSpaceOnUse"><rect width="4" height="4" fill="${bg}"/><circle cx="2" cy="2" r=".8" fill="${fg}"/></pattern>
+<pattern id="h3" width="5" height="5" patternUnits="userSpaceOnUse" patternTransform="rotate(-45)"><rect width="5" height="5" fill="${bg}"/><line x1="0" y1="0" x2="0" y2="5" stroke="${fg}" stroke-width="1.1"/></pattern>
+</defs>`;}
+async function go(){
+ await Promise.all(['500 12px Oswald','700 12px Oswald','500 12px "Barlow Condensed"','700 12px "Barlow Condensed"','400 12px "Plex Mono"','600 12px "Plex Mono"','400 12px "Space Grotesk"','700 12px "Space Grotesk"'].map(f=>document.fonts.load(f)));
+ const D=JSON.parse(JSON.stringify(window.DUBOIS)); delete D.$comment;
+ const duboisA=vega.mergeConfig(D,{font:'Oswald',title:{font:'Oswald',fontSize:21,fontWeight:500},axis:{labelFont:'Oswald',titleFont:'Oswald',labelFontSize:12,titleFontSize:12,titleFontWeight:500},legend:{labelFont:'Oswald',titleFont:'Oswald',labelFontSize:12,titleFontSize:12}});
+ const ink='#16110d';
+ const duboisB={background:'#e4d4b8',padding:18,font:'Barlow Condensed',view:{stroke:null},
+  title:{font:'Barlow Condensed',fontSize:24,fontWeight:700,color:ink,anchor:'middle',offset:14},
+  range:{category:['#d0142c',ink,'#f2b705','#1f5f8b','#2f7d4f','#c9a27a','#e98ca0']},
+  bar:{stroke:ink,strokeWidth:1,binSpacing:3},point:{filled:true,stroke:ink,strokeWidth:1,opacity:1,color:'#d0142c'},
+  axis:{domainColor:ink,domainWidth:2,grid:false,tickColor:ink,tickSize:5,labelColor:ink,labelFont:'Barlow Condensed',labelFontSize:13,labelFontWeight:500,titleColor:ink,titleFont:'Barlow Condensed',titleFontSize:13,titleFontWeight:700},
+  axisBand:{domain:false,ticks:false},
+  legend:{labelColor:ink,labelFont:'Barlow Condensed',labelFontSize:13,labelFontWeight:500,titleColor:ink,titleFont:'Barlow Condensed',titleFontSize:13,symbolType:'circle',symbolSize:150,symbolStrokeColor:ink,symbolStrokeWidth:1}};
+ const p538=['#30a2da','#fc4f30','#e5ae38','#6d904f','#8b8b8b','#b96db8','#ff9e27'];
+ const f538A={background:'#f0f0f0',padding:18,font:'Inter',view:{stroke:null},
+  title:{font:'Inter',fontSize:19,fontWeight:700,color:'#222',anchor:'start',offset:14},
+  range:{category:p538},bar:{binSpacing:2},point:{filled:true,opacity:.8,color:'#30a2da'},
+  axis:{domain:false,ticks:false,grid:true,gridColor:'#d4d4d4',labelColor:'#6b6b6b',labelFont:'Inter',labelFontSize:11,labelPadding:6,titleColor:'#333',titleFont:'Inter',titleFontSize:11,titleFontWeight:600},
+  axisX:{grid:false},legend:{labelColor:'#444',labelFont:'Inter',labelFontSize:11,titleColor:'#222',titleFont:'Inter',titleFontSize:11,titleFontWeight:700,symbolType:'circle',symbolSize:90}};
+ const f538B=vega.mergeConfig(f538A,{font:'Space Grotesk',title:{font:'Space Grotesk',fontSize:21},axis:{labelFont:'Space Grotesk',titleFont:'Space Grotesk',gridColor:'#cbcbcb'},legend:{labelFont:'Space Grotesk',titleFont:'Space Grotesk'},point:{opacity:.9}});
+ const M='Plex Mono';
+ function instr(bg,fg,mut,line,acc){return {background:bg,padding:20,font:M,view:{stroke:null},
+  title:{font:M,fontSize:12,fontWeight:600,color:fg,anchor:'start',offset:16},
+  range:{category:[acc,fg,'url(#h1)',mut,'url(#h2)','#55595f','url(#h3)']},
+  bar:{stroke:bg,strokeWidth:1.2,binSpacing:3},point:{filled:true,opacity:.9,color:fg,stroke:bg,strokeWidth:1},
+  axis:{domain:false,ticks:true,tickColor:mut,tickSize:3,grid:true,gridColor:line,gridWidth:.6,labelColor:mut,labelFont:M,labelFontSize:9.5,titleColor:fg,titleFont:M,titleFontSize:9.5,titleFontWeight:600},
+  axisX:{grid:false},axisY:{titleAngle:0,titleAlign:'left',titleBaseline:'bottom',titleX:0,titleY:-12},
+  legend:{labelColor:mut,labelFont:M,labelFontSize:9.5,titleColor:fg,titleFont:M,titleFontSize:9.5,symbolType:'square',symbolSize:90,symbolStrokeWidth:0}};}
+ const instrA=instr('#16181b','#e8e5de','#8e9196','#2b2f34','#ff5a1f');
+ const instrB=instr('#1b1d20','#ece8df','#9a9ca0','#303439','#f2b230');
+ const c={text:'#dadada',muted:'#a3a3a3',border:'#3f3f3f',accent:'#a882ff'};
+ const obsdark={background:'#1e1e1e',padding:14,font:'Inter',title:{color:c.text,font:'Inter',fontSize:15,anchor:'start'},
+  axis:{labelColor:c.muted,titleColor:c.text,domainColor:c.border,tickColor:c.border,gridColor:c.border,gridOpacity:.6,labelFont:'Inter',titleFont:'Inter',labelFontSize:11,titleFontSize:12},
+  legend:{labelColor:c.muted,titleColor:c.text,labelFont:'Inter',titleFont:'Inter',labelFontSize:11,titleFontSize:12},view:{stroke:'transparent'},mark:{color:c.accent},
+  range:{category:['#a882ff','#5aa7ff','#44cf6e','#e9973f','#fb464c','#53dfdd','#e0de71']}};
+ const reading={background:'#1e1e1e',padding:18,font:'Inter',view:{stroke:null},
+  title:{font:'Inter',fontSize:16,fontWeight:700,color:'#dadada',anchor:'start',offset:12},
+  range:{category:['#44cf6e','#027aff','url(#tx)','#e9973f','#a882ff','#fb464c','#53dfdd']},
+  bar:{cornerRadius:2,stroke:'#1e1e1e',strokeWidth:1.5},point:{filled:true,color:'#44cf6e',opacity:.9,stroke:'#1e1e1e',strokeWidth:1},
+  axis:{domain:false,ticks:false,grid:true,gridColor:'#363636',labelColor:'#a3a3a3',labelFont:'Inter',labelFontSize:11,titleColor:'#dadada',titleFont:'Inter',titleFontSize:11,titleFontWeight:600,labelPadding:6},
+  axisX:{grid:false},legend:{labelColor:'#a3a3a3',labelFont:'Inter',labelFontSize:11,titleColor:'#dadada',titleFont:'Inter',titleFontSize:11,symbolType:'square',symbolSize:120,symbolStrokeWidth:0}};
+ function plot(bg,ink,mut,grid){return {background:bg,padding:20,font:M,view:{stroke:null},
+  title:{font:M,fontSize:12,fontWeight:600,color:ink,anchor:'start',offset:16},
+  range:{category:[ink,'url(#q1)','url(#q2)','url(#q3)','url(#q4)','url(#q5)','url(#q6)']},
+  bar:{stroke:ink,strokeWidth:.9,binSpacing:3},point:{filled:false,stroke:ink,strokeWidth:1,opacity:1,color:ink},
+  axis:{domain:false,ticks:true,tickColor:mut,tickSize:3,grid:true,gridColor:grid,gridWidth:.6,labelColor:mut,labelFont:M,labelFontSize:9.5,titleColor:ink,titleFont:M,titleFontSize:9.5,titleFontWeight:600},
+  axisX:{grid:false},axisY:{titleAngle:0,titleAlign:'left',titleBaseline:'bottom',titleX:0,titleY:-12},
+  legend:{labelColor:mut,labelFont:M,labelFontSize:9.5,titleColor:ink,titleFont:M,titleFontSize:9.5,symbolType:'square',symbolSize:110,symbolStrokeColor:ink,symbolStrokeWidth:.9}};}
+ const plotted=plot('#fbf6f0','#e0654f','#c98a7c','#f0ddd4');
+ const plottedDark=plot('#1d1b1a','#f07a62','#b98577','#3a302d');
+ function qdefs(ink,bg){return `<defs>
+<pattern id="tx" width="7" height="7" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="7" height="7" fill="#2e2e2e"/><line x1="0" y1="0" x2="0" y2="7" stroke="#7a7a7a" stroke-width="1.4"/></pattern>
+<pattern id="q1" width="5" height="5" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="5" height="5" fill="${bg}"/><line x1="0" y1="0" x2="0" y2="5" stroke="${ink}" stroke-width=".9"/></pattern>
+<pattern id="q2" width="4.5" height="4.5" patternUnits="userSpaceOnUse"><rect width="4.5" height="4.5" fill="${bg}"/><circle cx="2.25" cy="2.25" r=".8" fill="${ink}"/></pattern>
+<pattern id="q3" width="5" height="5" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="5" height="5" fill="${bg}"/><path d="M0 0V5M0 0H5" stroke="${ink}" stroke-width=".7"/></pattern>
+<pattern id="q4" width="4" height="4" patternUnits="userSpaceOnUse"><rect width="4" height="4" fill="${bg}"/><line x1="0" y1="1" x2="4" y2="1" stroke="${ink}" stroke-width=".8"/></pattern>
+<pattern id="q5" width="5" height="5" patternUnits="userSpaceOnUse" patternTransform="rotate(-45)"><rect width="5" height="5" fill="${bg}"/><line x1="0" y1="0" x2="0" y2="5" stroke="${ink}" stroke-width=".9"/></pattern>
+<pattern id="q6" width="4" height="4" patternUnits="userSpaceOnUse"><rect width="4" height="4" fill="${bg}"/></pattern>
+</defs>`;}
+ const cfgs={reading,plotted,plottedDark};
+ window.CFGS=cfgs;
+ for(const n of NAMES){
+   const s=JSON.parse(JSON.stringify(window.SPEC)); delete s.$schema; s.config=cfgs[n]; s.data={values:window.ROWS};
+   const view=new vega.View(vega.parse(vegaLite.compile(s).spec),{renderer:'svg'});
+   let svg=await view.toSVG(2);
+   if(n==='plottedDark') svg=svg.replace(/(<svg[^>]*>)/,'$1'+qdefs('#f07a62','#1d1b1a')).replace(/#q(\d)/g,'#dq$1').replace(/id="q(\d)"/g,'id="dq$1"');
+   else svg=svg.replace(/(<svg[^>]*>)/,'$1'+qdefs('#e0654f','#fbf6f0'));
+   const d=document.createElement('div'); d.id=n; d.style.display='inline-block'; d.innerHTML=svg; document.getElementById('out').appendChild(d);
+ }
+ window.done=true;
+}
+go().catch(e=>{document.body.innerText=e.stack;window.done=true});
+</script></body></html>

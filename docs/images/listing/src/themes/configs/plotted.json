@@ -1,0 +1,77 @@
+{
+  "background": "#fbf6f0",
+  "padding": 20,
+  "font": "Plex Mono",
+  "view": {
+    "stroke": null
+  },
+  "title": {
+    "font": "Plex Mono",
+    "fontSize": 12,
+    "fontWeight": 600,
+    "color": "#e0654f",
+    "anchor": "start",
+    "offset": 16
+  },
+  "range": {
+    "category": [
+      "#e0654f",
+      "url(#q1)",
+      "url(#q2)",
+      "url(#q3)",
+      "url(#q4)",
+      "url(#q5)",
+      "url(#q6)"
+    ]
+  },
+  "bar": {
+    "stroke": "#e0654f",
+    "strokeWidth": 0.9,
+    "binSpacing": 3
+  },
+  "point": {
+    "filled": false,
+    "stroke": "#e0654f",
+    "strokeWidth": 1,
+    "opacity": 1,
+    "color": "#e0654f"
+  },
+  "axis": {
+    "domain": false,
+    "ticks": true,
+    "tickColor": "#c98a7c",
+    "tickSize": 3,
+    "grid": true,
+    "gridColor": "#f0ddd4",
+    "gridWidth": 0.6,
+    "labelColor": "#c98a7c",
+    "labelFont": "Plex Mono",
+    "labelFontSize": 9.5,
+    "titleColor": "#e0654f",
+    "titleFont": "Plex Mono",
+    "titleFontSize": 9.5,
+    "titleFontWeight": 600
+  },
+  "axisX": {
+    "grid": false
+  },
+  "axisY": {
+    "titleAngle": 0,
+    "titleAlign": "left",
+    "titleBaseline": "bottom",
+    "titleX": 0,
+    "titleY": -12
+  },
+  "legend": {
+    "labelColor": "#c98a7c",
+    "labelFont": "Plex Mono",
+    "labelFontSize": 9.5,
+    "titleColor": "#e0654f",
+    "titleFont": "Plex Mono",
+    "titleFontSize": 9.5,
+    "symbolType": "square",
+    "symbolSize": 110,
+    "symbolStrokeColor": "#e0654f",
+    "symbolStrokeWidth": 0.9
+  }
+}

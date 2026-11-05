@@ -1,0 +1,450 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><style>
+/* light palette from docs/site.css */
+:root{--bg:#e9ebef;--ink:#171b22;--mute:#5a6474;--line:#c0c7d1;
+  --rust:#b64325;--blue:#2357c6;--green:#2e7d4f;--red:#c8102e;--violet:#6a4bd6;--teal:#0f7f86}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#888}
+.s{width:1200px;height:800px;position:relative;overflow:hidden;background:var(--bg);margin-bottom:16px}
+.txt{position:absolute;left:68px;top:50%;transform:translateY(-50%);width:440px;z-index:5}
+h1{font:700 54px/1.13 "Inter Display";letter-spacing:-.022em;color:var(--ink)}
+.sub{margin-top:26px;font:400 20px/1.45 "Inter";color:var(--mute);width:400px}
+.rust{color:var(--rust)}.blue{color:var(--blue)}.green{color:var(--green)}.red{color:var(--red)}.violet{color:var(--violet)}.teal{color:var(--teal)}
+.shadow{box-shadow:0 0 0 1px var(--line),0 2px 4px rgba(20,30,50,.08),0 28px 60px -24px rgba(20,30,50,.35)}
+.win{position:absolute;overflow:hidden;border-radius:14px 0 0 0}
+.win img{display:block;width:100%}
+.card{position:absolute;overflow:hidden;border-radius:12px}
+.card img{display:block;width:100%}
+
+/* Obsidian note shell */
+.note{position:absolute;left:560px;top:96px;width:720px;bottom:0;border-radius:14px 0 0 0;overflow:hidden;font-family:Inter}
+.tabs{height:38px;display:flex;align-items:flex-end;padding-left:10px;gap:2px}
+.tab{height:30px;padding:0 16px;display:flex;align-items:center;font-size:12.5px;border-radius:8px 8px 0 0;white-space:nowrap}
+.crumb{height:34px;display:flex;align-items:center;justify-content:center;font-size:12px}
+.body{padding:22px 44px 0}
+.body h2{font:700 25px/1.2 Inter;margin-bottom:12px}
+.lede{font-style:italic;font-size:14.5px;margin-bottom:14px}
+.body p{font-size:13.5px;line-height:1.6;margin-bottom:16px}
+.tb{display:flex;align-items:center;font-size:12px;margin:8px 0 12px;gap:14px}
+.tb .v{font-weight:500}
+.tb .r{margin-left:auto;display:flex;gap:14px}
+.chart img{display:block;width:100%;border-radius:4px}
+.dark{background:#1e1e1e;color:#dadada}
+.dark .tabs{background:#141414}.dark .tab{color:#8a8a8a}.dark .tab.on{background:#1e1e1e;color:#dadada}
+.dark .crumb,.dark .lede,.dark .tb{color:#9a9a9a}.dark .body p{color:#c9c9c9}
+.light{background:#ffffff;color:#222}
+.light .tabs{background:#ececec}.light .tab{color:#6b6b6b}.light .tab.on{background:#fff;color:#222}
+.light .crumb,.light .lede,.light .tb{color:#6b6b6b}.light .body p{color:#333}
+code{font:12.5px 'DejaVu Sans Mono';background:rgba(127,127,127,.18);padding:1px 5px;border-radius:4px}
+
+/* slide-specific */
+#s7 h1{font-size:49px}
+#s1 .win{left:560px;top:96px;width:720px}
+#s2 .g{position:absolute;width:300px;height:240px;object-fit:cover;border-radius:12px}
+.foot{margin-top:30px;font:500 14px Inter;color:var(--mute);display:flex;align-items:center;gap:10px}
+.foot .dot{width:8px;height:8px;border-radius:50%;background:var(--rust)}
+#s3 .note .shot{display:block;width:100%}
+.th .c1{left:450px;top:78px;width:540px}
+.th .c2{left:495px;top:213px;width:540px}
+.th .c3{left:540px;top:348px;width:540px}
+.th .c4{left:585px;top:483px;width:540px}
+#s6 .note{background:#1f1e2c}#s6 .tabs{background:#16151f}#s6 .tab.on{background:#1f1e2c}
+.ph{border:1px dashed #4a4a4a;border-radius:10px;padding:34px 30px;text-align:center;margin-top:6px}
+.ph b{display:block;font-size:17px;color:#dadada;margin-bottom:18px}
+.btn{display:inline-block;font:500 13px Inter;padding:8px 14px;border-radius:7px;margin:0 5px;background:#363636;color:#dadada}
+.btn.cta{background:#7f6df2;color:#fff}
+.ph .hint{font-size:12px;color:#8a8a8a;line-height:1.55;margin:18px auto 0;max-width:470px}
+.prompt{position:absolute;left:640px;top:430px;width:520px;background:#fbfaf7;border-radius:12px;padding:20px 22px;font:11.5px/1.55 'DejaVu Sans Mono';color:#2a2a2a;white-space:pre-wrap;z-index:6}
+.prompt .h{color:#b64325;font-weight:700}
+.prompt .tag{position:absolute;top:-13px;left:18px;font:600 11px Inter;background:#171b22;color:#fff;padding:5px 10px;border-radius:20px;letter-spacing:.02em}
+.body h3{font:700 16px Inter;margin:16px 0 8px}
+.body ul{margin:0 0 0 18px;font-size:13.5px;line-height:1.65}
+.light .body ul{color:#333}
+.step{display:flex;align-items:center;gap:12px;margin:0 0 12px}
+.step .n{flex:none;width:22px;height:22px;border-radius:50%;background:#7f6df2;color:#fff;font:600 12px/22px Inter;text-align:center}
+.ph2{flex:1;border:1px dashed #4a4a4a;border-radius:10px;padding:14px 18px;display:flex;align-items:center;gap:10px}
+.ph2 b{font-size:14px;color:#dadada;margin-right:auto}
+.btn.hot{background:#2c2840;color:#e7e2ff;box-shadow:0 0 0 1.5px #7f6df2}
+.ask{flex:1;background:#262626;border-radius:10px;padding:12px 16px;font:italic 13px/1.45 Inter;color:#cfcfcf}
+.saved{font:12.5px 'DejaVu Sans Mono';color:#9a9a9a}.saved span{color:#c4b8ff}
+.toast{position:absolute;top:50px;right:22px;width:300px;background:#303030;color:#e6e6e6;font:12.5px/1.45 Inter;padding:12px 14px;border-radius:8px;box-shadow:0 8px 24px rgba(0,0,0,.45);border:1px solid #444}
+#s9 .note{width:590px;border-radius:14px 14px 0 0}
+.st{position:absolute;left:540px;width:610px}
+.st .n{position:absolute;left:0;top:0;width:24px;height:24px;border-radius:50%;background:var(--rust);color:#fff;font:600 12.5px/24px Inter;text-align:center}
+.st .lab{margin-left:36px;font:600 14px/24px Inter;color:var(--ink);margin-bottom:10px}
+.st .bar{margin-left:36px;background:#1e1e1e;border-radius:12px;padding:18px 20px;display:flex;gap:12px;box-shadow:0 0 0 1px var(--line),0 18px 40px -22px rgba(20,30,50,.4)}
+.bn{font:500 13.5px Inter;padding:9px 16px;border-radius:8px;background:#363636;color:#dadada}
+.bn.hot{background:#7f6df2;color:#fff;box-shadow:0 0 0 4px rgba(127,109,242,.28)}
+.st .code{margin-left:36px;background:#fdfcfa;border-radius:12px;padding:16px 20px;font:11.2px/1.5 'DejaVu Sans Mono';color:#3a3f47;white-space:pre-wrap;box-shadow:0 0 0 1px var(--line),0 18px 40px -22px rgba(20,30,50,.35)}
+.code .h{color:var(--rust);font-weight:700}.code .k{color:#2357c6}.code .c{color:#6b7280}
+.st .ch{margin-left:36px;border-radius:12px;overflow:hidden;box-shadow:0 0 0 1px var(--line),0 18px 40px -22px rgba(20,30,50,.45)}
+.st .ch img{display:block;width:100%}
+
+/* ---------- MOBILE (900x1600) ---------- */
+.m{width:900px;height:1600px;position:relative;overflow:hidden;background:var(--bg);margin-bottom:16px}
+.m .mt{position:absolute;left:80px;right:80px;top:118px}
+.m h1{font:700 82px/1.06 "Inter Display";letter-spacing:-.025em;color:var(--ink)}
+.m .sub{margin-top:30px;font:400 29px/1.42 Inter;color:var(--mute);width:auto}
+.phone{position:absolute;left:135px;width:630px;top:470px;height:1230px;background:#0c0d10;border-radius:78px;padding:15px;
+  box-shadow:0 0 0 2px #2a2d33,0 4px 10px rgba(20,30,50,.12),0 50px 90px -30px rgba(20,30,50,.55)}
+.scr{width:100%;height:100%;border-radius:64px;overflow:hidden;position:relative;font-family:Inter}
+.sb{height:62px;display:flex;align-items:flex-end;justify-content:space-between;padding:0 46px 6px 52px;font:600 21px Inter}
+.sb .isl{position:absolute;left:50%;top:16px;transform:translateX(-50%);width:150px;height:42px;border-radius:22px;background:#000}
+.sb .ic{display:flex;gap:8px;align-items:center;font-size:17px}
+.sb .bat{width:34px;height:16px;border-radius:5px;border:2px solid currentColor;opacity:.9;position:relative}
+.sb .bat:after{content:"";position:absolute;inset:2px 6px 2px 2px;background:currentColor;border-radius:2px}
+.hdr{height:64px;display:flex;align-items:center;padding:0 26px;font:500 20px Inter;gap:14px}
+.hdr .ttl{flex:1;text-align:center;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hdr .i{width:30px;text-align:center;font-size:26px;opacity:.75}
+.mb{padding:14px 30px 0}
+.mb h2{font:700 36px/1.15 Inter;margin-bottom:12px}
+.mb .lede{font:italic 21px/1.45 Inter;margin-bottom:22px}
+.mb p{font-size:20px;line-height:1.55;margin-bottom:18px}
+.mb .chart img{display:block;width:100%;border-radius:8px}
+.m .dark{background:#1e1e1e;color:#dadada}.m .dark .hdr{color:#cfcfcf}.m .dark .lede{color:#a0a0a0}
+.m .light{background:#fff;color:#222}.m .light .hdr{color:#333;border-bottom:1px solid #eee}.m .light .lede{color:#6b6b6b}
+.kv{display:grid;grid-template-columns:1fr 1fr;gap:18px 20px;margin:4px 0 26px}
+.kv b{display:block;font:700 46px/1 Inter;letter-spacing:-.02em}
+.kv span{display:block;margin-top:6px;font-size:18px;color:#9a9a9a}
+/* numbers */
+#m2 .scr{background:#1f1e2c;color:#e4e2f0}
+#m2 .hdr{color:#cfcde0}
+#m2 .lede{color:#9c99b4}
+.grp{margin:0 0 22px}
+.grp h4{font:600 15px Inter;letter-spacing:.12em;text-transform:uppercase;margin-bottom:12px;display:flex;align-items:center;gap:10px}
+.grp h4:after{content:"";flex:1;height:1px;background:#34324a}
+.nums{display:grid;grid-template-columns:1fr 1fr;gap:14px 22px}
+.nums b{display:block;font:700 50px/1 "Inter Display";letter-spacing:-.025em;color:#f2f0fb}
+.nums span{display:block;margin-top:6px;font-size:17px;color:#9c99b4}
+/* redlining */
+.leg{display:grid;grid-template-columns:1fr 1fr;gap:10px 16px;margin:16px 0 22px;font-size:18px;color:#333}
+.leg i{display:inline-block;width:18px;height:18px;border-radius:4px;vertical-align:-3px;margin-right:9px;border:1px solid rgba(0,0,0,.25)}
+.mb h3{font:700 24px Inter;margin:4px 0 10px}
+.mb ul{margin:0 0 0 24px;font-size:20px;line-height:1.6;color:#333}
+
+/* ---------- MOBILE, rest of the deck ---------- */
+.m .mt.hero h1{font-size:74px}
+#m4 .phone{top:700px}
+#m4 .scr{background:#151515;color:#e6e2d8}
+#m4 .hdr{color:#cfcabd}
+.serif h2{font:italic 500 40px/1.15 Lora,serif;margin-bottom:10px}
+.serif .lede{font:italic 20px/1.45 Lora,serif;color:#cfc9ba}
+.serif .kv b{font:600 44px/1 Lora,serif;letter-spacing:0}
+.serif .kv span{font:17px Lora,serif;color:#a49e90}
+.serif p{font:19px/1.55 Lora,serif;color:#d6d1c4}
+.tiles{position:absolute;left:80px;top:560px;width:740px;display:grid;grid-template-columns:1fr 1fr;gap:22px}
+.tiles img{display:block;width:359px;height:470px;object-fit:cover;border-radius:18px}
+.m .foot{position:absolute;left:80px;top:1555px;margin:0;font-size:20px}
+.m .foot .dot{width:11px;height:11px}
+.stack .card{left:80px;width:740px;border-radius:16px}
+.mai{position:absolute;left:80px;width:740px}
+.mai .n{position:absolute;left:0;top:0;width:34px;height:34px;border-radius:50%;background:var(--rust);color:#fff;font:600 18px/34px Inter;text-align:center}
+.mai .lab{margin-left:50px;font:600 22px/34px Inter;color:var(--ink);margin-bottom:14px}
+.mai .bar{background:#1e1e1e;border-radius:16px;padding:22px;display:flex;gap:14px;box-shadow:0 0 0 1px var(--line),0 18px 40px -22px rgba(20,30,50,.4)}
+.mai .bn{font-size:20px;padding:13px 20px;border-radius:10px}
+.mai .code{background:#fdfcfa;border-radius:16px;padding:22px 26px;font:17px/1.5 'DejaVu Sans Mono';color:#3a3f47;white-space:pre-wrap;box-shadow:0 0 0 1px var(--line),0 18px 40px -22px rgba(20,30,50,.35)}
+.mai .ch{border-radius:16px;overflow:hidden;box-shadow:0 0 0 1px var(--line),0 18px 40px -22px rgba(20,30,50,.45)}
+.mai .ch img{display:block;width:100%}
+</style></head><body>
+
+<!-- 1 HERO (pinned) -->
+<section class="s" id="s1">
+  <div class="txt"><h1>The grammar of <span class="rust">Vega&#8209;Lite</span>.<br>The data in <span class="blue">your notes</span>.<br>Built for Obsidian.</h1>
+  <div class="sub">Turn any Base into a live chart. Its filters, sorts and groups drive what you see.</div></div>
+  <div class="win shadow"><img src="img/minard.jpg"></div>
+</section>
+
+<!-- 2 CASES 2x2 -->
+<section class="s" id="s2">
+  <div class="txt"><h1>Track anything.<br>Draw it <span class="rust">any way</span>.<br>One plugin.</h1>
+  <div class="sub">Habits, history, economics, trails. One plugin covers them all and grows with your vault, one chart at a time.</div>
+  <div class="foot"><span class="dot"></span>Every chart on this page is drawn by Agate.</div></div>
+  <img class="g shadow" style="left:516px;top:153px" src="img/habits-zoom.jpg">
+  <img class="g shadow" style="left:830px;top:153px" src="img/dubois.jpg">
+  <img class="g shadow" style="left:516px;top:407px" src="img/gapminder.jpg">
+  <img class="g shadow" style="left:830px;top:407px" src="img/basemap.jpg">
+</section>
+
+<!-- 3 MAP -->
+<section class="s" id="s3">
+  <div class="txt"><h1>Every trip,<br>on a <span class="green">real map</span>.<br>One note per day.</h1>
+  <div class="sub">Each day of the hike is a note with its GPS track. Agate lays the route over hillshade or topo tiles and lines up elevation, speed and weather underneath. Map keys stay in Obsidian's secret storage.</div></div>
+  <div class="note dark shadow" style="background:#262626">
+    <div class="tabs"><span class="tab on" style="background:#262626">AT Georgia 2025</span><span class="tab">Russian campaign 1812</span><span class="tab">Journal</span></div>
+    <img class="shot" src="img/at.jpg">
+  </div>
+</section>
+
+<!-- 4 THEMES -->
+<section class="s th" id="s4">
+  <div class="txt"><h1>One spec.<br>Styled like <span class="red">Du&nbsp;Bois</span>,<br>like <span class="blue">538</span>,<br>or like you.</h1>
+  <div class="sub">The theme lives apart from the spec. Pick one per chart or for the whole vault, or let it follow your Obsidian theme, light or dark.</div></div>
+  <div class="card shadow c1"><img src="img/t2-duboisA.png"></div>
+  <div class="card shadow c2"><img src="img/t2-f538A.png"></div>
+  <div class="card shadow c3"><img src="img/t2-reading.png"></div>
+  <div class="card shadow c4"><img src="img/t2-plotted.png"></div>
+</section>
+
+<section class="s th" id="s4b">
+  <div class="txt"><h1>One spec.<br>Styled like <span class="red">Du&nbsp;Bois</span>,<br>like <span class="blue">538</span>,<br>or like you.</h1>
+  <div class="sub">The theme lives apart from the spec. Pick one per chart or for the whole vault, or let it follow your Obsidian theme, light or dark.</div></div>
+  <div class="card shadow c1"><img src="img/t2-duboisA.png"></div>
+  <div class="card shadow c2"><img src="img/t2-f538A.png"></div>
+  <div class="card shadow c3"><img src="img/t2-reading.png"></div>
+  <div class="card shadow c4"><img src="img/t2-plottedDark.png"></div>
+</section>
+
+<!-- 5 CUBISM -->
+<section class="s" id="s5">
+  <div class="txt"><h1>Each note brings its <span class="teal">own data</span>.</h1>
+  <div class="sub">Point a note at a CSV or a URL: a stock, a weather station, a sensor log. Agate loads one series per note and keeps them in sync with the base.</div></div>
+  <div class="note dark shadow">
+    <div class="tabs"><span class="tab on">Markets</span><span class="tab">AT Georgia 2025</span><span class="tab">Journal</span></div>
+    <div class="crumb">notes / 3_resources / finance / Markets</div>
+    <div class="body">
+      <h2>Markets</h2>
+      <div class="lede">Twelve FRED series, one note each.</div>
+      <p>Each note holds one id, like <code>fred: SP500</code>. The base turns it into a CSV link, Agate fetches one series per note, and the spec draws them as Cubism-style horizon strips.</p>
+      <div class="tb"><span class="v">▱ Horizon ⌄</span><span>12 results</span><span class="r"><span>⇅ Sort</span><span>≡ Filter</span><span>☰ Properties</span><span>+ New</span></span></div>
+      <div class="chart"><img src="img/pernote.jpg"></div>
+    </div>
+  </div>
+</section>
+
+<!-- 6 BIG NUMBERS -->
+<section class="s" id="s6">
+  <div class="txt"><h1>Big numbers,<br>as <span class="violet">note text</span>.</h1>
+  <div class="sub">Vega filters and counts; Agate prints the result in your note's own font. It wraps, selects and follows the base.</div></div>
+  <div class="note dark shadow">
+    <div class="tabs"><span class="tab on">Journal</span><span class="tab">AT Georgia 2025</span><span class="tab">Markets</span></div>
+    <img class="shot" style="display:block;width:100%" src="img/journal-note.jpg">
+  </div>
+</section>
+
+<!-- 7 CIRCULAR -->
+<section class="s" id="s7">
+  <div class="txt"><h1>If Vega can draw&nbsp;it,<br><span class="violet">Agate can</span>.</h1>
+  <div class="sub">Edge bundling, trees, force graphs, sankeys. Any layout from the Vega gallery runs on your notes, and every mark opens its note.</div></div>
+  <div class="note light shadow">
+    <div class="tabs"><span class="tab on">Vault links</span><span class="tab">Vault review</span><span class="tab">Journal</span></div>
+    <div class="crumb">notes / Vault links</div>
+    <div class="body">
+      <h2>Vault links</h2>
+      <div class="lede">Every note on a circle, grouped by folder.</div>
+      <div class="tb"><span class="v">▱ Links ⌄</span><span>606 results</span><span class="r"><span>⇅ Sort</span><span>≡ Filter</span><span>☰ Properties</span><span>+ New</span></span></div>
+      <div class="chart"><img src="img/links-sq.jpg"></div>
+    </div>
+  </div>
+</section>
+
+<!-- 8 BROOKLYN -->
+<section class="s" id="s8">
+  <div class="txt"><h1>Notes that make<br>the <span class="red">argument</span>.</h1>
+  <div class="sub">Work with the source and see what it means, right away. Add the data to your vault and the pattern is on the page, next to the notes that explain it, not in a separate tool.</div></div>
+  <div class="note light shadow">
+    <div class="tabs"><span class="tab on">Redlining Brooklyn</span><span class="tab">Du Bois spiral</span><span class="tab">Russian campaign 1812</span></div>
+    <div class="crumb">notes / 3_resources / dataviz / Redlining Brooklyn</div>
+    <div class="body">
+      <h2>Redlining Brooklyn</h2>
+      <div class="lede">The 1938 HOLC map: neighbourhoods graded A ("Best") to D ("Hazardous").</div>
+      <div class="chart"><img src="img/holc.jpg"></div>
+      <h3>What the map shows</h3>
+      <ul><li>One zone in all of Brooklyn got an A.</li><li>D is the largest grade: 23 of 66 zones, 41% of the graded land.</li><li>Three quarters of the graded land was marked C or D.</li></ul>
+    </div>
+  </div>
+</section>
+
+<!-- 9 AI -->
+<section class="s" id="s9">
+  <div class="txt"><h1>Charting in<br>the era of <span class="rust">AI</span>.</h1>
+  <div class="sub">Agate makes no network calls and talks to no AI. Instead it writes a live prompt for your base: its properties, sample rows and Vega versions. Paste it into any assistant and save the reply as a chart.</div></div>
+  <div class="st" style="top:92px"><span class="n">1</span><div class="lab">Copy a prompt for this base</div>
+    <div class="bar"><span class="bn">Pick a recipe</span><span class="bn hot">Copy prompt for an LLM</span></div></div>
+  <div class="st" style="top:212px"><span class="n">2</span><div class="lab">Paste it into any assistant</div>
+    <div class="code"><span class="c">I use Obsidian with the Agate plugin, which renders Vega and Vega-Lite specs over an Obsidian Bases view. Write a chart spec for me.</span>
+
+<span class="h">## What I want</span>
+Plays per month, stacked by winner, next to the shelf.
+
+<span class="h">## Data</span>
+119 notes as a dataset named <span class="k">base</span>. Properties:
+<span class="k">note.type</span> · <span class="k">note.date</span> · <span class="k">note.winner</span> · <span class="k">note.complexity</span> …
+
+<span class="h">## Environment</span>
+Agate 0.4.3 · Obsidian 1.13 · Vega 6 · Vega-Lite 6</div></div>
+  <div class="st" style="top:500px"><span class="n">3</span><div class="lab">Save the reply as a spec: the chart follows the base</div>
+    <div class="ch"><img src="img/t2-obsdark.png"></div></div>
+</section>
+
+<!-- ================= MOBILE 900x1600 ================= -->
+
+<!-- M1 TRIP -->
+<section class="m" id="m1">
+  <div class="mt"><h1>Every trip,<br>on a <span class="green">real map</span>.</h1>
+  <div class="sub">One note per day of the hike, each with its GPS track. Agate draws the route over hillshade, in your pocket.</div></div>
+  <div class="phone"><div class="scr dark" style="background:#262626">
+    <div class="sb"><span>9:41</span><span class="isl"></span><span class="ic">▂▄▆ <span class="bat"></span></span></div>
+    <div class="hdr"><span class="i">‹</span><span class="ttl">AT Georgia 2025</span><span class="i">⋯</span></div>
+    <div class="mb">
+      <h2>AT Georgia 2025</h2>
+      <div class="lede">Springer Mountain to Neel Gap, three days in October 2025.</div>
+      <div class="kv"><div><b>29.2</b><span>miles</span></div><div><b>3</b><span>days</span></div>
+        <div><b>4,422 ft</b><span>Blood Mountain</span></div><div><b>2</b><span>nights in shelters</span></div></div>
+      <p style="color:#c9c9c9">The first 30 miles of the Appalachian Trail, from the southern terminus to the outfitter at Neel Gap. Each day is a note with its GPS track.</p>
+      <div class="chart"><img src="img/m-at.jpg"></div>
+    </div>
+  </div></div>
+</section>
+
+<!-- M2 NUMBERS -->
+<section class="m" id="m2">
+  <div class="mt"><h1>Big numbers,<br>as <span class="violet">note text</span>.</h1>
+  <div class="sub">Counts, streaks and totals print in your note's own font. They wrap to the screen and follow the base.</div></div>
+  <div class="phone"><div class="scr">
+    <div class="sb"><span>9:41</span><span class="isl"></span><span class="ic">▂▄▆ <span class="bat"></span></span></div>
+    <div class="hdr"><span class="i">‹</span><span class="ttl">Home</span><span class="i">⋯</span></div>
+    <div class="mb">
+      <h2>Home</h2>
+      <div class="lede">The vault at a glance.</div>
+      <div class="grp"><h4 style="color:#c4b8ff">Journal</h4><div class="nums">
+        <div><b>183</b><span>daily notes</span></div><div><b>70%</b><span>days with a walk</span></div>
+        <div><b>53%</b><span>with the gym</span></div><div><b>12</b><span>day walking streak</span></div></div></div>
+      <div class="grp"><h4 style="color:#f0a37f">Board games</h4><div class="nums">
+        <div><b>95</b><span>plays this year</span></div><div><b>93</b><span>hours at the table</span></div>
+        <div><b>24</b><span>games on the shelf</span></div><div><b>5</b><span>never played</span></div></div></div>
+      <div class="grp"><h4 style="color:#7fd6c2">Reading</h4><div class="nums">
+        <div><b>20</b><span>finished</span></div><div><b>7,778</b><span>pages</span></div>
+        <div><b>4</b><span>abandoned</span></div><div><b>2</b><span>on the nightstand</span></div></div></div>
+      <div class="grp"><h4 style="color:#8fb4ff">Travel</h4><div class="nums">
+        <div><b>13</b><span>trips</span></div><div><b>17</b><span>countries</span></div>
+        <div><b>131</b><span>nights away</span></div><div><b>4</b><span>with family</span></div></div></div>
+      <div class="grp"><h4 style="color:#e8c66a">Work</h4><div class="nums">
+        <div><b>158</b><span>meetings since April</span></div><div><b>105</b><span>hours</span></div></div></div>
+    </div>
+  </div></div>
+</section>
+
+<!-- M3 REDLINING -->
+<section class="m" id="m3">
+  <div class="mt"><h1>Notes that make<br>the <span class="red">argument</span>.</h1>
+  <div class="sub">Add the source data to your vault and the pattern sits next to the notes that explain it. On any screen.</div></div>
+  <div class="phone"><div class="scr light">
+    <div class="sb" style="color:#111"><span>9:41</span><span class="isl"></span><span class="ic">▂▄▆ <span class="bat"></span></span></div>
+    <div class="hdr"><span class="i">‹</span><span class="ttl">Redlining Brooklyn</span><span class="i">⋯</span></div>
+    <div class="mb">
+      <h2>Redlining Brooklyn</h2>
+      <div class="lede">The 1938 HOLC map: neighbourhoods graded A ("Best") to D ("Hazardous").</div>
+      <div class="chart"><img src="img/m-holc.jpg"></div>
+      <div class="leg"><div><i style="background:#86b97d"></i>A “Best”</div><div><i style="background:#7fbfcf"></i>B “Still desirable”</div>
+        <div><i style="background:#e3e08a"></i>C “Declining”</div><div><i style="background:#ee9aa8"></i>D “Hazardous”</div></div>
+      <h3>What the map shows</h3>
+      <ul><li>One zone in all of Brooklyn got an A.</li><li>D is the largest grade: 23 of 66 zones, 41% of the graded land.</li><li>Three quarters of the graded land was marked C or D.</li></ul>
+    </div>
+  </div></div>
+</section>
+
+<!-- M4 HERO -->
+<section class="m" id="m4">
+  <div class="mt hero"><h1>The grammar of<br><span class="rust">Vega&#8209;Lite</span>.<br>The data in<br><span class="blue">your notes</span>.</h1>
+  <div class="sub">Turn any Base into a live chart, on desktop or in your pocket. Its filters, sorts and groups drive what you see.</div></div>
+  <div class="phone"><div class="scr serif">
+    <div class="sb"><span>9:41</span><span class="isl"></span><span class="ic">▂▄▆ <span class="bat"></span></span></div>
+    <div class="hdr"><span class="i">‹</span><span class="ttl" style="font-family:Inter">Russian campaign 1812</span><span class="i">⋯</span></div>
+    <div class="mb">
+      <h2>Napoleon's Russian campaign, 1812</h2>
+      <div class="lede">Minard's map, rebuilt from his numbers, with the battles as notes.</div>
+      <div class="kv"><div><b>422,000</b><span>crossed the Niemen</span></div><div><b>100,000</b><span>reached Moscow</span></div>
+        <div><b>10,000</b><span>came back</span></div><div><b>−38 °C</b><span>on December 6</span></div></div>
+      <div class="chart"><img src="img/m-minard.jpg"></div>
+      <p style="margin-top:20px">Charles Joseph Minard drew this map in 1869: the band is the army, its width the number of men.</p>
+    </div>
+  </div></div>
+</section>
+
+<!-- M5 TRACK ANYTHING -->
+<section class="m" id="m5">
+  <div class="mt"><h1>Track anything.<br>Draw it <span class="rust">any way</span>.</h1>
+  <div class="sub">Habits, history, economics, trails. One plugin covers them all and grows with your vault, one chart at a time.</div></div>
+  <div class="tiles">
+    <img class="shadow" src="img/habits-zoom.jpg"><img class="shadow" src="img/dubois.jpg">
+    <img class="shadow" src="img/gapminder.jpg"><img class="shadow" src="img/basemap.jpg">
+  </div>
+  <div class="foot"><span class="dot"></span>Every chart here is drawn by Agate.</div>
+</section>
+
+<!-- M6 THEMES (paper front) -->
+<section class="m stack" id="m6">
+  <div class="mt"><h1>One spec.<br>Styled like <span class="red">Du&nbsp;Bois</span>, like <span class="blue">538</span>, or like you.</h1>
+  <div class="sub">The theme lives apart from the spec. Pick one per chart or for the whole vault, or follow your Obsidian theme.</div></div>
+  <div class="card shadow" style="top:640px"><img src="img/t2-duboisA.png"></div>
+  <div class="card shadow" style="top:860px"><img src="img/t2-f538A.png"></div>
+  <div class="card shadow" style="top:1080px"><img src="img/t2-reading.png"></div>
+  <div class="card shadow" style="top:1300px"><img src="img/t2-plotted.png"></div>
+</section>
+
+<!-- M6b THEMES (graphite front) -->
+<section class="m stack" id="m6b">
+  <div class="mt"><h1>One spec.<br>Styled like <span class="red">Du&nbsp;Bois</span>, like <span class="blue">538</span>, or like you.</h1>
+  <div class="sub">The theme lives apart from the spec. Pick one per chart or for the whole vault, or follow your Obsidian theme.</div></div>
+  <div class="card shadow" style="top:640px"><img src="img/t2-duboisA.png"></div>
+  <div class="card shadow" style="top:860px"><img src="img/t2-f538A.png"></div>
+  <div class="card shadow" style="top:1080px"><img src="img/t2-reading.png"></div>
+  <div class="card shadow" style="top:1300px"><img src="img/t2-plottedDark.png"></div>
+</section>
+
+<!-- M7 PER-NOTE DATA -->
+<section class="m" id="m7">
+  <div class="mt"><h1>Each note brings its <span class="teal">own data</span>.</h1>
+  <div class="sub">Point a note at a CSV or a URL: a stock, a weather station, a sensor log. Agate loads one series per note.</div></div>
+  <div class="phone"><div class="scr dark">
+    <div class="sb"><span>9:41</span><span class="isl"></span><span class="ic">▂▄▆ <span class="bat"></span></span></div>
+    <div class="hdr"><span class="i">‹</span><span class="ttl">Markets</span><span class="i">⋯</span></div>
+    <div class="mb">
+      <h2>Markets</h2>
+      <div class="lede">Twelve FRED series, one note each.</div>
+      <p style="color:#c9c9c9">Each note holds one id, like <code>fred: SP500</code>. Agate fetches one series per note and draws them as horizon strips.</p>
+      <div class="chart"><img src="img/m-pernote.jpg"></div>
+      <h3 style="font:700 24px Inter;margin:26px 0 10px;color:#e6e6e6">What moved this year</h3>
+      <ul style="margin:0 0 0 24px;font-size:20px;line-height:1.65;color:#c9c9c9"><li>WTI crude up 74.7%, the biggest move of the twelve.</li><li>Ether down 39.5%, Bitcoin down 24.6%.</li><li>The 10-year Treasury yield up 27.5%, to 5.10.</li></ul>
+    </div>
+  </div></div>
+</section>
+
+<!-- M8 IF VEGA CAN DRAW IT -->
+<section class="m" id="m8">
+  <div class="mt"><h1>If Vega can draw&nbsp;it, <span class="violet">Agate can</span>.</h1>
+  <div class="sub">Edge bundling, trees, force graphs, sankeys. Any Vega layout runs on your notes, and every mark opens its note.</div></div>
+  <div class="phone"><div class="scr light">
+    <div class="sb" style="color:#111"><span>9:41</span><span class="isl"></span><span class="ic">▂▄▆ <span class="bat"></span></span></div>
+    <div class="hdr"><span class="i">‹</span><span class="ttl">Vault links</span><span class="i">⋯</span></div>
+    <div class="mb">
+      <h2>Vault links</h2>
+      <div class="lede">Every note on a circle, grouped by folder.</div>
+      <div style="display:flex;gap:18px;font-size:17px;color:#6b6b6b;margin:-6px 0 14px"><span style="font-weight:500;color:#333">▱ Links ⌄</span><span>606 results</span></div>
+      <div class="chart"><img src="img/links-sq.jpg"></div>
+      <p style="color:#333;margin-top:20px">606 notes, the links between them, and every mark opens its note.</p>
+    </div>
+  </div></div>
+</section>
+
+<!-- M9 AI -->
+<section class="m" id="m9">
+  <div class="mt"><h1>Charting in the era of <span class="rust">AI</span>.</h1>
+  <div class="sub">Agate makes no network calls and talks to no AI. It writes a live prompt for your base; paste it into any assistant.</div></div>
+  <div class="mai" style="top:560px"><span class="n">1</span><div class="lab">Copy a prompt for this base</div>
+    <div class="bar"><span class="bn">Pick a recipe</span><span class="bn hot">Copy prompt for an LLM</span></div></div>
+  <div class="mai" style="top:720px"><span class="n">2</span><div class="lab">Paste it into any assistant</div>
+    <div class="code"><span class="c">I use Obsidian with the Agate plugin. Write a chart spec for me.</span>
+
+<span class="h">## What I want</span>
+Plays per month, stacked by winner.
+
+<span class="h">## Data</span>
+119 notes as <span class="k">base</span>: <span class="k">note.date</span> · <span class="k">note.winner</span> …
+
+<span class="h">## Environment</span>
+Agate 0.4.3 · Vega 6 · Vega-Lite 6</div></div>
+  <div class="mai" style="top:1130px"><span class="n">3</span><div class="lab">Save the reply: the chart follows the base</div>
+    <div class="ch"><img src="img/t2-obsdark.png"></div></div>
+</section>
+</body></html>

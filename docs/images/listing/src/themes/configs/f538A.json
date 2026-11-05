@@ -1,0 +1,63 @@
+{
+  "background": "#f0f0f0",
+  "padding": 18,
+  "font": "Inter",
+  "view": {
+    "stroke": null
+  },
+  "title": {
+    "font": "Inter",
+    "fontSize": 19,
+    "fontWeight": 700,
+    "color": "#222",
+    "anchor": "start",
+    "offset": 14
+  },
+  "range": {
+    "category": [
+      "#30a2da",
+      "#fc4f30",
+      "#e5ae38",
+      "#6d904f",
+      "#8b8b8b",
+      "#b96db8",
+      "#ff9e27"
+    ]
+  },
+  "bar": {
+    "binSpacing": 2
+  },
+  "point": {
+    "filled": true,
+    "opacity": 0.8,
+    "color": "#30a2da"
+  },
+  "axis": {
+    "domain": false,
+    "ticks": false,
+    "grid": true,
+    "gridColor": "#d4d4d4",
+    "labelColor": "#6b6b6b",
+    "labelFont": "Inter",
+    "labelFontSize": 11,
+    "labelPadding": 6,
+    "titleColor": "#333",
+    "titleFont": "Inter",
+    "titleFontSize": 11,
+    "titleFontWeight": 600
+  },
+  "axisX": {
+    "grid": false
+  },
+  "legend": {
+    "labelColor": "#444",
+    "labelFont": "Inter",
+    "labelFontSize": 11,
+    "titleColor": "#222",
+    "titleFont": "Inter",
+    "titleFontSize": 11,
+    "titleFontWeight": 700,
+    "symbolType": "circle",
+    "symbolSize": 90
+  }
+}
