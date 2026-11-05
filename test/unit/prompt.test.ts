@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { buildChartPrompt, buildThemePrompt } from "../../src/core/prompt";
+import { buildChartPrompt, buildThemePrompt, summarizeProperty } from "../../src/core/prompt";
 
 const base = {
   colors: { text: "#111", background: "#fff", accent: "#7c3aed", blue: "#086ddd" },
@@ -83,5 +83,24 @@ describe("buildChartPrompt", () => {
     expect(data).toContain('{"data": {"name": "trips"}}');
     expect(data).toContain("`note.country` (text)");
     expect(data).toContain('"Lisbon"');
+  });
+});
+
+describe("summarizeProperty", () => {
+  const rows = [
+    { note: { score: 3, domain: "SQL", tags: ["a", "b"], date: "2026-08-01" } },
+    { note: { score: 5, domain: "SQL", tags: ["a"], date: "2026-07-01" } },
+    { note: { score: 2, domain: "ML", date: "2026-09-01" } },
+    { note: { domain: "" } },
+  ];
+  const sum = (id: string, type: "number" | "text" | "list" | "date") => summarizeProperty({ id, label: id, type }, rows);
+
+  it("gives ranges for numbers and dates", () => {
+    expect(sum("note.score", "number")).toBe("2 to 5; empty in 1");
+    expect(sum("note.date", "date")).toBe("2026-07-01 to 2026-09-01; empty in 1");
+  });
+  it("gives most common values for text and list items", () => {
+    expect(sum("note.domain", "text")).toBe('2 distinct: "SQL" ×2, "ML" ×1; empty in 1');
+    expect(sum("note.tags", "list")).toBe('2 distinct items: "a" ×2, "b" ×1; empty in 2');
   });
 });
