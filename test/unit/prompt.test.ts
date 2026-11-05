@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { buildThemePrompt } from "../../src/core/prompt";
+import { buildChartPrompt, buildThemePrompt } from "../../src/core/prompt";
 
 const base = {
   colors: { text: "#111", background: "#fff", accent: "#7c3aed", blue: "#086ddd" },
@@ -41,5 +41,47 @@ describe("buildThemePrompt", () => {
     const withOverrides = buildThemePrompt({ ...base, currentOverrides: '{"mark":{"color":"#e93147"}}' });
     expect(withOverrides).toContain("My current overrides");
     expect(withOverrides).toContain('{"mark":{"color":"#e93147"}}');
+  });
+});
+
+describe("buildChartPrompt", () => {
+  const books = {
+    viewName: "Table",
+    datasetName: "base",
+    properties: [{ id: "note.rating", type: "number" as const, label: "Rating" }],
+    rows: [{ file: { name: "Dune", path: "Books/Dune.md" }, note: { rating: 5 } }],
+    env: base.env,
+  };
+  const trips = {
+    viewName: "Trips",
+    datasetName: "trips",
+    properties: [{ id: "note.country", type: "text" as const, label: "note.country" }],
+    rows: [{ file: { name: "Lisbon", path: "Trips/Lisbon.md" }, note: { country: "PT" } }],
+    env: base.env,
+  };
+
+  it("runs from fixed text to this base's data and ends on the request", () => {
+    const out = buildChartPrompt(books);
+    const at = (s: string) => out.indexOf(s);
+    expect(at("## How Agate feeds a spec")).toBeGreaterThan(0);
+    expect(at("## Rules")).toBeGreaterThan(at("## How Agate feeds a spec"));
+    expect(at("## Environment")).toBeGreaterThan(at("## Rules"));
+    expect(at("## My data")).toBeGreaterThan(at("## Environment"));
+    expect(at("## What I want")).toBeGreaterThan(at("## My data"));
+    expect(out.trimEnd().endsWith("interaction>")).toBe(true);
+  });
+
+  it("keeps everything before the environment identical across bases", () => {
+    const prefix = (s: string) => s.slice(0, s.indexOf("## Environment"));
+    expect(prefix(buildChartPrompt(books))).toBe(prefix(buildChartPrompt(trips)));
+    expect(prefix(buildChartPrompt(books))).not.toContain("Dune");
+  });
+
+  it("names the dataset, properties and sample rows under My data", () => {
+    const out = buildChartPrompt(trips);
+    const data = out.slice(out.indexOf("## My data"));
+    expect(data).toContain('{"data": {"name": "trips"}}');
+    expect(data).toContain("`note.country` (text)");
+    expect(data).toContain('"Lisbon"');
   });
 });

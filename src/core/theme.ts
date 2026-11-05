@@ -1,6 +1,7 @@
 import { mergeConfig, type Config } from "vega";
 import * as vegaThemes from "vega-themes";
 import type { ThemeSource } from "./types";
+import { colorDistance, mixColors, parseColor, resolvePalette, type ResolvedPalette, type ThemeContext } from "./palettes";
 
 /**
  * The active Obsidian theme's colours, read from its CSS variables. Specs get them as the
@@ -57,8 +58,9 @@ export function obsidianTheme(): Config {
   const textSize = parseFloat(cs.getPropertyValue("--font-text-size")) || 16;
 
   // Obsidian's named colours make a category palette that matches the theme. Many themes use one
-  // of them as the accent (Nord's is its red), so drop repeats or two categories share a colour.
-  const category = [...new Set([accent, c.blue, c.green, c.orange, c.red, c.purple, c.cyan, c.yellow, c.pink])];
+  // of them as the accent (Nord's is its red; the default accent is all but its purple), so drop
+  // colours too close to one already in, or two categories look the same.
+  const category = distinct([accent, c.blue, c.green, c.orange, c.red, c.purple, c.cyan, c.yellow, c.pink]);
 
   const labelFontSize = Math.round(textSize * 0.7);
   const titleFontSize = Math.round(textSize * 0.8);
@@ -136,11 +138,115 @@ export function instrumentTheme(): Config {
   } as Config);
 }
 
-/** Built-in themes: the dynamic Obsidian theme plus the static ones shipped by vega-themes. */
-export function builtinThemes(): Map<string, ThemeSource> {
+/** Keep the first of any colours closer than `min` (OKLab ΔE ×100); exact repeats always go. */
+export function distinct(colors: string[], min = 8): string[] {
+  const out: string[] = [];
+  for (const c of colors) {
+    if (out.some((o) => o === c || (colorDistance(o, c) ?? Infinity) < min)) continue;
+    out.push(c);
+  }
+  return out;
+}
+
+/** Theme context from the DOM alone: light/dark and body classes, no theme name. */
+export function domThemeContext(): ThemeContext {
+  return {
+    name: "",
+    classes: Array.from(document.body.classList),
+    dark: document.body.classList.contains("theme-dark"),
+    accent: themeColors().accent,
+  };
+}
+
+/**
+ * The dynamic `auto` theme: the `obsidian` theme's fonts, text and grid, with a category palette
+ * made for the active Obsidian theme (Nord, Catppuccin, Minimal's color schemes, …) or, for the
+ * default and unrecognized themes, a toned-down palette led by the accent's hue.
+ */
+/**
+ * Ink tones from the theme's text toward its background, in an order where neighbors differ most.
+ * Four is what e-ink panels keep apart reliably; past that Vega repeats them, so specs with more
+ * series should add a shape or strokeDash encoding, or facet.
+ */
+export const EINK_TONES = [0, 0.6, 0.3, 0.8] as const;
+
+/**
+ * The dynamic `eink` theme, for e-ink and grayscale screens: identity by tone, outline and shape
+ * instead of hue. Everything is drawn in the theme's ink (its text color) on its paper (its
+ * background): no muted grays or opacity, which e-ink panels dither into fuzz; dotted ink grids;
+ * 2px lines and filled points; ink outlines on bars, slices and areas so light fills keep an edge;
+ * point shapes that differ per category; grayscale ramps for heatmaps.
+ */
+export function einkTheme(): Config {
+  const c = themeColors();
+  const ink = parseColor(c.text) ? mixColors(c.text, c.text, 0) : "#000000";
+  const paper = parseColor(c.background) ? mixColors(c.background, c.background, 0) : "#ffffff";
+  const tone = (t: number) => mixColors(ink, paper, t);
+  const cs = getComputedStyle(document.body);
+  const font = cs.getPropertyValue("--font-interface").trim() || "sans-serif";
+  const textSize = parseFloat(cs.getPropertyValue("--font-text-size")) || 16;
+  const labelFontSize = Math.round(textSize * 0.75);
+  const titleFontSize = Math.round(textSize * 0.85);
+  const guide = { labelColor: ink, titleColor: ink, labelFont: font, titleFont: font, labelFontSize, titleFontSize, titleFontWeight: 600 };
+  const outline = { stroke: ink, strokeWidth: 1 };
+  return {
+    background: "transparent",
+    font,
+    title: { color: ink, font, fontSize: Math.round(textSize * 0.95), fontWeight: 700, subtitleColor: ink, anchor: "start" },
+    axis: { ...guide, domainColor: ink, tickColor: ink, domainWidth: 1, tickWidth: 1, gridColor: ink, gridDash: [1, 5], gridOpacity: 1, gridWidth: 0.75 },
+    legend: { ...guide, symbolStrokeColor: ink, symbolStrokeWidth: 1 },
+    header: { labelColor: ink, titleColor: ink, labelFont: font, titleFont: font },
+    view: { stroke: "transparent" },
+    mark: { color: ink, opacity: 1 },
+    bar: outline,
+    arc: outline,
+    area: { ...outline, opacity: 1 },
+    line: { strokeWidth: 2 },
+    trail: { opacity: 1 },
+    point: { filled: true, size: 50, opacity: 1, stroke: paper, strokeWidth: 1 },
+    circle: { size: 50, opacity: 1, stroke: paper, strokeWidth: 1 },
+    square: { size: 50, opacity: 1, stroke: paper, strokeWidth: 1 },
+    rule: { color: ink },
+    text: { color: ink, font },
+    range: {
+      category: EINK_TONES.map(tone),
+      ordinal: [tone(0.8), tone(0.6), tone(0.3), tone(0)],
+      ramp: [tone(0.92), tone(0)],
+      heatmap: [tone(0.92), tone(0)],
+      symbol: ["circle", "square", "triangle-up", "cross", "diamond", "triangle-down"],
+    },
+    style: {
+      "guide-label": { fill: ink, font, fontSize: labelFontSize },
+      "guide-title": { fill: ink, font, fontSize: titleFontSize },
+      text: { fill: ink, font },
+      cell: { strokeOpacity: 0 },
+    },
+    // Brushes as a dashed frame: a tinted fill would dither.
+    selection: { interval: { mark: { fill: paper, fillOpacity: 0, stroke: ink, strokeDash: [3, 2], strokeOpacity: 1 } } },
+  } as Config;
+}
+
+export function autoTheme(context: () => ThemeContext = domThemeContext, onPalette?: (p: ResolvedPalette) => void): Config {
+  const palette: ResolvedPalette = resolvePalette(context());
+  onPalette?.(palette);
+  if (palette.family === "eink") return einkTheme();
+  const [first] = palette.colors;
+  return mergeConfig(obsidianTheme(), {
+    mark: { color: first },
+    range: { category: palette.colors },
+  } as Config);
+}
+
+/** Built-in themes: `auto`, the dynamic Obsidian themes, and the static ones shipped by vega-themes. */
+export function builtinThemes(
+  context: () => ThemeContext = domThemeContext,
+  onPalette?: (p: ResolvedPalette) => void,
+): Map<string, ThemeSource> {
   const map = new Map<string, ThemeSource>();
+  map.set("auto", () => autoTheme(context, onPalette));
   map.set("obsidian", obsidianTheme);
   map.set("instrument", instrumentTheme);
+  map.set("eink", einkTheme);
   for (const [name, cfg] of Object.entries(vegaThemes as Record<string, unknown>)) {
     if (name === "version" || name === "default" || typeof cfg !== "object" || cfg === null) continue;
     map.set(name, cfg);

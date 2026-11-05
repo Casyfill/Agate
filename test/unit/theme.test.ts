@@ -1,10 +1,11 @@
 // @vitest-environment jsdom
 import { describe, expect, it } from "vitest";
-import { builtinThemes, composeConfig, instrumentTheme, materialize, obsidianTheme, themeColors } from "../../src/core/theme";
+import { EINK_TONES, autoTheme, builtinThemes, composeConfig, distinct, einkTheme, instrumentTheme, materialize, obsidianTheme, themeColors } from "../../src/core/theme";
 
 describe("themes (D5, D11)", () => {
   it("ships the dynamic obsidian theme plus vega-themes, without the version export", () => {
     const names = [...builtinThemes().keys()];
+    expect(names[0]).toBe("auto");
     expect(names).toContain("obsidian");
     expect(names).toContain("quartz");
     expect(names).toContain("dark");
@@ -47,6 +48,58 @@ describe("themes (D5, D11)", () => {
     document.body.style.setProperty("--color-red", "rgb(191, 97, 106)");
     const { range } = obsidianTheme() as { range: { category: string[] } };
     expect(range.category.filter((x) => x === "rgb(191, 97, 106)")).toHaveLength(1);
+  });
+
+  it("drops near-identical colours, not only exact repeats (the default accent vs its purple)", () => {
+    expect(distinct(["hsl(258, 88%, 66%)", "#7852ee", "#086ddd"])).toEqual(["hsl(258, 88%, 66%)", "#086ddd"]);
+    expect(distinct(["#e93147", "#e93147", "var(--x)", "var(--x)"])).toEqual(["#e93147", "var(--x)"]);
+  });
+
+  it("auto keeps the obsidian chrome and swaps in the palette made for the active theme", () => {
+    document.body.style.setProperty("--text-normal", "rgb(1, 2, 3)");
+    const nord = autoTheme(() => ({ name: "Nord", classes: [], dark: true })) as { axis: { titleColor: string }; mark: { color: string }; range: { category: string[] } };
+    expect(nord.axis.titleColor).toBe("rgb(1, 2, 3)");
+    expect(nord.range.category[0]).toBe("#88c0d0");
+    expect(nord.mark.color).toBe("#88c0d0");
+
+    const seen: string[] = [];
+    autoTheme(() => ({ name: "", classes: [], dark: false }), (p) => seen.push(p.variant));
+    expect(seen).toEqual(["default-light"]);
+  });
+
+  it("eink draws in ink on paper: tones from the theme's text toward its background, outlines, shapes", () => {
+    document.body.style.setProperty("--text-normal", "#000000");
+    document.body.style.setProperty("--background-primary", "#ffffff");
+    type E = { axis: { labelColor: string; gridColor: string }; bar: { stroke: string }; mark: { opacity: number }; range: { category: string[]; symbol: string[]; heatmap: string[] } };
+    const cfg = einkTheme() as E;
+    expect(cfg.range.category).toEqual(["#000000", "#999999", "#4d4d4d", "#cccccc"]);
+    expect(cfg.range.category).toHaveLength(EINK_TONES.length);
+    expect(cfg.axis.labelColor).toBe("#000000");
+    expect(cfg.bar.stroke).toBe("#000000");
+    expect(cfg.mark.opacity).toBe(1);
+    expect(new Set(cfg.range.symbol).size).toBe(cfg.range.symbol.length);
+    expect(cfg.range.heatmap.at(-1)).toBe("#000000");
+
+    // Dark e-ink (or any theme): light ink on dark paper.
+    document.body.style.setProperty("--text-normal", "rgb(230, 230, 230)");
+    document.body.style.setProperty("--background-primary", "#111111");
+    expect((einkTheme() as E).range.category[0]).toBe("#e6e6e6");
+
+    // auto hands Ink the whole eink theme, not just a palette.
+    const auto = autoTheme(() => ({ name: "Ink", classes: [], dark: false })) as E;
+    expect(auto.bar.stroke).toBe("#e6e6e6");
+    expect(builtinThemes().has("eink")).toBe(true);
+  });
+
+  it("auto reads light/dark from the body class by default", () => {
+    document.body.classList.add("theme-dark");
+    document.body.style.setProperty("--color-accent", "hsl(258, 88%, 66%)");
+    const cfg = materialize(builtinThemes().get("auto")) as { range: { category: string[] } };
+    expect(cfg.range.category[0]).toBe("#9084dd");
+    // A red accent leads with the palette's red, keeping the rest of the cycle.
+    document.body.style.setProperty("--color-accent", "rgb(191, 97, 106)");
+    expect((materialize(builtinThemes().get("auto")) as { range: { category: string[] } }).range.category[0]).toBe("#e47b7b");
+    document.body.classList.remove("theme-dark");
   });
 
   it("exposes the theme colours by role for the agateColors signal", () => {

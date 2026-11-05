@@ -58,6 +58,10 @@ function trimRow(row: Row, ids: Set<string>): Row {
   return out;
 }
 
+/**
+ * Sections run from what never changes to what changes most (prompt-cache friendly, and the user
+ * types at the end): Agate's rules, this install's environment, this base's data, the request.
+ */
 export function buildChartPrompt(input: PromptInput): string {
   const { viewName, datasetName, properties, rows, env } = input;
   const vlMajor = env ? major(env.vegaLite) : "6";
@@ -72,27 +76,17 @@ export function buildChartPrompt(input: PromptInput): string {
     .map((r) => JSON.stringify(trimRow(r, ids)))
     .join("\n");
 
-  return `I use Obsidian with the Agate plugin, which renders Vega and Vega-Lite specs over an Obsidian Bases view. Write a chart spec for me.
+  return `I use Obsidian with the Agate plugin, which renders Vega and Vega-Lite specs over an Obsidian Bases view. Write a chart spec for me. How Agate works comes first, then my data, then what I want.
 
-## What I want
+## How Agate feeds a spec
 
-<describe the chart here: what it should show, and anything about colors, size or interaction>
-
-## Data
-
-The spec receives the notes of an Obsidian base (view "${viewName}"), ${rows.length} notes, as a dataset named \`${datasetName}\`. Reference it as \`{"data": {"name": "${datasetName}"}}\` (Vega-Lite) or a data entry \`{"name": "${datasetName}"}\` (Vega). Do not inline values.
+The spec receives the notes of an Obsidian base as one named dataset (its name is under "My data"). Reference it by name and do not inline values.
 
 Each row is one note. Field names are Bases property ids, nested by prefix: \`note.*\` (frontmatter), \`file.*\` (file.name, file.path, file.ctime, file.mtime, file.size, file.tags), \`formula.*\` (base formulas), and \`group\` when the view is grouped. In Vega-Lite use them as field strings ("note.rating"); in expressions use datum["note"]["rating"].
 
-Properties in this base:
-${props}
-
-Sample rows:
-${samples || "(the view has no rows)"}
-
 Dates arrive as ISO strings (use "type": "temporal" or toDate()). Links arrive as paths or "[[...]]" strings. Lists arrive as arrays.
 
-${env ? environmentSection(env) : ""}## Rules
+## Rules
 
 - Prefer Vega-Lite v${vlMajor} ("$schema": "https://vega.github.io/schema/vega-lite/v${vlMajor}.json"); use Vega v${vgMajor} ("https://vega.github.io/schema/vega/v${vgMajor}.json") only for layouts Vega-Lite lacks (force, tree, partition, custom geo).
 - Leave out "width" for a single Vega-Lite view (it fills the pane); give facets and concats explicit widths. On a discrete y axis give marks room with a step height, e.g. "height": {"step": 40}.
@@ -108,8 +102,22 @@ ${env ? environmentSection(env) : ""}## Rules
   - "textures": {"hatch": {"orientation": "diagonal", "stroke": "#999", "background": "#eee"}} defines fill patterns used as "url(#hatch)" wherever a color goes, scale ranges included (types "lines", "circles", "paths"; SVG renderer only).
 - A Vega signal or Vega-Lite param named "agateDark" with a plain "value" is set to true in dark mode; one named "agateColors" with an object "value" gets the theme's colors by role (text, muted, accent, red, yellow, blue, …), e.g. {"expr": "agateColors.accent"}.
 - Never put an API key in a URL: write {secret:name} (a lowercase name such as maptiler); the user stores the key in Agate's settings and allows that name for its host.
+- Reply with one complete, valid JSON spec (no comments, no trailing commas) in a single \`\`\`json code block, and nothing else.
 
-Reply with the JSON spec only.`;
+${env ? environmentSection(env) : ""}## My data
+
+Base view "${viewName}", ${rows.length} notes, as the dataset \`${datasetName}\`. Reference it as \`{"data": {"name": "${datasetName}"}}\` (Vega-Lite) or a data entry \`{"name": "${datasetName}"}\` (Vega).
+
+Properties in this base:
+${props}
+
+Sample rows:
+${samples || "(the view has no rows)"}
+
+## What I want
+
+<describe the chart here: what it should show, and anything about colors, size or interaction>
+`;
 }
 
 /**
@@ -163,7 +171,7 @@ ${overrides}
 }
 ## How Agate will use it
 
-I'll save your reply to the "Theme file" setting (\`${target}\`), where it applies to every chart in the vault. Unlike Agate's built-in dynamic \`obsidian\` theme, this file is a fixed snapshot: it will not re-derive from my theme when I switch light and dark, so pick colors that read on my background.
+I'll save your reply to the "Theme file" setting (\`${target}\`), where it applies to every chart in the vault. Unlike Agate's built-in dynamic \`auto\` and \`obsidian\` themes, this file is a fixed snapshot: it will not re-derive from my theme when I switch light and dark, so pick colors that read on my background.
 
 ## Rules
 

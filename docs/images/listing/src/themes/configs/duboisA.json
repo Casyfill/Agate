@@ -1,0 +1,116 @@
+{
+  "background": "#e7dcc6",
+  "padding": 14,
+  "font": "Oswald",
+  "view": {
+    "stroke": null
+  },
+  "title": {
+    "fontSize": 21,
+    "fontWeight": 500,
+    "color": "#1f1a16",
+    "anchor": "middle",
+    "offset": 14,
+    "font": "Oswald"
+  },
+  "range": {
+    "category": [
+      "#dc143c",
+      "#ffc000",
+      "#4682b4",
+      "#00aa5a",
+      "#d2b48c",
+      "#654321",
+      "#ffb6c1",
+      "#1f1a16"
+    ],
+    "ordinal": {
+      "scheme": "goldred"
+    },
+    "ramp": [
+      "#ffc000",
+      "#dc143c",
+      "#1f1a16"
+    ],
+    "heatmap": [
+      "#e7dcc6",
+      "#ffc000",
+      "#dc143c",
+      "#1f1a16"
+    ]
+  },
+  "mark": {
+    "color": "#dc143c"
+  },
+  "arc": {
+    "stroke": "#1f1a16",
+    "strokeWidth": 0.8
+  },
+  "bar": {
+    "stroke": "#1f1a16",
+    "strokeWidth": 0.8,
+    "binSpacing": 2
+  },
+  "rect": {
+    "stroke": "#1f1a16",
+    "strokeWidth": 0.6
+  },
+  "area": {
+    "stroke": "#1f1a16",
+    "strokeWidth": 0.8
+  },
+  "line": {
+    "strokeWidth": 3.5,
+    "strokeCap": "butt"
+  },
+  "point": {
+    "filled": true,
+    "size": 70,
+    "stroke": "#1f1a16",
+    "strokeWidth": 0.8,
+    "opacity": 1
+  },
+  "circle": {
+    "size": 70,
+    "stroke": "#1f1a16",
+    "strokeWidth": 0.8,
+    "opacity": 1
+  },
+  "axis": {
+    "domainColor": "#1f1a16",
+    "domainWidth": 1.5,
+    "grid": false,
+    "tickColor": "#1f1a16",
+    "tickSize": 4,
+    "labelColor": "#1f1a16",
+    "labelFontSize": 12,
+    "labelPadding": 4,
+    "titleColor": "#1f1a16",
+    "titleFontSize": 12,
+    "titleFontWeight": 500,
+    "titlePadding": 8,
+    "labelFont": "Oswald",
+    "titleFont": "Oswald"
+  },
+  "axisBand": {
+    "domain": false,
+    "ticks": false
+  },
+  "legend": {
+    "labelColor": "#1f1a16",
+    "labelFontSize": 12,
+    "titleColor": "#1f1a16",
+    "titleFontSize": 12,
+    "symbolType": "square",
+    "symbolSize": 140,
+    "symbolStrokeColor": "#1f1a16",
+    "symbolStrokeWidth": 0.8,
+    "labelFont": "Oswald",
+    "titleFont": "Oswald"
+  },
+  "header": {
+    "labelFontSize": 14,
+    "titleFontSize": 15,
+    "labelColor": "#1f1a16"
+  }
+}

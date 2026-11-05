@@ -1,0 +1,71 @@
+{
+  "background": "#e4d4b8",
+  "padding": 18,
+  "font": "Barlow Condensed",
+  "view": {
+    "stroke": null
+  },
+  "title": {
+    "font": "Barlow Condensed",
+    "fontSize": 24,
+    "fontWeight": 700,
+    "color": "#16110d",
+    "anchor": "middle",
+    "offset": 14
+  },
+  "range": {
+    "category": [
+      "#d0142c",
+      "#16110d",
+      "#f2b705",
+      "#1f5f8b",
+      "#2f7d4f",
+      "#c9a27a",
+      "#e98ca0"
+    ]
+  },
+  "bar": {
+    "stroke": "#16110d",
+    "strokeWidth": 1,
+    "binSpacing": 3
+  },
+  "point": {
+    "filled": true,
+    "stroke": "#16110d",
+    "strokeWidth": 1,
+    "opacity": 1,
+    "color": "#d0142c"
+  },
+  "axis": {
+    "domainColor": "#16110d",
+    "domainWidth": 2,
+    "grid": false,
+    "tickColor": "#16110d",
+    "tickSize": 5,
+    "labelColor": "#16110d",
+    "labelFont": "Barlow Condensed",
+    "labelFontSize": 13,
+    "labelFontWeight": 500,
+    "titleColor": "#16110d",
+    "titleFont": "Barlow Condensed",
+    "titleFontSize": 13,
+    "titleFontWeight": 700
+  },
+  "axisBand": {
+    "domain": false,
+    "ticks": false
+  },
+  "legend": {
+    "labelColor": "#16110d",
+    "labelFont": "Barlow Condensed",
+    "labelFontSize": 13,
+    "labelFontWeight": 500,
+    "titleColor": "#16110d",
+    "titleFont": "Barlow Condensed",
+    "titleFontSize": 13,
+    "symbolType": "circle",
+    "symbolSize": 150,
+    "symbolStrokeColor": "#16110d",
+    "symbolStrokeWidth": 1
+  }
+}

@@ -1,0 +1,2 @@
+{"name":"agate-listing-themes","private":true,
+ "dependencies":{"vega":"^5","vega-lite":"^5","@fontsource/oswald":"*","@fontsource/barlow-condensed":"*","@fontsource/ibm-plex-mono":"*","@fontsource/space-grotesk":"*"}}

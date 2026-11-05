@@ -139,7 +139,7 @@ export class RecipeRolesModal extends Modal {
 }
 
 /** Write `name` into `folder`, creating the folder and adding " 2", " 3", … if the name is taken. */
-async function writeUnique(app: App, folder: string, name: string, text: string): Promise<string> {
+export async function writeUnique(app: App, folder: string, name: string, text: string): Promise<string> {
   const dir = folder.trim() ? normalizePath(folder) : "";
   if (dir && !app.vault.getFolderByPath(dir)) await app.vault.createFolder(dir);
   const m = /^(.*?)((?:\.[a-z]+)+)$/i.exec(name);

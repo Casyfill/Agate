@@ -114,6 +114,16 @@ describe("referencedProperties", () => {
       ["file.name", "formula.age", "note.genre", "note.pages", "note.published", "note.rating"].sort(),
     );
   });
+  it("finds bracket and mixed forms inside expressions", () => {
+    const spec = {
+      transform: [
+        { calculate: "datum['note']['domain']", as: "domain" },
+        { calculate: `toNumber(datum["note"]["initial"]) + datum.note["due date"]`, as: "x" },
+        { filter: "datum[ 'file' ].name !== '' && isValid(datum['note'])" },
+      ],
+    };
+    expect(referencedProperties(spec).sort()).toEqual(["file.name", "note.domain", "note.due date", "note.initial"]);
+  });
   it("ignores unrelated strings", () => {
     expect(referencedProperties({ mark: "bar", title: "note.taking is fun", x: "file.csv here" })).toEqual([]);
   });

@@ -3,6 +3,9 @@ node_modules/
 main.js
 *.map
 
+# local scratch from assistant sessions
+Claude outputs/
+
 # editor / OS
 .DS_Store
 .vscode/

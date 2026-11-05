@@ -1,0 +1,67 @@
+{
+  "background": "#1e1e1e",
+  "padding": 18,
+  "font": "Inter",
+  "view": {
+    "stroke": null
+  },
+  "title": {
+    "font": "Inter",
+    "fontSize": 16,
+    "fontWeight": 700,
+    "color": "#dadada",
+    "anchor": "start",
+    "offset": 12
+  },
+  "range": {
+    "category": [
+      "#44cf6e",
+      "#027aff",
+      "url(#tx)",
+      "#e9973f",
+      "#a882ff",
+      "#fb464c",
+      "#53dfdd"
+    ]
+  },
+  "bar": {
+    "cornerRadius": 2,
+    "stroke": "#1e1e1e",
+    "strokeWidth": 1.5
+  },
+  "point": {
+    "filled": true,
+    "color": "#44cf6e",
+    "opacity": 0.9,
+    "stroke": "#1e1e1e",
+    "strokeWidth": 1
+  },
+  "axis": {
+    "domain": false,
+    "ticks": false,
+    "grid": true,
+    "gridColor": "#363636",
+    "labelColor": "#a3a3a3",
+    "labelFont": "Inter",
+    "labelFontSize": 11,
+    "titleColor": "#dadada",
+    "titleFont": "Inter",
+    "titleFontSize": 11,
+    "titleFontWeight": 600,
+    "labelPadding": 6
+  },
+  "axisX": {
+    "grid": false
+  },
+  "legend": {
+    "labelColor": "#a3a3a3",
+    "labelFont": "Inter",
+    "labelFontSize": 11,
+    "titleColor": "#dadada",
+    "titleFont": "Inter",
+    "titleFontSize": 11,
+    "symbolType": "square",
+    "symbolSize": 120,
+    "symbolStrokeWidth": 0
+  }
+}

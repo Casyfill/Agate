@@ -1,0 +1,63 @@
+{
+  "background": "#f0f0f0",
+  "padding": 18,
+  "font": "Space Grotesk",
+  "view": {
+    "stroke": null
+  },
+  "title": {
+    "font": "Space Grotesk",
+    "fontSize": 21,
+    "fontWeight": 700,
+    "color": "#222",
+    "anchor": "start",
+    "offset": 14
+  },
+  "range": {
+    "category": [
+      "#30a2da",
+      "#fc4f30",
+      "#e5ae38",
+      "#6d904f",
+      "#8b8b8b",
+      "#b96db8",
+      "#ff9e27"
+    ]
+  },
+  "bar": {
+    "binSpacing": 2
+  },
+  "point": {
+    "filled": true,
+    "opacity": 0.9,
+    "color": "#30a2da"
+  },
+  "axis": {
+    "domain": false,
+    "ticks": false,
+    "grid": true,
+    "gridColor": "#cbcbcb",
+    "labelColor": "#6b6b6b",
+    "labelFont": "Space Grotesk",
+    "labelFontSize": 11,
+    "labelPadding": 6,
+    "titleColor": "#333",
+    "titleFont": "Space Grotesk",
+    "titleFontSize": 11,
+    "titleFontWeight": 600
+  },
+  "axisX": {
+    "grid": false
+  },
+  "legend": {
+    "labelColor": "#444",
+    "labelFont": "Space Grotesk",
+    "labelFontSize": 11,
+    "titleColor": "#222",
+    "titleFont": "Space Grotesk",
+    "titleFontSize": 11,
+    "titleFontWeight": 700,
+    "symbolType": "circle",
+    "symbolSize": 90
+  }
+}
