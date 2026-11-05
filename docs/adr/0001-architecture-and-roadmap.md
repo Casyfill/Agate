@@ -144,7 +144,7 @@ Each `BasesEntry` becomes one row. Field names reuse the Bases property id so a 
 
 Vega treats `.` as nested access, so `"field": "note.rating"` and `"field": "file.name"` work without escaping. `group` is present only when the view has a groupBy.
 
-Which properties are converted: the union of what the spec refers to (exact `note.x` / `formula.x` / `file.x` strings anywhere in the spec, and `datum.note.x` inside expressions), what the user made visible in the Bases Properties menu (`config.getOrder()`), and `file.name` / `file.path` always. The spec scan is what makes a synthesized view work, since it has no property order of its own (M0 finding). Conversion cost stays proportional to what the chart needs; an unfiltered base with thousands of notes and dozens of properties is never converted wholesale on every `onDataUpdated`.
+Which properties are converted: the union of what the spec refers to (exact `note.x` / `formula.x` / `file.x` strings anywhere in the spec, and `datum.note.x` or `datum["note"]["x"]` inside expressions; see `docs/property-scan.md`), what the user made visible in the Bases Properties menu (`config.getOrder()`), and `file.name` / `file.path` always. The spec scan is what makes a synthesized view work, since it has no property order of its own (M0 finding). Conversion cost stays proportional to what the chart needs; an unfiltered base with thousands of notes and dozens of properties is never converted wholesale on every `onDataUpdated`.
 
 `Value` to JSON mapping (implemented in `core/data/bases.ts`, table-driven, unit-tested):
 

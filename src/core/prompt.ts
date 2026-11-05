@@ -102,7 +102,7 @@ Dates arrive as ISO strings (use "type": "temporal" or toDate()). Links arrive a
   - "textures": {"hatch": {"orientation": "diagonal", "stroke": "#999", "background": "#eee"}} defines fill patterns used as "url(#hatch)" wherever a color goes, scale ranges included (types "lines", "circles", "paths"; SVG renderer only).
 - A Vega signal or Vega-Lite param named "agateDark" with a plain "value" is set to true in dark mode; one named "agateColors" with an object "value" gets the theme's colors by role (text, muted, accent, red, yellow, blue, …), e.g. {"expr": "agateColors.accent"}.
 - Never put an API key in a URL: write {secret:name} (a lowercase name such as maptiler); the user stores the key in Agate's settings and allows that name for its host.
-- Reply with the JSON spec only.
+- Reply with one complete, valid JSON spec (no comments, no trailing commas) in a single \`\`\`json code block, and nothing else.
 
 ${env ? environmentSection(env) : ""}## My data
 

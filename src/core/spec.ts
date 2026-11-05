@@ -263,11 +263,14 @@ export function withInitialValues(spec: AnySpec, mode: Mode, datasetName: string
 }
 
 const PROP_STRING = /^(note|formula|file)\.[^\s"'{}[\]()]+$/;
-const PROP_IN_EXPR = /\bdatum\.(note|formula|file)\.([A-Za-z_$][\w$]*)/g;
+// datum.note.x, datum["note"]["x"], datum['note']['x'] and mixes such as datum.note["due date"].
+// ponytail: regex, not an expression parser; see docs/property-scan.md for when to switch to vega's parseExpression.
+const PROP_IN_EXPR =
+  /\bdatum(?:\.(note|formula|file)|\[\s*(["'])(note|formula|file)\2\s*\])(?:\.([A-Za-z_$][\w$]*)|\[\s*(["'])(.+?)\5\s*\])/g;
 
 /**
  * Bases property ids a spec refers to: exact field strings like "note.rating" anywhere in
- * the spec, and `datum.note.rating` inside expressions. Used to decide which properties to
+ * the spec, and `datum.note.rating` / `datum["note"]["rating"]` inside expressions. Used to decide which properties to
  * convert, so a chart works even when the Bases view has no property order set (D4).
  */
 export function referencedProperties(spec: unknown): string[] {
@@ -275,7 +278,7 @@ export function referencedProperties(spec: unknown): string[] {
   const visit = (node: unknown): void => {
     if (typeof node === "string") {
       if (PROP_STRING.test(node)) out.add(node);
-      for (const m of node.matchAll(PROP_IN_EXPR)) out.add(`${m[1]}.${m[2]}`);
+      for (const m of node.matchAll(PROP_IN_EXPR)) out.add(`${m[1] ?? m[3]}.${m[4] ?? m[6]}`);
       return;
     }
     if (Array.isArray(node)) {

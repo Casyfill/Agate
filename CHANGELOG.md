@@ -17,6 +17,12 @@ All notable changes to Agate. The format follows [Keep a Changelog](https://keep
 - Vaults still on the old default theme (`obsidian`) move to `auto` once. Pick `obsidian` again in settings to keep the theme's named colors as they are.
 - The chart prompt puts Agate's rules first, then the environment, then the base's properties and sample rows, and ends with the space for what you want, so you type at the end and the fixed part is the same for every base.
 - The `obsidian` theme drops near-identical colors from its category palette, not only exact repeats, so the default theme's accent and purple no longer both appear.
+- The chart prompt asks for one complete, valid JSON spec in a single ```json code block, which Paste spec picks up as is.
+- The inspiration links sit at the bottom of the empty chart view, below the actions.
+
+### Fixed
+
+- Properties a spec uses only through bracket expressions (`datum["note"]["domain"]`, `datum['note']['x']`, `datum.note["due date"]`) are now loaded. Before, a chart in a view with no visible properties that used them got no data and showed nothing. The chart prompt, recipes and skill all write this form. Notes in [docs/property-scan.md](docs/property-scan.md).
 
 ## [0.4.3] - 2026-10-31
 

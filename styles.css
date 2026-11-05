@@ -190,6 +190,11 @@
   color: var(--text-muted);
   padding: var(--size-4-4);
   text-align: center;
+  /* Full height so the inspiration block can sit at the bottom. */
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  min-height: 100%;
 }
 
 .agate-placeholder-title {
@@ -248,7 +253,9 @@
 
 /* Inspiration links on the empty chart view */
 .agate-inspiration {
-  margin: var(--size-4-6) auto 0;
+  margin: auto auto 0;
+  padding-top: var(--size-4-6);
+  width: 100%;
   max-width: 40rem;
 }
 
