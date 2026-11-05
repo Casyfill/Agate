@@ -4,6 +4,8 @@ All notable changes to Agate. The format follows [Keep a Changelog](https://keep
 
 ## [Unreleased]
 
+## [0.5.0] - 2026-11-05 
+
 ### Added
 
 - `auto` theme, the new default: the `obsidian` theme's fonts, text and grid, with a category palette made for the active Obsidian theme. Palettes for Nord, Catppuccin (Latte, Frappé, Macchiato, Mocha; also through AnuPpuccin), Gruvbox, Everforest, Rosé Pine (Dawn, Main, Moon), Solarized, Dracula, Tokyo Night, Atom and Flexoki, light and dark, matched by theme name or by Minimal's color scheme. Every palette is checked for contrast on its theme's background and for color-blind separation between neighboring series.
@@ -18,6 +20,8 @@ All notable changes to Agate. The format follows [Keep a Changelog](https://keep
 - The chart prompt puts Agate's rules first, then the environment, then the base's properties and sample rows, and ends with the space for what you want, so you type at the end and the fixed part is the same for every base.
 - The `obsidian` theme drops near-identical colors from its category palette, not only exact repeats, so the default theme's accent and purple no longer both appear.
 - The chart prompt asks for one complete, valid JSON spec in a single ```json code block, which Paste spec picks up as is.
+- The chart prompt summarizes each property over all notes in the view: the range for numbers and dates, the number of distinct values and the most common ones for text, links and lists, and how many notes leave it empty.
+- The chart prompt lists known Vega-Lite traps (overlapping wedges when an arc chart also encodes radius; unrequested decoration such as `padAngle`) and asks the model to check its fields against the base before replying.
 - The inspiration links sit at the bottom of the empty chart view, below the actions.
 
 ### Fixed
