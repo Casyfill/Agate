@@ -10,3 +10,4 @@ Sections: Status table, Context, Decision (numbered D1…Dn so later ADRs can re
 | [0002](0002-one-vault.md) | One repo vault for showcase and tests | Accepted |
 | [0003](0003-state-at-0-5.md) | Amendments to ADR-0001 at 0.5 | Accepted |
 | [0004](0004-yaml-specs.md) | YAML specs | Accepted (D4, D5 proposed) |
+| [0005](0005-open-in-vega-editor.md) | Open a chart in the Vega editor | Proposed |
