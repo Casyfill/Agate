@@ -2,12 +2,12 @@
 
 | | |
 |---|---|
-| Version reviewed | 0.5.0 (`3d54ad2`), updated for the restructuring in [ADR-0003](adr/0003-state-at-0-5.md) |
+| Version reviewed | 0.5.0 (`3d54ad2`), updated through `0723761`: the ADR-0003 restructuring, fixes for R3, R4 and R7, and YAML docs |
 | Date | 2026-11-08 |
 | Scope | `src/` (about 4,950 lines of TypeScript plus 13 recipe specs), `test/`, build and CI |
-| Companion docs | [ADR-0001](adr/0001-architecture-and-roadmap.md) (decisions D1 to D13), [ADR-0002](adr/0002-one-vault.md), [ADR-0003](adr/0003-state-at-0-5.md) (amendments from this review), [property-scan.md](property-scan.md), [testing.md](testing.md) |
+| Companion docs | [ADR-0001](adr/0001-architecture-and-roadmap.md) (decisions D1 to D13), [ADR-0002](adr/0002-one-vault.md), [ADR-0003](adr/0003-state-at-0-5.md) (amendments from this review), [ADR-0004](adr/0004-yaml-specs.md) (YAML specs), [ADR-0005](adr/0005-open-in-vega-editor.md) (proposed: open in the Vega editor), [property-scan.md](property-scan.md), [testing.md](testing.md) |
 
-This document explains how Agate works as built, then reviews it. The ADRs say what was decided and why; this says where each decision lives in the code today and where the code has moved past them. Decision numbers (D3, D12, …) refer to ADR-0001 unless they say ADR-0003, which amends it.
+This document explains how Agate works as built, then reviews it. The ADRs say what was decided and why; this says where each decision lives in the code today and where the code has moved past them. Decision numbers (D3, D12, …) refer to ADR-0001 unless they name another ADR.
 
 All diagrams are Mermaid, so they render on GitHub and in Obsidian's reading view.
 
@@ -212,6 +212,7 @@ sequenceDiagram
 
 Points worth knowing:
 
+- Commands act on `plugin.targetBasesView()`: an Agate view in the most recent leaf (views register in `plugin.basesViews` on load), else the view whose data last updated.
 - Two generation counters guard against races. `renderGen` in the view drops results from a slow per-row load that a newer render has overtaken; `generation` in the renderer drops a vega-embed result that finished after a newer embed began.
 - View options (spec file, inline spec, dataset name, theme, renderer, interactive, export menu) are declared in the registration and persisted by Obsidian inside the `.base` file. Agate has no per-view storage of its own.
 - The placeholder is also the start of every authoring path (section 12).
@@ -241,7 +242,7 @@ flowchart TD
   N --> R
 ```
 
-The synthesis trick (D3) is what lets a note chart base data without Agate re-implementing Bases. The spec path is resolved against the note before synthesis, because the synthesized view has no note context. Once a block has delegated to a base, it stops reacting to its own redraw events: the inner Bases view handles data, theme and spec-file changes. See finding R1 in section 15 for the one change that doesn't reach it.
+Blocks and spec files can be JSON or YAML (ADR-0004); an inline YAML `spec:` mapping next to `base:` goes into the synthesized view as is. The synthesis trick (D3) is what lets a note chart base data without Agate re-implementing Bases. The spec path is resolved against the note before synthesis, because the synthesized view has no note context. Once a block has delegated to a base, it stops reacting to its own redraw events: the inner Bases view handles data, theme and spec-file changes. See finding R1 in section 15 for the one change that doesn't reach it.
 
 ## 7. The renderer
 
@@ -392,7 +393,7 @@ flowchart TD
   ALLOW -- yes --> FILL["fill from secretStorage<br/>(errors show the unfilled URL)"] --> FETCH
   FETCH["requestUrl (no CORS)<br/>max 2 per host, 2 retries on 5xx/429/network"]
   FETCH --> IMG{"image with secret?"}
-  IMG -- yes --> BLOB["return blob: URL<br/>so the key never reaches the DOM or an SVG export"]
+  IMG -- yes --> BLOB["return blob: URL<br/>so the key never reaches the DOM or an SVG export;<br/>trackBlobs records it, destroyView revokes it"]
   IMG -- no --> TXT["text to Vega"]
   SCH -- "other, registered" --> PROV["DataSchemeProvider from the API"]
   SCH -- "other, unknown" --> UNK["error: unknown scheme"]
@@ -418,7 +419,7 @@ flowchart LR
   WHICH -- "a spec file" --> SPECL["spec-file listeners<br/>(match by path)"]
   DU --> BVIEW["Bases views"]
   CSS --> BVIEW
-  CSS --> CBLK["code blocks<br/>(not delegated)"]
+  CSS --> CBLK["code blocks<br/>(not delegated; scheduleRun batches per tick)"]
   SETC --> BVIEW
   SETC --> CBLK
   SPECL --> BVIEW
@@ -428,7 +429,7 @@ flowchart LR
   CBLK --> R
 ```
 
-Every chart re-resolves everything on each trigger and lets the renderer decide between a cheap data push and a re-embed. That keeps the surfaces simple; the cost is noted in R3.
+Every chart re-resolves everything on each trigger and lets the renderer decide between a cheap data push and a re-embed. Both surfaces batch triggers into one render per tick (`scheduleRender` in the Bases view, `scheduleRun` in code blocks). What's left of R3 is that every settings save broadcasts, even ones that don't affect rendering.
 
 ## 12. Authoring aids: recipes, prompt, paste, skill
 
@@ -468,6 +469,8 @@ flowchart TD
 
 The prompt and the skill state the same conventions (bracket accessors, `"sort": null` for Bases order, no hard-coded colors). `test/unit/skill.test.ts` and `test/unit/prompt.test.ts` keep them from drifting apart.
 
+A fifth path is proposed but not built: **Open in Vega editor**, which hands the chart as rendered (rows inlined) to the online editor for schema validation and live preview, with Paste spec turning the result back into a spec that reads the base ([ADR-0005](adr/0005-open-in-vega-editor.md)).
+
 ## 13. Extension API
 
 Reached as `app.plugins.plugins.agate.api`, or on the `agate:ready` workspace event. The one rule (D7): add-ons never bundle Vega. They use `api.vega`, so their registrations land in the instance that renders the charts.
@@ -492,7 +495,7 @@ flowchart LR
   end
   subgraph TESTS["Test layers (testing.md)"]
     L1["1 unit (Node, jsdom)<br/>obsidian aliased to test/mocks/obsidian.ts"]
-    L2["2 headless renders<br/>every spec in demo-vault rendered to SVG<br/>by real Vega, snapshotted"]
+    L2["2 headless renders<br/>every spec in demo-vault, JSON or YAML,<br/>rendered to SVG by real Vega, snapshotted"]
     L3["3 manual checklist<br/>demo-vault/tests in Obsidian, desktop + phone"]
   end
   TAG["make release VERSION=x.y.z<br/>preflight: clean main, CHANGELOG entry, check"] --> REL["release.yml builds,<br/>attests, drafts the GitHub release"]
