@@ -14,7 +14,7 @@ import * as vegaThemes from "vega-themes";
 import { describe, expect, it } from "vitest";
 import { defaultRows } from "../fixtures/rows";
 import { marketColumns, marketLabels, marketRows, marketsFixtureDir } from "../fixtures/markets";
-import { ensureNamedData, withInitialValues, withSignalValues } from "../../src/core/spec";
+import { ensureNamedData, parseJsonOrYaml, withInitialValues, withSignalValues } from "../../src/core/spec";
 import { expandRowData, rowDataDefs } from "../../src/core/data/rowdata";
 import { cellsDatasetName, tableCells } from "../../src/core/data/table";
 import { edgesDatasetName, linkEdges, pathTree, treeDatasetName } from "../../src/core/data/structure";
@@ -83,7 +83,8 @@ function previewConfig(dark: boolean): Record<string, unknown> | undefined {
 }
 
 async function renderFixture(name: string): Promise<string> {
-  const raw = JSON.parse(readFileSync(join(chartsDir, name), "utf8")) as Record<string, unknown>;
+  // parseJsonOrYaml, as Agate reads spec files: JSON first, then YAML.
+  const raw = parseJsonOrYaml(readFileSync(join(chartsDir, name), "utf8")) as Record<string, unknown>;
   const isVL = typeof raw.$schema === "string" && /vega-lite/.test(raw.$schema);
   const mode = isVL ? "vega-lite" : "vega";
   // Specs with per-row data (D12) chart tests/Markets; the rest chart the Library rows.
@@ -122,7 +123,7 @@ async function renderFixture(name: string): Promise<string> {
 /** Specs whose layout needs a real canvas to measure text (none at the moment). */
 const CANVAS_ONLY = new Set<string>();
 
-const fixtures = readdirSync(chartsDir).filter((f) => f.endsWith(".json")).sort();
+const fixtures = readdirSync(chartsDir).filter((f) => /\.(json|ya?ml)$/.test(f)).sort();
 
 describe("fixture specs render headlessly with D4 rows", () => {
   for (const name of fixtures) {

@@ -19,6 +19,10 @@ All notable changes to Agate. The format follows [Keep a Changelog](https://keep
 - Keyed map tiles (`{secret:…}` URLs) release their memory when the chart redraws or closes.
 - `agate` code blocks with inline `data:` rows can now ask for the `edges` and `tree` datasets, as Bases views already could. Before, a link graph or sunburst in a self-contained block got no structure data.
 
+### Docs
+
+- [Writing specs in YAML](docs/yaml-specs.md): YAML works wherever a spec goes, and suits specs written in the note itself, static or with rows from a base. The page shows both formats side by side, the quoting rules, and which editor plugins open JSON and YAML files. The guide introduces it in section 3. See [ADR-0004](docs/adr/0004-yaml-specs.md).
+
 ### Internal
 
 - One `usermeta.agate` contract (`src/core/usermeta.ts`), with a test that keeps the code and the table in step. The stats output moved from the renderer to `stats.ts`, spec resolution and property selection moved from the Bases view to `core/spec.ts`, and `edges` and `tree` are built in one place for both surfaces. See [ADR-0003](docs/adr/0003-state-at-0-5.md).

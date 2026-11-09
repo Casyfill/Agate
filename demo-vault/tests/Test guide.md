@@ -38,5 +38,6 @@ This folder exists to exercise the plugin; the rest of the vault is the showcase
 11. [[tests/Surfaces/11 Tooltip images]] — cover image from a note's URL in the tooltip (needs network)
 12. [[tests/Surfaces/12 Gallery]] — sunburst, link graph, arc diagram, travel globe, sankey, linked dashboard, beeswarm
 13. [[tests/Surfaces/13 Stats]] — live big numbers: drawn by Vega, or computed by Vega and shown as HTML (experimental)
+14. [[tests/Surfaces/14 YAML specs]] — YAML in a block (static, and with rows from a base) and as a spec file
 
 Also open [[tests/Library/Books.base]] directly and switch views from the toolbar.
