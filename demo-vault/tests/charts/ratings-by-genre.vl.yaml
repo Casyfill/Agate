@@ -1,0 +1,29 @@
+# The same chart as ratings-by-genre.vl.json, written as YAML.
+# Comments like these are the main thing YAML adds: JSON has no place for them.
+$schema: https://vega.github.io/schema/vega-lite/v6.json
+description: Average rating per genre, from the base's rows.
+
+# Rows come from the Bases query as the `base` dataset.
+data: {name: base}
+
+transform:
+  # Quote expressions: they often hold characters YAML treats specially.
+  - filter: "isValid(datum.note.rating) && isValid(datum.note.genre)"
+
+mark: {type: bar, tooltip: true, cornerRadiusEnd: 3}
+
+encoding:
+  y:
+    field: note.genre
+    type: nominal
+    title: Genre
+    sort: null # keep the order rows arrive in, so the Bases sort menu orders the bars
+  x:
+    aggregate: mean
+    field: note.rating
+    type: quantitative
+    title: Average rating
+    scale: {domain: [0, 5]}
+  color: {field: note.genre, type: nominal, legend: null}
+
+height: {step: 28}

@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { FakeApp, requestUrlCalls, requestUrlFailures } from "obsidian";
-import { createVaultLoader, fetchRemote, fillSecrets, parseSecretHosts } from "../../src/core/loader";
+import { createVaultLoader, fetchRemote, fillSecrets, parseSecretHosts, revokeBlobs, trackBlobs } from "../../src/core/loader";
+import type { Loader } from "vega";
 import type { DataSchemeProvider } from "../../src/core/types";
 
 const app = new FakeApp({
@@ -119,5 +120,23 @@ describe("vault loader (D5)", () => {
     await expect(make(false, undefined, hosts).sanitize("https://api.maptiler.com/t.png?key={secret:maptiler}", { context: "href" })).rejects.toThrow(
       /Remote URL blocked/,
     );
+  });
+});
+
+describe("trackBlobs / revokeBlobs", () => {
+  it("collects blob: URLs from sanitize and revokes them once", async () => {
+    const hrefs = ["blob:a", "https://x/tile.png"];
+    const inner = { sanitize: vi.fn(() => Promise.resolve({ href: hrefs.shift() })) } as unknown as Loader;
+    const blobs: string[] = [];
+    const loader = trackBlobs(inner, blobs);
+    await loader.sanitize("u1", { context: "href" });
+    await loader.sanitize("u2", { context: "href" });
+    expect(blobs).toEqual(["blob:a"]);
+    const revoke = vi.spyOn(URL, "revokeObjectURL").mockImplementation(() => undefined);
+    revokeBlobs(blobs);
+    revokeBlobs(blobs);
+    expect(revoke).toHaveBeenCalledTimes(1);
+    expect(revoke).toHaveBeenCalledWith("blob:a");
+    expect(blobs).toEqual([]);
   });
 });

@@ -1,4 +1,5 @@
 import type { AnySpec, Row } from "./types";
+import { agateMeta } from "./usermeta";
 import { getProperty } from "./data/rowdata";
 
 /**
@@ -51,9 +52,7 @@ const ROLE_KEY = /^[A-Za-z][\w-]*$/;
 
 /** Read a recipe from a spec, or null when the spec carries no `usermeta.agate.recipe`. Throws on a malformed one. */
 export function parseRecipe(raw: AnySpec, source: string, fallbackId: string): Recipe | null {
-  const meta = raw.usermeta as Record<string, unknown> | undefined;
-  const agate = meta && typeof meta === "object" ? (meta.agate as Record<string, unknown> | undefined) : undefined;
-  const r = agate && typeof agate === "object" ? (agate.recipe as Record<string, unknown> | undefined) : undefined;
+  const r = agateMeta(raw)?.recipe as Record<string, unknown> | undefined;
   if (!r || typeof r !== "object") return null;
   if (typeof r.name !== "string" || !r.name.trim()) throw new Error(`${source}: usermeta.agate.recipe.name is required.`);
   const roles: Record<string, RecipeRole> = {};

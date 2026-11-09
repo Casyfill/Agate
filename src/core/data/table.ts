@@ -1,5 +1,6 @@
 import type { AnySpec, Row } from "../types";
 import { getProperty } from "./rowdata";
+import { agateMeta } from "../usermeta";
 
 /**
  * Table cells (ADR-0001 D12): a spec that wants to draw the Bases view as a table, with
@@ -10,9 +11,7 @@ import { getProperty } from "./rowdata";
  *   "usermeta": { "agate": { "cells": "cells" } }
  */
 export function cellsDatasetName(spec: AnySpec): string | null {
-  const meta = spec.usermeta as Record<string, unknown> | undefined;
-  const agate = meta && typeof meta === "object" ? (meta.agate as Record<string, unknown> | undefined) : undefined;
-  const name = agate && typeof agate === "object" ? agate.cells : undefined;
+  const name = agateMeta(spec)?.cells;
   if (name === undefined) return null;
   if (typeof name !== "string" || !name.trim()) throw new Error("usermeta.agate.cells must be a dataset name.");
   return name.trim();

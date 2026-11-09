@@ -1,4 +1,5 @@
 import type { AnySpec, Row } from "../types";
+import { agateMeta } from "../usermeta";
 
 /**
  * Structure datasets (ADR-0001 D12): links between the notes of a base, and the folder
@@ -7,12 +8,6 @@ import type { AnySpec, Row } from "../types";
  *
  *   "usermeta": { "agate": { "edges": "edges", "tree": "tree" } }
  */
-
-function agateMeta(spec: AnySpec): Record<string, unknown> | undefined {
-  const meta = spec.usermeta as Record<string, unknown> | undefined;
-  const agate = meta && typeof meta === "object" ? meta.agate : undefined;
-  return agate && typeof agate === "object" ? (agate as Record<string, unknown>) : undefined;
-}
 
 function datasetName(spec: AnySpec, key: string): string | null {
   const v = agateMeta(spec)?.[key];
@@ -23,6 +18,21 @@ function datasetName(spec: AnySpec, key: string): string | null {
 
 export const edgesDatasetName = (spec: AnySpec): string | null => datasetName(spec, "edges");
 export const treeDatasetName = (spec: AnySpec): string | null => datasetName(spec, "tree");
+
+/** The `edges` and `tree` datasets a spec asks for, built from its rows. Empty when it asks for neither. */
+export function structureDatasets(
+  spec: AnySpec,
+  rows: Row[],
+  resolvedLinks: Record<string, Record<string, number>>,
+  vaultName: string,
+): Record<string, Row[]> {
+  const out: Record<string, Row[]> = {};
+  const edges = edgesDatasetName(spec);
+  if (edges) out[edges] = linkEdges(rows, resolvedLinks);
+  const tree = treeDatasetName(spec);
+  if (tree) out[tree] = pathTree(rows, vaultName);
+  return out;
+}
 
 const pathOf = (row: Row): string | undefined => (row.file as { path?: string } | undefined)?.path;
 const nameOf = (row: Row): string => (row.file as { name?: string } | undefined)?.name ?? "";

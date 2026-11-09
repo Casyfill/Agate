@@ -27,7 +27,7 @@ What is covered: block parsing and the bare-spec versus envelope decision, mode 
 
 ## Layer 2: headless renders (`test/render/specs.test.ts`)
 
-Every spec in `demo-vault/tests/charts/` is compiled (Vega-Lite → Vega where needed), given rows in the D4 shape from `test/fixtures/rows.ts` the way the plugin injects them, and rendered to SVG by real Vega with a loader that reads the vault directory. Assertions: at least one shape drawn, no "Infinite extent" warnings (rows must be present on the first run), and a snapshot of the SVG (or a hash for the world map). Snapshots live in `test/render/__snapshots__/`.
+Every spec in `demo-vault/tests/charts/` (`.json`, `.yaml` or `.yml`, parsed with `parseJsonOrYaml` as the plugin does) is compiled (Vega-Lite → Vega where needed), given rows in the D4 shape from `test/fixtures/rows.ts` the way the plugin injects them, and rendered to SVG by real Vega with a loader that reads the vault directory. Assertions: at least one shape drawn, no "Infinite extent" warnings (rows must be present on the first run), and a snapshot of the SVG (or a hash for the world map). Snapshots live in `test/render/__snapshots__/`.
 
 A snapshot diff means one of: the spec changed (expected, update with `npx vitest run -u`), the fixture rows changed, or Agate's spec preprocessing (`ensureNamedData`, `withInitialValues`) changed behavior. Vega and Vega-Lite upgrades also move snapshots; review the diff, then update.
 

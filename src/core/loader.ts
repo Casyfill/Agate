@@ -138,7 +138,6 @@ export function createVaultLoader(deps: LoaderDeps): Loader {
     }
     if (uri.includes("{secret:")) {
       // Fetch it here and hand Vega a blob: URL, so the key is not in the chart's DOM or an SVG export.
-      // ponytail: blob URLs are never revoked (one per keyed tile per render); revoke on view finalize if memory shows up.
       const res = await fetchRemoteResponse(fillSecrets(uri, deps.secretHosts, deps.getSecret), uri);
       const type = Object.entries(res.headers ?? {}).find(([k]) => k.toLowerCase() === "content-type")?.[1];
       return { href: URL.createObjectURL(new Blob([res.arrayBuffer], type ? { type } : {})) };
@@ -175,6 +174,25 @@ export function createVaultLoader(deps: LoaderDeps): Loader {
   };
 
   return base;
+}
+
+/**
+ * The loader, noting every blob: URL its sanitize() hands out (keyed map tiles) in `blobs`, so
+ * the renderer can revoke them when the chart is torn down.
+ */
+export function trackBlobs(loader: Loader, blobs: string[]): Loader {
+  const tracked = Object.create(loader) as Loader;
+  tracked.sanitize = async (...args: Parameters<Loader["sanitize"]>) => {
+    const out = await loader.sanitize(...args);
+    if (typeof out?.href === "string" && out.href.startsWith("blob:")) blobs.push(out.href);
+    return out;
+  };
+  return tracked;
+}
+
+/** Revoke and forget every URL in `blobs`. */
+export function revokeBlobs(blobs: string[]): void {
+  for (const url of blobs.splice(0)) URL.revokeObjectURL(url);
 }
 
 /**

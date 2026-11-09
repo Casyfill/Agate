@@ -11,6 +11,7 @@ import { AgateRenderer } from "../core/render";
 import { detectMode, loadSpecFile, parseBlock, resolveSpecFile, resolveVaultFile } from "../core/spec";
 import { synthesizeBaseConfig } from "../core/synthesize";
 import { rowDataDefs } from "../core/data/rowdata";
+import { edgesDatasetName, treeDatasetName } from "../core/data/structure";
 import type { AgateEnvelope, AnySpec, Mode, ResolvedSpec, Row } from "../core/types";
 import { errorMessage } from "../util/log";
 import { AGATE_VIEW_TYPE } from "./bases-view";
@@ -47,6 +48,7 @@ class AgateBlock extends MarkdownRenderChild {
   private watchedSpecPath: string | null = null;
   /** True once the block delegated to a synthesized ```base block; that embed handles its own re-rendering. */
   private delegatedToBase = false;
+  private runQueued = false;
 
   constructor(
     private readonly plugin: AgatePlugin,
@@ -61,17 +63,17 @@ class AgateBlock extends MarkdownRenderChild {
   onload(): void {
     this.registerEvent(
       this.plugin.app.workspace.on("css-change", () => {
-        if (!this.delegatedToBase) void this.run();
+        if (!this.delegatedToBase) this.scheduleRun();
       }),
     );
     this.register(
       this.plugin.onSettingsChanged(() => {
-        if (!this.delegatedToBase) void this.run();
+        if (!this.delegatedToBase) this.scheduleRun();
       }),
     );
     this.register(
       this.plugin.onSpecFileChanged((path) => {
-        if (path === this.watchedSpecPath && !this.delegatedToBase) void this.run();
+        if (path === this.watchedSpecPath && !this.delegatedToBase) this.scheduleRun();
       }),
     );
     void this.run();
@@ -80,6 +82,16 @@ class AgateBlock extends MarkdownRenderChild {
   onunload(): void {
     this.renderer?.destroy();
     this.renderer = null;
+  }
+
+  /** Coalesce bursts (css-change + settings + spec save) into one run per tick, as the Bases view does. */
+  private scheduleRun(): void {
+    if (this.runQueued) return;
+    this.runQueued = true;
+    window.setTimeout(() => {
+      this.runQueued = false;
+      void this.run();
+    }, 0);
   }
 
   private getRenderer(): AgateRenderer {
@@ -106,10 +118,11 @@ class AgateBlock extends MarkdownRenderChild {
       const config = await this.plugin.resolveConfig(options.theme);
       const loader = this.plugin.makeLoader(sourcePath);
       let datasets = inlineDatasets(env, options.dataset);
-      if (rowDataDefs(resolved.spec).length > 0) {
-        // Per-row data (D12) over inline `data:` rows; with `base:` the Bases view does this.
+      const spec = resolved.spec;
+      if (rowDataDefs(spec).length > 0 || edgesDatasetName(spec) || treeDatasetName(spec)) {
+        // Per-row data and the structure datasets (D12) over inline `data:` rows; with `base:` the Bases view does this.
         const rows = datasets[options.dataset] ?? [];
-        datasets = { ...datasets, ...(await this.plugin.buildDatasets(resolved.spec, options.dataset, rows, loader)) };
+        datasets = { ...datasets, ...(await this.plugin.buildDatasets(spec, options.dataset, rows, loader)) };
       }
 
       const openNote = (path: string, newLeaf: boolean): void => {

@@ -14,8 +14,7 @@ import type AgatePlugin from "../main";
 import { AgateRenderer } from "../core/render";
 import { describeEntry, groupsToRows } from "../core/data/bases";
 import { cellsDatasetName, tableCells } from "../core/data/table";
-import { edgesDatasetName, linkEdges, pathTree, treeDatasetName } from "../core/data/structure";
-import { detectMode, loadSpecFile, parseJsonOrYaml, referencedProperties, resolveSpecFile } from "../core/spec";
+import { detectMode, loadSpecFile, propertiesToConvert, resolveSpecFile, resolveViewSpec } from "../core/spec";
 import { openSpecFile } from "../ui/open-spec";
 import type { AnySpec, ChartOptions, ResolvedSpec } from "../core/types";
 import { CHART_VIEW_ICON_ID } from "../chart-icon";
@@ -61,6 +60,7 @@ export class AgateBasesView extends BasesView {
   }
 
   onload(): void {
+    this.plugin.basesViews.add(this);
     this.registerEvent(this.app.workspace.on("css-change", () => this.scheduleRender()));
     this.register(this.plugin.onSettingsChanged(() => this.scheduleRender()));
     this.register(this.plugin.onSpecFileChanged((path) => {
@@ -69,7 +69,13 @@ export class AgateBasesView extends BasesView {
   }
 
   onunload(): void {
+    this.plugin.basesViews.delete(this);
     this.renderer.destroy();
+  }
+
+  /** Whether this chart sits inside `el` (a leaf's view), for picking the command target. */
+  isInside(el: HTMLElement): boolean {
+    return el.contains(this.containerEl);
   }
 
   onDataUpdated(): void {
@@ -224,7 +230,7 @@ export class AgateBasesView extends BasesView {
       const config = await plugin.resolveConfig(options.theme);
       const loader = plugin.makeLoader(null);
 
-      const props = this.propertiesToConvert(resolved.spec);
+      const props = propertiesToConvert(this.config.getOrder(), this.allProperties ?? [], resolved.spec) as BasesPropertyId[];
       const groups = this.data?.groupedData ?? [];
       const rows = groupsToRows(groups, props, plugin.settings.debug ? plugin.log : undefined);
       plugin.log.debug(`bases view: ${rows.length} rows, ${props.length} properties`, props);
@@ -237,10 +243,6 @@ export class AgateBasesView extends BasesView {
         const order = this.config.getOrder();
         datasets[cellsName] = tableCells(rows, order, (id) => this.config.getDisplayName(id as BasesPropertyId));
       }
-      const edgesName = edgesDatasetName(resolved.spec);
-      if (edgesName) datasets[edgesName] = linkEdges(rows, this.app.metadataCache.resolvedLinks);
-      const treeName = treeDatasetName(resolved.spec);
-      if (treeName) datasets[treeName] = pathTree(rows, this.app.vault.getName());
 
       const openNote = (path: string, newLeaf: boolean): void => {
         void this.app.workspace.openLinkText(path, "", newLeaf);
@@ -249,24 +251,6 @@ export class AgateBasesView extends BasesView {
     } catch (err) {
       if (gen === this.renderGen) this.renderer.showError(err);
     }
-  }
-
-  /**
-   * Properties to convert (D4): whatever the spec refers to, plus what the user made visible
-   * in the Bases Properties menu, plus file.name/path. A synthesized view has no order, so
-   * the spec scan is what makes `base:` blocks work at all.
-   */
-  private propertiesToConvert(spec: AnySpec): BasesPropertyId[] {
-    const set = new Set<BasesPropertyId>(this.config.getOrder());
-    const available = new Set<string>(this.allProperties ?? []);
-    for (const id of referencedProperties(spec)) {
-      // Only note.* must exist in the dataset; formula.* and file.* are worth asking Bases for anyway.
-      if (id.startsWith("note.") && available.size > 0 && !available.has(id)) continue;
-      set.add(id as BasesPropertyId);
-    }
-    set.add("file.name");
-    set.add("file.path");
-    return [...set];
   }
 
   private readChartOptions(): ChartOptions {
@@ -290,28 +274,13 @@ export class AgateBasesView extends BasesView {
   }
 
   private async resolveSpec(): Promise<ResolvedSpec | null> {
-    const specFile = this.specFilePath();
-    const inline = this.config.get("spec");
-
-    let spec: AnySpec | null = null;
-    let specPath: string | null = null;
-
-    if (specFile) {
-      spec = await loadSpecFile(this.app, specFile, null, this.plugin.settings.specFolder);
-      specPath = specFile;
-    } else if (typeof inline === "string" && inline.trim().length > 0) {
-      const parsed = parseJsonOrYaml(inline);
-      if (!parsed || typeof parsed !== "object") throw new Error("Inline spec is not an object.");
-      spec = parsed as AnySpec;
-    } else if (inline && typeof inline === "object" && !Array.isArray(inline)) {
-      // Hand-edited .base files can hold the spec as a nested YAML mapping.
-      spec = inline as AnySpec;
-    }
-
-    if (!spec) return null;
-    const mode = detectMode(spec);
-    spec = this.plugin.preprocess(spec, { mode, sourcePath: specPath, surface: "bases-view" });
-    return { mode, spec, specPath };
+    const found = await resolveViewSpec(this.specFilePath(), this.config.get("spec"), (path) =>
+      loadSpecFile(this.app, path, null, this.plugin.settings.specFolder),
+    );
+    if (!found) return null;
+    const mode = detectMode(found.spec);
+    const spec = this.plugin.preprocess(found.spec, { mode, sourcePath: found.specPath, surface: "bases-view" });
+    return { mode, spec, specPath: found.specPath };
   }
 
   private renderPlaceholder(): void {

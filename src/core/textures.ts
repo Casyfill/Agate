@@ -1,4 +1,5 @@
 import type { AnySpec } from "./types";
+import { agateMeta } from "./usermeta";
 
 /**
  * SVG fill textures (hatching, dots) a spec declares under `usermeta.agate.textures` and uses as
@@ -49,8 +50,7 @@ const NAME_RE = /^[A-Za-z][\w-]*$/;
 
 /** The textures a spec declares, by name; invalid names are dropped. */
 export function texturesOf(spec: AnySpec): Record<string, TextureDef> {
-  const agate = (spec.usermeta as { agate?: { textures?: unknown } } | undefined)?.agate;
-  const raw = agate?.textures;
+  const raw = agateMeta(spec)?.textures;
   if (!raw || typeof raw !== "object") return {};
   const out: Record<string, TextureDef> = {};
   for (const [name, def] of Object.entries(raw as Record<string, unknown>)) {

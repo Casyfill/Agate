@@ -14,6 +14,7 @@ import { SpecFileModal } from "./ui/spec-file-modal";
 import { parseJsonOrYaml, resolveVaultFile } from "./core/spec";
 import { resolveChartOptions } from "./core/options";
 import { RowDataCache, expandRowData, rowDataDefs } from "./core/data/rowdata";
+import { structureDatasets } from "./core/data/structure";
 import { parseRecipe, type Recipe } from "./core/recipes";
 import { buildThemePrompt, type PromptEnvironment } from "./core/prompt";
 import { builtinRecipes } from "./recipes";
@@ -45,8 +46,10 @@ export default class AgatePlugin extends Plugin {
   readonly schemes: Map<string, DataSchemeProvider> = new Map();
   readonly preprocessors: SpecPreprocessor[] = [];
 
-  /** Most recently updated Agate Bases view (weakly held, per the plugin guidelines); target of the debug dump command. */
+  /** Most recently updated Agate Bases view (weakly held, per the plugin guidelines); fallback target of the commands. */
   lastBasesView: WeakRef<AgateBasesView> | null = null;
+  /** Live Agate Bases views; each adds itself on load and removes itself on unload. */
+  readonly basesViews = new Set<AgateBasesView>();
 
   /** Remote responses behind per-row data (D12), shared by every chart in the vault. */
   readonly rowDataCache = new RowDataCache();
@@ -71,13 +74,13 @@ export default class AgatePlugin extends Plugin {
 
     this.addCommand({
       id: "dump-first-row",
-      name: "Debug: dump first Bases row of the last rendered chart to the console",
+      name: "Debug: dump first Bases row of the current chart to the console",
       callback: () => {
         if (!this.settings.debug) {
           new Notice("Agate: turn on debug logging first, then run this again.");
           return;
         }
-        const view = this.lastBasesView?.deref();
+        const view = this.targetBasesView();
         if (!view) {
           new Notice("Agate: no Agate chart has rendered from a base yet.");
           return;
@@ -89,9 +92,9 @@ export default class AgatePlugin extends Plugin {
 
     this.addCommand({
       id: "new-chart-from-recipe",
-      name: "New chart from recipe (in the last chart view)",
+      name: "New chart from recipe (in the current chart view)",
       checkCallback: (checking) => {
-        const view = this.lastBasesView?.deref();
+        const view = this.targetBasesView();
         if (!view) return false;
         if (!checking) void view.openRecipePicker();
         return true;
@@ -100,9 +103,9 @@ export default class AgatePlugin extends Plugin {
 
     this.addCommand({
       id: "copy-chart-prompt",
-      name: "Copy chart prompt for an LLM (from the last chart view)",
+      name: "Copy chart prompt for an LLM (from the current chart view)",
       checkCallback: (checking) => {
-        const view = this.lastBasesView?.deref();
+        const view = this.targetBasesView();
         if (!view) return false;
         if (!checking) void view.copyChartPrompt();
         return true;
@@ -111,9 +114,9 @@ export default class AgatePlugin extends Plugin {
 
     this.addCommand({
       id: "paste-chart-spec",
-      name: "Paste chart spec from the clipboard (into the last chart view)",
+      name: "Paste chart spec from the clipboard (into the current chart view)",
       checkCallback: (checking) => {
-        const view = this.lastBasesView?.deref();
+        const view = this.targetBasesView();
         if (!view) return false;
         if (!checking) void view.pasteSpecFromClipboard();
         return true;
@@ -122,9 +125,9 @@ export default class AgatePlugin extends Plugin {
 
     this.addCommand({
       id: "edit-chart-spec",
-      name: "Edit the spec of the last chart (beside it)",
+      name: "Edit the spec of the current chart (beside it)",
       checkCallback: (checking) => {
-        const view = this.lastBasesView?.deref();
+        const view = this.targetBasesView();
         if (!view) return false;
         if (!checking) void view.editSpec();
         return true;
@@ -173,7 +176,20 @@ export default class AgatePlugin extends Plugin {
     this.log.debug(`loaded, vega ${this.api.vegaVersion}`);
   }
 
+  /**
+   * The chart a command acts on: an Agate view in the focused leaf, preferring the one whose data
+   * last updated when a note embeds several; otherwise the last updated view anywhere.
+   */
+  targetBasesView(): AgateBasesView | null {
+    const last = this.lastBasesView?.deref() ?? null;
+    const leafEl = this.app.workspace.getMostRecentLeaf()?.view.containerEl;
+    const inLeaf = leafEl ? [...this.basesViews].filter((v) => v.isInside(leafEl)) : [];
+    if (last && inLeaf.includes(last)) return last;
+    return inLeaf[0] ?? last;
+  }
+
   onunload(): void {
+    this.basesViews.clear();
     this.settingsListeners.clear();
     this.specFileListeners.clear();
   }
@@ -285,6 +301,8 @@ export default class AgatePlugin extends Plugin {
    * The datasets a chart receives: the rows under `datasetName`, plus one dataset per
    * `usermeta.agate.rowData` entry built by loading each row's property (D12). A row that
    * fails to load is skipped with a warning; when every row fails the chart shows the error.
+   * `edges` and `tree` (D12) come from the vault, so every surface gets them; `cells` needs the
+   * Bases view's Properties-menu order and is added there.
    */
   async buildDatasets(spec: AnySpec, datasetName: string, rows: Row[], loader: Loader): Promise<Record<string, Row[]>> {
     const datasets: Record<string, Row[]> = { [datasetName]: rows };
@@ -306,7 +324,7 @@ export default class AgatePlugin extends Plugin {
       this.log.debug(`per-row data "${def.name}": ${records.length} records from ${rows.length} rows`);
       datasets[def.name] = records;
     }
-    return datasets;
+    return { ...datasets, ...structureDatasets(spec, rows, this.app.metadataCache.resolvedLinks, this.app.vault.getName()) };
   }
 
   /** Copy a prompt for generating a static Vega theme from the active Obsidian theme and current overrides. */

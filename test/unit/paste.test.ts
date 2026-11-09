@@ -123,3 +123,10 @@ describe("every demo-vault chart passes the check", () => {
     expect(r.errors).toEqual([]);
   });
 });
+
+describe("checkPastedSpec usermeta.agate", () => {
+  it("warns on unknown keys", () => {
+    const r = check(JSON.stringify({ ...bar, usermeta: { agate: { opne: "click" } } }));
+    expect(r.warnings.some((w) => w.includes('"opne"'))).toBe(true);
+  });
+});

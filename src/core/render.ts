@@ -14,11 +14,12 @@ import {
   withSignalValues,
 } from "./spec";
 import { errorMessage, type Logger } from "../util/log";
-import { trackFailures } from "./loader";
+import { revokeBlobs, trackBlobs, trackFailures } from "./loader";
 import { quietAriaLabels } from "./aria";
 import { themeColors } from "./theme";
 import { containerSignals, isBounce } from "./resize";
-import { computeStats, isStatsSpec } from "./stats";
+import { computeStats, isStatsSpec, renderStats } from "./stats";
+import { unknownAgateKeys } from "./usermeta";
 import { bindTextures, texturesOf, texturesSvg } from "./textures";
 
 export interface RenderInput {
@@ -98,6 +99,8 @@ export class AgateRenderer {
   private lastResizeAt = 0;
   private resizeTimer: number | null = null;
   private generation = 0;
+  /** blob: URLs of keyed images for the current embed, revoked in destroyView. */
+  private blobs: string[] = [];
 
   constructor(
     private readonly hostEl: HTMLElement,
@@ -138,8 +141,13 @@ export class AgateRenderer {
     this.hostEl.empty();
     this.chartEl = this.hostEl.createDiv({ cls: "agate-chart" });
 
+    const typos = unknownAgateKeys(resolved.spec);
+    if (typos.length > 0) this.log.warn("unknown usermeta.agate keys, ignored:", typos);
+
     const failures: string[] = [];
-    const loader = trackFailures(input.loader, failures);
+    const blobs: string[] = [];
+    this.blobs = blobs;
+    const loader = trackBlobs(trackFailures(input.loader, failures), blobs);
     try {
       let spec = cloneSpec(resolved.spec);
       const datasetNames = Object.keys(input.datasets);
@@ -165,25 +173,11 @@ export class AgateRenderer {
       if (isStatsSpec(resolved.spec)) {
         const stats = await computeStats(spec, resolved.mode, input.config, loader);
         if (gen !== this.generation) return;
-        this.chartEl.empty();
-        this.chartEl.addClass("agate-stats");
-        markStatsHosts(this.chartEl, true);
-        for (const s of stats) {
-          const cell = this.chartEl.createDiv({ cls: "agate-stat" });
-          const top = cell.createDiv({ cls: "agate-stat-top" });
-          top.createSpan({ cls: "agate-stat-value", text: s.value });
-          if (s.change) {
-            const cls = ["agate-stat-change", `is-${s.direction ?? "flat"}`];
-            if (s.good !== undefined) cls.push(s.good ? "is-good" : "is-bad");
-            top.createSpan({ cls: cls.join(" "), text: s.change });
-          }
-          cell.createDiv({ cls: "agate-stat-label", text: s.label });
-          if (s.note) cell.createDiv({ cls: "agate-stat-note", text: s.note });
-        }
+        renderStats(this.chartEl, stats);
         this.showLoadFailures(failures);
         return;
       }
-      markStatsHosts(this.chartEl, false);
+      renderStats(this.chartEl, null);
 
       const embedOptions: EmbedOptions = {
         mode: resolved.mode,
@@ -214,6 +208,7 @@ export class AgateRenderer {
       if (gen !== this.generation) {
         // A newer render started while we were embedding; drop this one.
         result.finalize();
+        revokeBlobs(blobs);
         return;
       }
       this.result = result;
@@ -359,6 +354,8 @@ export class AgateRenderer {
       this.result = null;
       this.bumpCounter(-1);
     }
+    if (this.blobs.length > 0) this.log.debug(`revoking ${this.blobs.length} image blob URLs`);
+    revokeBlobs(this.blobs);
     this.embedKey = "";
     this.lastDatasets = {};
     this.chartEl = null;
@@ -368,16 +365,5 @@ export class AgateRenderer {
     if (!this.isDebug()) return;
     window.__agateViews = (window.__agateViews ?? 0) + delta;
     this.log.debug("live views:", window.__agateViews);
-  }
-}
-
-/**
- * Mark the base block, embed or view around a stats chart, so styles.css can drop the Bases
- * header and fixed height there. A class instead of `:has()`, which makes the browser
- * re-check selectors across the whole document on every DOM change.
- */
-function markStatsHosts(el: HTMLElement, on: boolean): void {
-  for (let p = el.parentElement; p; p = p.parentElement) {
-    if (p.matches(".block-language-base, .bases-embed, .agate-bases-view")) p.toggleClass("agate-has-stats", on);
   }
 }

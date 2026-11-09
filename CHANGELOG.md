@@ -4,6 +4,34 @@ All notable changes to Agate. The format follows [Keep a Changelog](https://keep
 
 ## [Unreleased]
 
+## [0.6.0] - 2026-11-09
+
+### Added
+
+- **Paste spec** warns about keys under `usermeta.agate` that Agate doesn't know (a typo such as `rowdata` or `texture`), and the console logs them when a chart renders. Before, they were ignored silently.
+- The guide has a reference table of every `usermeta.agate` key (section 10).
+
+### Changed
+
+- The chart commands (Edit the spec, New chart from recipe, Copy chart prompt, Paste chart spec, Debug: dump first row) act on the chart in the note or tab you're in. Before, they acted on whichever chart's data had last updated, which with two charts open could be the other one. Their names now say "current chart" instead of "last chart".
+
+### Fixed
+
+- A theme switch or settings change redraws each `agate` code block once, not once per event that fired.
+- Keyed map tiles (`{secret:…}` URLs) release their memory when the chart redraws or closes.
+- `agate` code blocks with inline `data:` rows can now ask for the `edges` and `tree` datasets, as Bases views already could. Before, a link graph or sunburst in a self-contained block got no structure data.
+
+### Docs
+
+- [Writing specs in YAML](docs/yaml-specs.md): YAML works wherever a spec goes, and suits specs written in the note itself, static or with rows from a base. The page shows both formats side by side, the quoting rules, and which editor plugins open JSON and YAML files. The guide introduces it in section 3. See [ADR-0004](docs/adr/0004-yaml-specs.md).
+- [Architecture](docs/architecture.md): how Agate works as built, with diagrams for each surface, the renderer, the data model, the loader and redraws, and a review with open findings.
+
+### Internal
+
+- One `usermeta.agate` contract (`src/core/usermeta.ts`), with a test that keeps the code and the table in step. The stats output moved from the renderer to `stats.ts`, spec resolution and property selection moved from the Bases view to `core/spec.ts`, and `edges` and `tree` are built in one place for both surfaces. See [ADR-0003](docs/adr/0003-state-at-0-5.md).
+- Render tests cover YAML spec files too (`tests/charts/ratings-by-genre.vl.yaml`).
+- [ADR-0005](docs/adr/0005-open-in-vega-editor.md) proposes an **Open in Vega editor** button; not built yet.
+
 ## [0.5.0] - 2026-11-05 
 
 ### Added

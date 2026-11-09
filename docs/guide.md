@@ -86,13 +86,29 @@ view: Table
 
 The first is a bare spec. The second adds inline rows. The third pulls rows from a base's query, reusing that view's filters and property order; it renders a hidden Bases view underneath, which is why the Bases toolbar shows above such charts.
 
+Blocks and spec files can be YAML as well as JSON. YAML is often nicer to write by hand: less punctuation, and room for comments. It works especially well for a spec that lives in the note, which you edit with Obsidian's own editor on any device. The spec can carry its own data, or take rows from a base:
+
+````markdown
+```agate
+base: Library/Books.base
+spec:
+  # Average rating per genre
+  mark: {type: bar, tooltip: true}
+  encoding:
+    y: {field: note.genre, type: nominal, sort: "-x"}
+    x: {aggregate: mean, field: note.rating, type: quantitative}
+```
+````
+
+JSON stays handier for copying, from the galleries, from an assistant, or into the Vega editor. [Writing specs in YAML](yaml-specs.md) has both forms side by side and the quoting rules.
+
 ## 4. Building a new visualization
 
 The fastest path is to start from something that already works and change it in small steps.
 
 1. Find a close example in the [Vega-Lite gallery](https://vega.github.io/vega-lite/examples/) (or the [Vega gallery](https://vega.github.io/vega/examples/) for custom layouts).
 2. Replace its `data` with `{ "name": "base" }` and its field names with `note.…`, `file.…` or `formula.…`.
-3. Save it as a file in your spec folder, not as an inline spec. Agate watches spec files, so every save redraws every chart that uses it. To edit it in Obsidian, install a code editor plugin once: Agate recommends [JSON Editor](https://community.obsidian.md/plugins/json-editor), a community plugin with source and tree views for JSON, on desktop and mobile. Then hover the chart and click **Edit spec** (`{ }`, top right), or run **Agate: Edit the spec of the last chart**: the file opens to the left of the chart, and every save redraws it. **Agate: Edit a spec file** opens any spec the same way. To see `.json` specs in the file explorer, turn on **Show spec files in the file explorer** in Settings → Agate → Editing specs (Obsidian's own Detect all file extensions).
+3. Save it as a file in your spec folder (`.json`, or `.yaml` if you prefer [YAML](yaml-specs.md)), not as an inline spec. Agate watches spec files, so every save redraws every chart that uses it. To edit it in Obsidian, install a code editor plugin once: Agate recommends [JSON Editor](https://community.obsidian.md/plugins/json-editor), a community plugin with source and tree views for JSON, on desktop and mobile. For YAML spec files, or one plugin for both formats, see [editor plugins](yaml-specs.md#editor-plugins). Then hover the chart and click **Edit spec** (`{ }`, top right), or run **Agate: Edit the spec of the current chart**: the file opens to the left of the chart, and every save redraws it. **Agate: Edit a spec file** opens any spec the same way. To see `.json` specs in the file explorer, turn on **Show spec files in the file explorer** in Settings → Agate → Editing specs (Obsidian's own Detect all file extensions).
 4. When a field comes out empty, run **Agate: Debug: dump first Bases row** from the command palette and look at the console (Cmd/Ctrl+Opt+I). It prints the raw Bases values and the converted row, which tells you the exact field names and types.
 5. For harder layouts, prototype in the [Vega editor](https://vega.github.io/editor/): paste the dumped row as inline `values`, get it right there, then switch back to `{ "name": "base" }`.
 
@@ -262,6 +278,22 @@ Agate fills in `{secret:name}` only when it makes the request, and only when the
 
 The key stays out of your vault files and Agate's settings file, so sync and git never carry it. Secret storage is kept per device: create the secret once on each device you use. Without it, a keyed URL fails with an error that names the secret, so give the spec a keyless fallback (the hike dashboard's `basemap` select) if the note is opened elsewhere.
 
+### Reference: every `usermeta.agate` key
+
+| Key | Value | What it does | Section |
+|---|---|---|---|
+| `rowData` | `{name, from, format?}` or a list | Loads each row's file or URL into one extra dataset | [6](#6-per-note-external-data) |
+| `cells` | dataset name | One record per row and visible property, in Properties-menu order (Bases view only) | [7](#7-a-table-with-a-chart-column) |
+| `edges` | dataset name | Links between the base's notes | [10](#10-gallery-structure-maps-flows) |
+| `tree` | dataset name | Folder hierarchy of the base's notes | [10](#10-gallery-structure-maps-flows) |
+| `open` | `"click"` or `"dblclick"` | Opens the note behind a mark | [10](#10-gallery-structure-maps-flows) |
+| `textures` | `{name: texture}` | Hatching and dot fills, used as `url(#name)` (SVG only) | [8](#textures-hatching-and-dots-svg-only) |
+| `output` | `"stats"` | Big numbers as note text (experimental) | [11](#11-experimental-big-numbers-as-note-text) |
+| `recipe` | recipe definition | Makes a spec in the recipe folder a recipe | [2](#2-your-first-chart-five-minutes) |
+| `fromRecipe` | `{id, roles}` | Written by Agate: which recipe a spec came from | [2](#2-your-first-chart-five-minutes) |
+
+Dataset names must differ from the rows dataset (`base` unless the view sets another). Agate ignores keys not in this table; **Paste spec** warns about them and the console logs them, which catches typos such as `rowdata`.
+
 ## 11. Experimental: big numbers as note text
 
 A row of headline numbers (books read, mean rating, pages) can be drawn by Vega as text marks, but SVG text does not wrap, cannot be selected and uses the chart font. Add one line to the spec instead:
@@ -293,4 +325,5 @@ Two things to know. In Vega-Lite's `aggregate`, a field written `note.rating` is
 - `README.md`: overview, settings, limits, API for plugin authors.
 - `docs/adr/0001-architecture-and-roadmap.md`: how it works and why (D3 surfaces, D4 rows, D7 API, D11 settings, D12 per-row data).
 - `docs/why-agate.md`: how Agate compares with other ways to chart in Obsidian.
+- `docs/yaml-specs.md`: writing specs in YAML, in a note or as a file.
 - `docs/future-features.md`: what might come next.
