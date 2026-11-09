@@ -54,9 +54,9 @@ Goal: answer the five questions from ADR-0001 M0 with evidence, not impressions.
 - [x] Settings → Config overrides → `{"mark": {"color": "#e93147"}}`. Bars turn red where the spec does not set a colour.
 - [x] Resize the pane with a chart. Vega-Lite charts without explicit width re-fit.
 - [x] Console: type `window.__agateViews` into the console prompt and press Enter (debug on; also logged as `[agate] live views: n` after each render). Open several charts, note the number, close their tabs, check again: should drop back to the number of charts still visible.
-- [ ] Batched redraws (R3): a note with several ```` ```agate ```` blocks, debug on. Toggle light/dark: each block logs one render, not two or three.
-- [ ] Command target (R4): a note embedding two Agate views, plus a `.base` tab with a third. Click into the note and run **Agate: Edit the spec of the current chart**: it opens one of the note's charts, never the `.base` tab's. Click into the `.base` tab and run it again: it opens that tab's chart.
-- [ ] Keyed tiles (R7): a chart with a `{secret:…}` basemap, debug on. Change its theme, then close the tab. Each time the console logs `[agate] revoking n image blob URLs`, with n the number of tiles.
+- [x] Batched redraws (R3): a note with several ```` ```agate ```` blocks, debug on. Toggle light/dark: each block logs one render, not two or three.
+- [x] Command target (R4): a note embedding two Agate views, plus a `.base` tab with a third. Click into the note and run **Agate: Edit the spec of the current chart**: it opens one of the note's charts, never the `.base` tab's. Click into the `.base` tab and run it again: it opens that tab's chart.
+- [x] Keyed tiles (R7): a chart with a `{secret:…}` basemap, debug on. Change its theme, then close the tab. Each time the console logs `[agate] revoking n image blob URLs`, with n the number of tiles.
 - [x] Disable the plugin in settings. No errors; charts disappear; `.base` views show "view type not found" or fall back, whichever Obsidian does.
 
 ## Round 1 findings (2026-09-26)
