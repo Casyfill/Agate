@@ -60,6 +60,7 @@ export class AgateBasesView extends BasesView {
   }
 
   onload(): void {
+    this.plugin.basesViews.add(this);
     this.registerEvent(this.app.workspace.on("css-change", () => this.scheduleRender()));
     this.register(this.plugin.onSettingsChanged(() => this.scheduleRender()));
     this.register(this.plugin.onSpecFileChanged((path) => {
@@ -68,7 +69,13 @@ export class AgateBasesView extends BasesView {
   }
 
   onunload(): void {
+    this.plugin.basesViews.delete(this);
     this.renderer.destroy();
+  }
+
+  /** Whether this chart sits inside `el` (a leaf's view), for picking the command target. */
+  isInside(el: HTMLElement): boolean {
+    return el.contains(this.containerEl);
   }
 
   onDataUpdated(): void {

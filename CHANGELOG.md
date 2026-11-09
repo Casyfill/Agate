@@ -9,8 +9,14 @@ All notable changes to Agate. The format follows [Keep a Changelog](https://keep
 - **Paste spec** warns about keys under `usermeta.agate` that Agate doesn't know (a typo such as `rowdata` or `texture`), and the console logs them when a chart renders. Before, they were ignored silently.
 - The guide has a reference table of every `usermeta.agate` key (section 10).
 
+### Changed
+
+- The chart commands (Edit the spec, New chart from recipe, Copy chart prompt, Paste chart spec, Debug: dump first row) act on the chart in the note or tab you're in. Before, they acted on whichever chart's data had last updated, which with two charts open could be the other one. Their names now say "current chart" instead of "last chart".
+
 ### Fixed
 
+- A theme switch or settings change redraws each `agate` code block once, not once per event that fired.
+- Keyed map tiles (`{secret:…}` URLs) release their memory when the chart redraws or closes.
 - `agate` code blocks with inline `data:` rows can now ask for the `edges` and `tree` datasets, as Bases views already could. Before, a link graph or sunburst in a self-contained block got no structure data.
 
 ### Internal

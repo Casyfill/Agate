@@ -48,6 +48,7 @@ class AgateBlock extends MarkdownRenderChild {
   private watchedSpecPath: string | null = null;
   /** True once the block delegated to a synthesized ```base block; that embed handles its own re-rendering. */
   private delegatedToBase = false;
+  private runQueued = false;
 
   constructor(
     private readonly plugin: AgatePlugin,
@@ -62,17 +63,17 @@ class AgateBlock extends MarkdownRenderChild {
   onload(): void {
     this.registerEvent(
       this.plugin.app.workspace.on("css-change", () => {
-        if (!this.delegatedToBase) void this.run();
+        if (!this.delegatedToBase) this.scheduleRun();
       }),
     );
     this.register(
       this.plugin.onSettingsChanged(() => {
-        if (!this.delegatedToBase) void this.run();
+        if (!this.delegatedToBase) this.scheduleRun();
       }),
     );
     this.register(
       this.plugin.onSpecFileChanged((path) => {
-        if (path === this.watchedSpecPath && !this.delegatedToBase) void this.run();
+        if (path === this.watchedSpecPath && !this.delegatedToBase) this.scheduleRun();
       }),
     );
     void this.run();
@@ -81,6 +82,16 @@ class AgateBlock extends MarkdownRenderChild {
   onunload(): void {
     this.renderer?.destroy();
     this.renderer = null;
+  }
+
+  /** Coalesce bursts (css-change + settings + spec save) into one run per tick, as the Bases view does. */
+  private scheduleRun(): void {
+    if (this.runQueued) return;
+    this.runQueued = true;
+    window.setTimeout(() => {
+      this.runQueued = false;
+      void this.run();
+    }, 0);
   }
 
   private getRenderer(): AgateRenderer {

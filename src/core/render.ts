@@ -14,7 +14,7 @@ import {
   withSignalValues,
 } from "./spec";
 import { errorMessage, type Logger } from "../util/log";
-import { trackFailures } from "./loader";
+import { revokeBlobs, trackBlobs, trackFailures } from "./loader";
 import { quietAriaLabels } from "./aria";
 import { themeColors } from "./theme";
 import { containerSignals, isBounce } from "./resize";
@@ -99,6 +99,8 @@ export class AgateRenderer {
   private lastResizeAt = 0;
   private resizeTimer: number | null = null;
   private generation = 0;
+  /** blob: URLs of keyed images for the current embed, revoked in destroyView. */
+  private blobs: string[] = [];
 
   constructor(
     private readonly hostEl: HTMLElement,
@@ -143,7 +145,9 @@ export class AgateRenderer {
     if (typos.length > 0) this.log.warn("unknown usermeta.agate keys, ignored:", typos);
 
     const failures: string[] = [];
-    const loader = trackFailures(input.loader, failures);
+    const blobs: string[] = [];
+    this.blobs = blobs;
+    const loader = trackBlobs(trackFailures(input.loader, failures), blobs);
     try {
       let spec = cloneSpec(resolved.spec);
       const datasetNames = Object.keys(input.datasets);
@@ -204,6 +208,7 @@ export class AgateRenderer {
       if (gen !== this.generation) {
         // A newer render started while we were embedding; drop this one.
         result.finalize();
+        revokeBlobs(blobs);
         return;
       }
       this.result = result;
@@ -349,6 +354,8 @@ export class AgateRenderer {
       this.result = null;
       this.bumpCounter(-1);
     }
+    if (this.blobs.length > 0) this.log.debug(`revoking ${this.blobs.length} image blob URLs`);
+    revokeBlobs(this.blobs);
     this.embedKey = "";
     this.lastDatasets = {};
     this.chartEl = null;

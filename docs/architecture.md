@@ -519,11 +519,11 @@ Ordered by how likely they are to bite a user.
 |---|---|---|---|---|
 | R1 | A code block with `base:` copies the `.base` file's YAML at render time. Edits to that base's filters, formulas or the named view do not reach the block until the note re-renders. Spec-file edits do reach it (the inner view watches `specFile`). Read from the code; confirm in Obsidian. | `codeblock.ts` `renderThroughBase`, `delegatedToBase` | Stale chart after editing the base | Subscribe the block to `vault.on("modify")` for its `.base` path and re-run synthesis |
 | R2 | Silent empty charts remain possible: a property the scan misses (field strings with spaces, names built at runtime) converts to `undefined` with no warning. | `spec.ts` `PROP_STRING`, `PROP_IN_EXPR` | Blank chart, no error box | Allow spaces in `PROP_STRING`; in debug mode log spec-referenced `note.*` ids absent from `allProperties`; switch to Vega's `parseExpression` if another regex gap appears (all in property-scan.md) |
-| R3 | Any settings save, theme registration or `css-change` re-resolves config and re-runs every open chart, including toggling Debug logging. Code blocks don't coalesce bursts the way Bases views do. Correct (generation counters drop stale work) but repeated work. | `main.ts` `emitSettingsChanged`, `codeblock.ts` `onload` | Jank in vaults with many open charts | Coalesce in `AgateBlock` like `scheduleRender`; skip the broadcast for settings that don't affect rendering |
-| R4 | Commands act on `lastBasesView`, the view whose data last updated, not the focused one. With two charts visible, "Edit the spec of the last chart" can open the other chart's spec. | `main.ts` commands, `bases-view.ts` `onDataUpdated` | Confusing target | Prefer the view in the active leaf; fall back to the last updated |
+| R3 | *Partly fixed: code blocks now batch like Bases views; the broadcast on every settings save remains.* Any settings save, theme registration or `css-change` re-resolves config and re-runs every open chart, including toggling Debug logging. Code blocks don't coalesce bursts the way Bases views do. Correct (generation counters drop stale work) but repeated work. | `main.ts` `emitSettingsChanged`, `codeblock.ts` `onload` | Jank in vaults with many open charts | Coalesce in `AgateBlock` like `scheduleRender`; skip the broadcast for settings that don't affect rendering |
+| R4 | *Fixed: commands use `targetBasesView()`.* Commands act on `lastBasesView`, the view whose data last updated, not the focused one. With two charts visible, "Edit the spec of the last chart" can open the other chart's spec. | `main.ts` commands, `bases-view.ts` `onDataUpdated` | Confusing target | Prefer the view in the active leaf; fall back to the last updated |
 | R5 | Static charts (`interactive: false`) re-embed on every data update, because a finalized View can't take new data. | `render.ts` reuse condition | Slower toolbar changes on big static charts | Fine as designed; document it next to the option |
 | R6 | Undocumented Obsidian internals: theme name (`customCss.theme`, `getConfig("cssTheme")`), `viewRegistry`, `plugins.enabledPlugins`, `get/setConfig("showUnsupportedFiles")`. Each has a fallback. | `main.ts`, `ui/open-spec.ts` | `auto` loses per-theme palettes if they move | Keep the fallbacks; add one unit test per fallback path |
-| R7 | Blob URLs for keyed image tiles are never revoked. | `loader.ts` `sanitize` | Memory growth only with keyed basemaps redrawn many times | Track per render; revoke in `destroyView` |
+| R7 | *Fixed: revoked in `destroyView`.* Blob URLs for keyed image tiles are never revoked. | `loader.ts` `sanitize` | Memory growth only with keyed basemaps redrawn many times | Track per render; revoke in `destroyView` |
 | R8 | The embed key is `JSON.stringify` of spec and config on every render. | `render.ts` | Negligible unless a spec inlines large `values` | Leave it; revisit only if profiling says so |
 
 ### Resolved by ADR-0003
@@ -541,12 +541,12 @@ The first pass of this review found six places where the code had moved past ADR
 
 ### Next candidates
 
-Ordered by value for effort. None of these is urgent.
+Ordered by value for effort. All four are done.
 
 1. **Done: one place builds datasets.** `edges` and `tree` are now built by `structureDatasets` (`core/data/structure.ts`), which `plugin.buildDatasets` calls for both surfaces, so code blocks with inline `data:` rows get them too. `cells` stays in the Bases view, because it needs the Properties-menu order.
-2. **Coalesce code-block renders (R3).** Copy the Bases view's `scheduleRender` into `AgateBlock`, so a settings save or `css-change` redraws each block once.
-3. **Revoke tile blob URLs (R7).** Track them per render in the loader and revoke them in `destroyView`.
-4. **Commands target the focused chart (R4).** Prefer the view in the active leaf, and fall back to `lastBasesView`.
+2. **Done: coalesce code-block renders (R3).** `AgateBlock.scheduleRun` batches redraw triggers per tick, as the Bases view's `scheduleRender` does.
+3. **Done: revoke tile blob URLs (R7).** `trackBlobs` (`core/loader.ts`) collects them per embed, and `destroyView` revokes them, as does a stale embed when it is dropped.
+4. **Done: commands target the focused chart (R4).** `plugin.targetBasesView()` picks an Agate view in the most recent leaf, and falls back to `lastBasesView`.
 
 ## 16. File index
 
