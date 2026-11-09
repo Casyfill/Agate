@@ -262,6 +262,22 @@ Agate fills in `{secret:name}` only when it makes the request, and only when the
 
 The key stays out of your vault files and Agate's settings file, so sync and git never carry it. Secret storage is kept per device: create the secret once on each device you use. Without it, a keyed URL fails with an error that names the secret, so give the spec a keyless fallback (the hike dashboard's `basemap` select) if the note is opened elsewhere.
 
+### Reference: every `usermeta.agate` key
+
+| Key | Value | What it does | Section |
+|---|---|---|---|
+| `rowData` | `{name, from, format?}` or a list | Loads each row's file or URL into one extra dataset | [6](#6-per-note-external-data) |
+| `cells` | dataset name | One record per row and visible property, in Properties-menu order (Bases view only) | [7](#7-a-table-with-a-chart-column) |
+| `edges` | dataset name | Links between the base's notes | [10](#10-gallery-structure-maps-flows) |
+| `tree` | dataset name | Folder hierarchy of the base's notes | [10](#10-gallery-structure-maps-flows) |
+| `open` | `"click"` or `"dblclick"` | Opens the note behind a mark | [10](#10-gallery-structure-maps-flows) |
+| `textures` | `{name: texture}` | Hatching and dot fills, used as `url(#name)` (SVG only) | [8](#textures-hatching-and-dots-svg-only) |
+| `output` | `"stats"` | Big numbers as note text (experimental) | [11](#11-experimental-big-numbers-as-note-text) |
+| `recipe` | recipe definition | Makes a spec in the recipe folder a recipe | [2](#2-your-first-chart-five-minutes) |
+| `fromRecipe` | `{id, roles}` | Written by Agate: which recipe a spec came from | [2](#2-your-first-chart-five-minutes) |
+
+Dataset names must differ from the rows dataset (`base` unless the view sets another). Agate ignores keys not in this table; **Paste spec** warns about them and the console logs them, which catches typos such as `rowdata`.
+
 ## 11. Experimental: big numbers as note text
 
 A row of headline numbers (books read, mean rating, pages) can be drawn by Vega as text marks, but SVG text does not wrap, cannot be selected and uses the chart font. Add one line to the spec instead:

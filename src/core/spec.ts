@@ -1,5 +1,6 @@
 import { App, TFile, normalizePath, parseYaml } from "obsidian";
 import type { AgateEnvelope, AnySpec, Mode, Row } from "./types";
+import { agateMeta } from "./usermeta";
 
 /** Top-level keys that mark a document as a bare Vega/Vega-Lite spec rather than an Agate envelope. */
 const SPEC_MARKERS = [
@@ -196,9 +197,7 @@ export function cloneSpec<T>(spec: T): T {
 
 /** `usermeta.agate.open`: which pointer event on a mark opens the note behind it (D12). */
 export function openOnEvent(spec: AnySpec): "click" | "dblclick" | null {
-  const meta = spec.usermeta as Record<string, unknown> | undefined;
-  const agate = meta && typeof meta === "object" ? (meta.agate as Record<string, unknown> | undefined) : undefined;
-  const v = agate && typeof agate === "object" ? agate.open : undefined;
+  const v = agateMeta(spec)?.open;
   return v === "click" || v === "dblclick" ? v : null;
 }
 
@@ -291,4 +290,41 @@ export function referencedProperties(spec: unknown): string[] {
   };
   visit(spec);
   return [...out];
+}
+
+/**
+ * Properties a Bases view converts (D4): the view's visible properties, whatever the spec refers
+ * to, and file.name/path. A synthesized view has no order, so the spec scan is what makes `base:`
+ * blocks work at all. Spec `note.*` ids the base doesn't have are dropped; formula.* and file.*
+ * are worth asking Bases for anyway. An empty `available` means the list is unknown: keep all.
+ */
+export function propertiesToConvert(order: readonly string[], available: readonly string[], spec: AnySpec): string[] {
+  const set = new Set<string>(order);
+  const have = new Set(available);
+  for (const id of referencedProperties(spec)) {
+    if (id.startsWith("note.") && have.size > 0 && !have.has(id)) continue;
+    set.add(id);
+  }
+  set.add("file.name");
+  set.add("file.path");
+  return [...set];
+}
+
+/**
+ * A Bases view's spec from its options: the spec file wins, then inline text (JSON or YAML), then
+ * an inline YAML mapping from a hand-edited .base file. Null when the view has no spec yet.
+ */
+export async function resolveViewSpec(
+  specFile: string | null,
+  inline: unknown,
+  load: (path: string) => Promise<AnySpec>,
+): Promise<{ spec: AnySpec; specPath: string | null } | null> {
+  if (specFile) return { spec: await load(specFile), specPath: specFile };
+  if (typeof inline === "string" && inline.trim().length > 0) {
+    const parsed = parseJsonOrYaml(inline);
+    if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) throw new Error("Inline spec is not an object.");
+    return { spec: parsed as AnySpec, specPath: null };
+  }
+  if (inline && typeof inline === "object" && !Array.isArray(inline)) return { spec: inline as AnySpec, specPath: null };
+  return null;
 }

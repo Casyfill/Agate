@@ -2,6 +2,7 @@ import { parse } from "vega";
 import { compile, type TopLevelSpec } from "vega-lite";
 import { detectMode, ensureNamedData, isBareSpec, parseJsonOrYaml, referencedProperties, specTextError } from "./spec";
 import type { AnySpec, Mode } from "./types";
+import { unknownAgateKeys } from "./usermeta";
 
 /**
  * "Paste spec from clipboard": the other half of "Copy prompt for an LLM" (ADR-0001 D13).
@@ -143,6 +144,10 @@ export function checkPastedSpec(input: PasteCheckInput): PasteCheck {
   const unknown = referencedProperties(spec).filter((id) => !known.has(id) && !FILE_PROPERTIES.has(id));
   if (unknown.length > 0) {
     result.warnings.push(`Not in this base: ${unknown.join(", ")}. Those fields will be empty.`);
+  }
+  const typos = unknownAgateKeys(spec);
+  if (typos.length > 0) {
+    result.warnings.push(`Agate doesn't know usermeta.agate ${typos.map((k) => `"${k}"`).join(", ")}; it will be ignored.`);
   }
   return result;
 }

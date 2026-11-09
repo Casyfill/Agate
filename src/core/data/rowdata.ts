@@ -1,5 +1,6 @@
 import { read } from "vega";
 import type { AnySpec, Row } from "../types";
+import { agateMeta } from "../usermeta";
 
 /**
  * Per-row data (ADR-0001 D12): a spec asks for one extra dataset built by following a
@@ -25,9 +26,7 @@ export const PARENT_KEYS = ["file", "note", "formula", "group", "rowIndex"] as c
 
 /** Read and validate `usermeta.agate.rowData` (one definition or a list). Throws on malformed input. */
 export function rowDataDefs(spec: AnySpec): RowDataDef[] {
-  const meta = spec.usermeta as Record<string, unknown> | undefined;
-  const agate = meta && typeof meta === "object" ? (meta.agate as Record<string, unknown> | undefined) : undefined;
-  const raw = agate && typeof agate === "object" ? agate.rowData : undefined;
+  const raw = agateMeta(spec)?.rowData;
   if (raw === undefined) return [];
   const list = Array.isArray(raw) ? raw : [raw];
   return list.map((d, i) => {

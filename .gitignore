@@ -18,3 +18,8 @@ demo-vault/.obsidian/plugins/
 demo-vault/.obsidian/cache
 demo-vault/.trash/
 demo-vault/.obsidian/themes/
+
+# listing images: rendered output, rebuild from src/ (see docs/images/listing/README.md)
+docs/images/listing/*
+!docs/images/listing/README.md
+!docs/images/listing/src/

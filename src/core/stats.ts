@@ -1,6 +1,7 @@
 import { parse, View, type Config, type Loader } from "vega";
 import { compile } from "vega-lite";
 import type { AnySpec } from "./types";
+import { agateMeta } from "./usermeta";
 
 /**
  * Experimental: stats as HTML. A spec with `usermeta.agate.output: "stats"` is run headlessly and
@@ -38,9 +39,7 @@ export function changeOf(raw: unknown, better: unknown): Pick<Stat, "change" | "
 }
 
 export function isStatsSpec(spec: AnySpec): boolean {
-  const meta = spec.usermeta as Record<string, unknown> | undefined;
-  const agate = meta && typeof meta === "object" ? (meta.agate as Record<string, unknown> | undefined) : undefined;
-  return !!agate && typeof agate === "object" && agate.output === "stats";
+  return agateMeta(spec)?.output === "stats";
 }
 
 /** The dataset feeding the first non-group mark of a Vega spec, searching groups depth first. */
@@ -79,5 +78,40 @@ export async function computeStats(spec: AnySpec, mode: "vega" | "vega-lite", co
     }));
   } finally {
     view.finalize();
+  }
+}
+
+/**
+ * Draw stats into `el` as HTML numbers, or pass null when `el` holds a chart: either way the
+ * base block, embed or view around it is marked, so styles.css can drop the Bases header and
+ * fixed height around stats. A class instead of `:has()`, which makes the browser re-check
+ * selectors across the whole document on every DOM change.
+ */
+export function renderStats(el: HTMLElement, stats: Stat[] | null): void {
+  for (let p = el.parentElement; p; p = p.parentElement) {
+    if (p.matches(".block-language-base, .bases-embed, .agate-bases-view")) p.classList.toggle("agate-has-stats", stats !== null);
+  }
+  if (!stats) return;
+  // Plain DOM rather than Obsidian's createDiv helpers, so this runs (and is tested) outside Obsidian.
+  const add = (parent: HTMLElement, tag: string, cls: string, text?: string): HTMLElement => {
+    const child = parent.ownerDocument.createElement(tag);
+    child.className = cls;
+    if (text !== undefined) child.textContent = text;
+    parent.appendChild(child);
+    return child;
+  };
+  el.replaceChildren();
+  el.classList.add("agate-stats");
+  for (const s of stats) {
+    const cell = add(el, "div", "agate-stat");
+    const top = add(cell, "div", "agate-stat-top");
+    add(top, "span", "agate-stat-value", s.value);
+    if (s.change) {
+      const cls = ["agate-stat-change", `is-${s.direction ?? "flat"}`];
+      if (s.good !== undefined) cls.push(s.good ? "is-good" : "is-bad");
+      add(top, "span", cls.join(" "), s.change);
+    }
+    add(cell, "div", "agate-stat-label", s.label);
+    if (s.note) add(cell, "div", "agate-stat-note", s.note);
   }
 }

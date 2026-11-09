@@ -1,4 +1,5 @@
 import type { AnySpec, Row } from "../types";
+import { agateMeta } from "../usermeta";
 
 /**
  * Structure datasets (ADR-0001 D12): links between the notes of a base, and the folder
@@ -7,12 +8,6 @@ import type { AnySpec, Row } from "../types";
  *
  *   "usermeta": { "agate": { "edges": "edges", "tree": "tree" } }
  */
-
-function agateMeta(spec: AnySpec): Record<string, unknown> | undefined {
-  const meta = spec.usermeta as Record<string, unknown> | undefined;
-  const agate = meta && typeof meta === "object" ? meta.agate : undefined;
-  return agate && typeof agate === "object" ? (agate as Record<string, unknown>) : undefined;
-}
 
 function datasetName(spec: AnySpec, key: string): string | null {
   const v = agateMeta(spec)?.[key];
