@@ -202,10 +202,10 @@ sequenceDiagram
   V->>P: makeLoader(null)
   V->>S: propertiesToConvert(order, allProperties, spec)
   V->>S: groupsToRows(groupedData, props)
-  V->>P: buildDatasets() adds usermeta.agate.rowData sets
+  V->>P: buildDatasets() adds rowData, edges and tree sets
   Note over V: stale check: gen still current?
-  opt usermeta.agate.cells / edges / tree
-    V->>S: tableCells / linkEdges(resolvedLinks) / pathTree
+  opt usermeta.agate.cells
+    V->>S: tableCells(rows, Properties-menu order)
   end
   V->>R: render({resolved, options, config, loader, datasets, openNote})
 ```
@@ -543,7 +543,7 @@ The first pass of this review found six places where the code had moved past ADR
 
 Ordered by value for effort. None of these is urgent.
 
-1. **One place builds datasets.** `plugin.buildDatasets` adds `rowData`, but `cells`, `edges` and `tree` are added inline in the Bases view's `render()`. So a code block with inline `data:` rows can't ask for `edges` or `tree`. Moving `edges` and `tree` into `buildDatasets` (passing in `resolvedLinks` and the vault name) shortens the view and gives both surfaces the same datasets. `cells` stays in the view, because it needs the Properties-menu order.
+1. **Done: one place builds datasets.** `edges` and `tree` are now built by `structureDatasets` (`core/data/structure.ts`), which `plugin.buildDatasets` calls for both surfaces, so code blocks with inline `data:` rows get them too. `cells` stays in the Bases view, because it needs the Properties-menu order.
 2. **Coalesce code-block renders (R3).** Copy the Bases view's `scheduleRender` into `AgateBlock`, so a settings save or `css-change` redraws each block once.
 3. **Revoke tile blob URLs (R7).** Track them per render in the loader and revoke them in `destroyView`.
 4. **Commands target the focused chart (R4).** Prefer the view in the active leaf, and fall back to `lastBasesView`.

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { edgesDatasetName, linkEdges, pathTree, treeDatasetName } from "../../src/core/data/structure";
+import { edgesDatasetName, linkEdges, pathTree, structureDatasets, treeDatasetName } from "../../src/core/data/structure";
 import type { Row } from "../../src/core/types";
 
 const row = (path: string, size = 10): Row => ({
@@ -49,5 +49,21 @@ describe("structure datasets (D12)", () => {
     expect(byId.get("/")).toMatchObject({ size: 21, count: 3 });
     expect(byId.get("Ideas")).toMatchObject({ size: 16, count: 2 });
     expect(byId.get("Ideas/Deep")).toMatchObject({ size: 9, count: 1 });
+  });
+});
+
+describe("structureDatasets", () => {
+  const rows: Row[] = [
+    { file: { name: "A", path: "x/A.md", size: 10 } },
+    { file: { name: "B", path: "x/B.md", size: 20 } },
+  ];
+  const links = { "x/A.md": { "x/B.md": 2 } };
+
+  it("builds only the datasets the spec names", () => {
+    expect(structureDatasets({ mark: "bar" }, rows, links, "V")).toEqual({});
+    const out = structureDatasets({ usermeta: { agate: { edges: "links", tree: "folders" } } }, rows, links, "V");
+    expect(Object.keys(out)).toEqual(["links", "folders"]);
+    expect(out.links).toEqual(linkEdges(rows, links));
+    expect(out.folders).toEqual(pathTree(rows, "V"));
   });
 });

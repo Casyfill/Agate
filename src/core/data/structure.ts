@@ -19,6 +19,21 @@ function datasetName(spec: AnySpec, key: string): string | null {
 export const edgesDatasetName = (spec: AnySpec): string | null => datasetName(spec, "edges");
 export const treeDatasetName = (spec: AnySpec): string | null => datasetName(spec, "tree");
 
+/** The `edges` and `tree` datasets a spec asks for, built from its rows. Empty when it asks for neither. */
+export function structureDatasets(
+  spec: AnySpec,
+  rows: Row[],
+  resolvedLinks: Record<string, Record<string, number>>,
+  vaultName: string,
+): Record<string, Row[]> {
+  const out: Record<string, Row[]> = {};
+  const edges = edgesDatasetName(spec);
+  if (edges) out[edges] = linkEdges(rows, resolvedLinks);
+  const tree = treeDatasetName(spec);
+  if (tree) out[tree] = pathTree(rows, vaultName);
+  return out;
+}
+
 const pathOf = (row: Row): string | undefined => (row.file as { path?: string } | undefined)?.path;
 const nameOf = (row: Row): string => (row.file as { name?: string } | undefined)?.name ?? "";
 

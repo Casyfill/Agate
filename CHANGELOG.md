@@ -4,6 +4,19 @@ All notable changes to Agate. The format follows [Keep a Changelog](https://keep
 
 ## [Unreleased]
 
+### Added
+
+- **Paste spec** warns about keys under `usermeta.agate` that Agate doesn't know (a typo such as `rowdata` or `texture`), and the console logs them when a chart renders. Before, they were ignored silently.
+- The guide has a reference table of every `usermeta.agate` key (section 10).
+
+### Fixed
+
+- `agate` code blocks with inline `data:` rows can now ask for the `edges` and `tree` datasets, as Bases views already could. Before, a link graph or sunburst in a self-contained block got no structure data.
+
+### Internal
+
+- One `usermeta.agate` contract (`src/core/usermeta.ts`), with a test that keeps the code and the table in step. The stats output moved from the renderer to `stats.ts`, spec resolution and property selection moved from the Bases view to `core/spec.ts`, and `edges` and `tree` are built in one place for both surfaces. See [ADR-0003](docs/adr/0003-state-at-0-5.md).
+
 ## [0.5.0] - 2026-11-05 
 
 ### Added

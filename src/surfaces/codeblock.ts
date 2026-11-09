@@ -11,6 +11,7 @@ import { AgateRenderer } from "../core/render";
 import { detectMode, loadSpecFile, parseBlock, resolveSpecFile, resolveVaultFile } from "../core/spec";
 import { synthesizeBaseConfig } from "../core/synthesize";
 import { rowDataDefs } from "../core/data/rowdata";
+import { edgesDatasetName, treeDatasetName } from "../core/data/structure";
 import type { AgateEnvelope, AnySpec, Mode, ResolvedSpec, Row } from "../core/types";
 import { errorMessage } from "../util/log";
 import { AGATE_VIEW_TYPE } from "./bases-view";
@@ -106,10 +107,11 @@ class AgateBlock extends MarkdownRenderChild {
       const config = await this.plugin.resolveConfig(options.theme);
       const loader = this.plugin.makeLoader(sourcePath);
       let datasets = inlineDatasets(env, options.dataset);
-      if (rowDataDefs(resolved.spec).length > 0) {
-        // Per-row data (D12) over inline `data:` rows; with `base:` the Bases view does this.
+      const spec = resolved.spec;
+      if (rowDataDefs(spec).length > 0 || edgesDatasetName(spec) || treeDatasetName(spec)) {
+        // Per-row data and the structure datasets (D12) over inline `data:` rows; with `base:` the Bases view does this.
         const rows = datasets[options.dataset] ?? [];
-        datasets = { ...datasets, ...(await this.plugin.buildDatasets(resolved.spec, options.dataset, rows, loader)) };
+        datasets = { ...datasets, ...(await this.plugin.buildDatasets(spec, options.dataset, rows, loader)) };
       }
 
       const openNote = (path: string, newLeaf: boolean): void => {

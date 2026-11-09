@@ -14,6 +14,7 @@ import { SpecFileModal } from "./ui/spec-file-modal";
 import { parseJsonOrYaml, resolveVaultFile } from "./core/spec";
 import { resolveChartOptions } from "./core/options";
 import { RowDataCache, expandRowData, rowDataDefs } from "./core/data/rowdata";
+import { structureDatasets } from "./core/data/structure";
 import { parseRecipe, type Recipe } from "./core/recipes";
 import { buildThemePrompt, type PromptEnvironment } from "./core/prompt";
 import { builtinRecipes } from "./recipes";
@@ -285,6 +286,8 @@ export default class AgatePlugin extends Plugin {
    * The datasets a chart receives: the rows under `datasetName`, plus one dataset per
    * `usermeta.agate.rowData` entry built by loading each row's property (D12). A row that
    * fails to load is skipped with a warning; when every row fails the chart shows the error.
+   * `edges` and `tree` (D12) come from the vault, so every surface gets them; `cells` needs the
+   * Bases view's Properties-menu order and is added there.
    */
   async buildDatasets(spec: AnySpec, datasetName: string, rows: Row[], loader: Loader): Promise<Record<string, Row[]>> {
     const datasets: Record<string, Row[]> = { [datasetName]: rows };
@@ -306,7 +309,7 @@ export default class AgatePlugin extends Plugin {
       this.log.debug(`per-row data "${def.name}": ${records.length} records from ${rows.length} rows`);
       datasets[def.name] = records;
     }
-    return datasets;
+    return { ...datasets, ...structureDatasets(spec, rows, this.app.metadataCache.resolvedLinks, this.app.vault.getName()) };
   }
 
   /** Copy a prompt for generating a static Vega theme from the active Obsidian theme and current overrides. */

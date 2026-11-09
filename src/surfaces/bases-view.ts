@@ -14,7 +14,6 @@ import type AgatePlugin from "../main";
 import { AgateRenderer } from "../core/render";
 import { describeEntry, groupsToRows } from "../core/data/bases";
 import { cellsDatasetName, tableCells } from "../core/data/table";
-import { edgesDatasetName, linkEdges, pathTree, treeDatasetName } from "../core/data/structure";
 import { detectMode, loadSpecFile, propertiesToConvert, resolveSpecFile, resolveViewSpec } from "../core/spec";
 import { openSpecFile } from "../ui/open-spec";
 import type { AnySpec, ChartOptions, ResolvedSpec } from "../core/types";
@@ -237,10 +236,6 @@ export class AgateBasesView extends BasesView {
         const order = this.config.getOrder();
         datasets[cellsName] = tableCells(rows, order, (id) => this.config.getDisplayName(id as BasesPropertyId));
       }
-      const edgesName = edgesDatasetName(resolved.spec);
-      if (edgesName) datasets[edgesName] = linkEdges(rows, this.app.metadataCache.resolvedLinks);
-      const treeName = treeDatasetName(resolved.spec);
-      if (treeName) datasets[treeName] = pathTree(rows, this.app.vault.getName());
 
       const openNote = (path: string, newLeaf: boolean): void => {
         void this.app.workspace.openLinkText(path, "", newLeaf);
