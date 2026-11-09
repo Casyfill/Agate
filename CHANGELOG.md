@@ -4,6 +4,8 @@ All notable changes to Agate. The format follows [Keep a Changelog](https://keep
 
 ## [Unreleased]
 
+## [0.6.0] - 2026-11-09
+
 ### Added
 
 - **Paste spec** warns about keys under `usermeta.agate` that Agate doesn't know (a typo such as `rowdata` or `texture`), and the console logs them when a chart renders. Before, they were ignored silently.
