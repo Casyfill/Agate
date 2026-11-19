@@ -172,6 +172,10 @@
 .is-mobile .agate-edit-spec {
   opacity: 0.7;
 }
+/* "Copy for Vega editor", left of "Edit spec" */
+.agate-copy-editor {
+  right: calc(var(--size-4-3) + var(--icon-size, 18px) + var(--size-4-4));
+}
 
 /* Bases view container */
 .agate-bases-view {
@@ -275,6 +279,49 @@
   font-size: var(--font-ui-small);
   color: var(--text-faint);
   margin-top: var(--size-4-1);
+}
+
+/* The empty view's three steps: start, work on it, bring it back */
+.agate-steps {
+  list-style: none;
+  counter-reset: agate-step;
+  padding: 0;
+  margin: var(--size-4-4) auto var(--size-4-2);
+  max-width: 42em;
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  gap: var(--size-4-4);
+}
+.agate-step {
+  counter-increment: agate-step;
+  display: grid;
+  grid-template-columns: 1.6em 1fr;
+  column-gap: var(--size-4-2);
+  align-items: baseline;
+}
+.agate-step::before {
+  content: counter(agate-step);
+  grid-row: span 2;
+  align-self: start;
+  width: 1.6em;
+  height: 1.6em;
+  border-radius: 50%;
+  background: var(--interactive-accent);
+  color: var(--text-on-accent);
+  font-size: var(--font-ui-smaller);
+  font-weight: var(--font-semibold);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.agate-step-title {
+  color: var(--text-normal);
+  font-weight: var(--font-semibold);
+}
+.agate-step .agate-placeholder-actions {
+  justify-content: flex-start;
+  margin: var(--size-4-2) 0 0;
 }
 
 /* Inspiration links on the empty chart view */

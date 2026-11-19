@@ -15,6 +15,7 @@ export const AGATE_KEYS = {
   output: '"stats": render the first mark\'s rows as big numbers in note text (experimental)',
   recipe: "recipe definition: name, roles, description (recipe files only)",
   fromRecipe: "{id, roles}: written by Agate when a spec is made from a recipe",
+  inlined: "dataset names: written by Copy for Vega editor; Paste spec removes those rows again",
 } as const;
 
 /** `spec.usermeta.agate` as an object, or undefined when absent or malformed. */

@@ -49,7 +49,7 @@ Dataset `cells` holds one record per note and visible property, with its display
 "usermeta": { "agate": { "output": "stats" } }
 ```
 
-Agate runs the spec without drawing it and shows the rows behind its **first mark** as big numbers in the note's own fonts. Each row needs `value` and `label` (strings); optional `note` (small line under it), `change` (a number or "+12%", shown with an up or down arrow) and `better: "down"` (when a fall is good news, for time or cost). Do the maths in Vega-Lite transforms: one `aggregate`, then fold the results into rows:
+Agate runs the spec without drawing it and shows the rows behind its **first mark** as big numbers in the note's own fonts. Each row needs `value` and `label` (strings); optional `note` (small line under it), `change` (a number or "+12%", shown with an up or down arrow) `better: "down"` (when a fall is good news, for time or cost), `size: "small"` (a secondary number on a quieter line under the big ones), `tone` (colours the value from the theme: `good`, `bad`, `warn`, `muted`, `accent` or an `agateColors` name such as `blue`; never a hex colour) and `class` (CSS classes for the user's snippets). Compute them with `calculate` like any field. Do the maths in Vega-Lite transforms: one `aggregate`, then fold the results into rows:
 
 ```json
 "transform": [
@@ -65,6 +65,8 @@ Agate runs the spec without drawing it and shows the rows behind its **first mar
 ```
 
 In Vega-Lite's `aggregate`, a dotted field such as `note.pages` is read as one flat name: copy nested fields out with `calculate` first, as above. The built-in **Headline numbers** recipe (`src/recipes/stats.json`) is a complete template; `demo-vault/charts/reading-stats.vl.json` and `hike-stats.vl.json` are real ones. The format is experimental.
+
+A spec copied with **Copy for Vega editor** carries the base's rows (Vega-Lite top-level `datasets`, or `values` on Vega data entries) and `usermeta.agate.inlined` listing their names. Edit it freely; Paste spec removes those rows and the marker again, so keep `inlined` in place when handing the spec back.
 
 ## `textures`: hatching and dots (SVG renderer)
 

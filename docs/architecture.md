@@ -195,7 +195,7 @@ sequenceDiagram
   V->>V: render(), gen = ++renderGen
   V->>S: resolveViewSpec(): specFile, else inline text, else inline YAML map
   alt no spec
-    V->>V: renderPlaceholder() (Pick a recipe / Copy prompt / Paste spec)
+    V->>V: renderPlaceholder(): three steps (recipe, prompt or editor copy / work on it / Paste spec)
   end
   V->>P: preprocess(spec) via registered preprocessors
   V->>P: resolveOptions(view options) and resolveConfig(theme)
@@ -343,7 +343,7 @@ flowchart TB
   OUT --> INJ["first embed: values written into the spec<br/>later updates: view.data(name, rows)"]
 ```
 
-Other `usermeta.agate` keys change behavior rather than data: `open` (click or double-click opens the note behind a mark), `textures` (SVG hatching and dots), `output: "stats"` (big numbers as HTML), `recipe` / `fromRecipe` (section 12).
+Other `usermeta.agate` keys change behavior rather than data: `open` (click or double-click opens the note behind a mark), `textures` (SVG hatching and dots), `output: "stats"` (big numbers as HTML), `recipe` / `fromRecipe` and `inlined` (section 12).
 
 ## 9. Theme and config resolution
 
@@ -469,7 +469,7 @@ flowchart TD
 
 The prompt and the skill state the same conventions (bracket accessors, `"sort": null` for Bases order, no hard-coded colors). `test/unit/skill.test.ts` and `test/unit/prompt.test.ts` keep them from drifting apart.
 
-A fifth path is proposed but not built: **Open in Vega editor**, which hands the chart as rendered (rows inlined) to the online editor for schema validation and live preview, with Paste spec turning the result back into a spec that reads the base ([ADR-0005](adr/0005-open-in-vega-editor.md)).
+A fifth path, since 0.7.1: **Copy for Vega editor**. `specForEditor()` (`core/editor.ts`) copies the chart's spec with every Agate dataset written in (Vega-Lite top-level `datasets`, Vega `values`; up to 5,000 rows each) and their names in `usermeta.agate.inlined`. The user works in the online editor and pastes the result back; `checkPastedSpec()` first calls `stripInlined()`, so the saved spec reads the base again. Theme and environment signals stay out, so nothing Obsidian-specific comes back ([ADR-0005](adr/0005-open-in-vega-editor.md)).
 
 ## 13. Extension API
 
@@ -566,7 +566,7 @@ Ordered by value for effort. All four are done.
 | `src/core/data/rowdata.ts`, `structure.ts`, `table.ts` | The `rowData`, `edges`, `tree`, `cells` datasets |
 | `src/core/theme.ts`, `palettes.ts` | Dynamic themes and per-theme palettes |
 | `src/core/loader.ts` | Vault loader, network gate, secrets, per-host limits |
-| `src/core/recipes.ts`, `prompt.ts`, `paste.ts` | Authoring aids |
+| `src/core/recipes.ts`, `prompt.ts`, `paste.ts`, `editor.ts` | Authoring aids (recipes, LLM prompt, Paste spec, Vega editor copy) |
 | `src/api/index.ts` | Add-on API |
 | `test/mocks/obsidian.ts` | What "pure" means for `core/` in practice |
 | `docs/adr/0001-architecture-and-roadmap.md` | Why it is built this way |

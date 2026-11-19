@@ -4,17 +4,21 @@ All notable changes to Agate. The format follows [Keep a Changelog](https://keep
 
 ## [Unreleased]
 
+## [0.7.1] - 2026-11-19
+
 ### Added
 
-- `header: false`, a view option and `agate` block key, hides the Bases title and toolbar above a chart embedded in a note. A `.base` tab keeps its header.
-- Command **Cycle Bases headers in this note** (bind a hotkey to it): auto, all hidden, all shown, for every base in the active note, overriding `header`. Per pane, not saved.
-- Stats rows with `size: "small"` form a line of smaller secondary numbers under the big ones.
-- Stats rows take `tone` to colour the value with an Obsidian theme variable: `good`, `bad`, `warn`, or any `agateColors` role that is a colour (`accent`, `muted`, `blue`, …), so charts and numbers share one vocabulary. Raw colours are ignored, so numbers keep working across light/dark and themes.
-- Stats rows take `class` to add CSS classes to the cell, for snippets. The guide lists every stats class to style.
+- **Hide the Bases toolbar in notes.** Set `header: false` on an Agate view or `agate` block to hide the title and toolbar above an embedded chart. `.base` tabs keep theirs.
+- **Toggle toolbars with a hotkey.** The command *Cycle Bases headers in this note* switches the open note between auto, all hidden and all shown, for every base in it. Assign a key in Settings → Hotkeys.
+- **Small numbers under big ones.** Give a stats row `size: "small"` to show it on a quieter line below the headline numbers.
+- **Colour and style numbers from the spec.** `tone` colours a value with your theme's colours (`good`, `bad`, `warn`, `muted`, or a name such as `blue`); `class` adds a CSS class for your own snippets.
+- **Copy for Vega editor.** Copies the chart with your base's rows, ready to paste into the online Vega editor. Bring the edited spec back with Paste spec and it reads the base again. Find it next to Edit spec when you hover a chart, on the empty view, and in the command palette.
 
 ### Changed
 
-- Stats no longer hide the Bases header on their own. The Headline numbers recipe and Paste spec write `header: false` for a stats spec instead; add it to existing stats blocks to keep them headerless.
+- **Heads-up:** big numbers (stats) no longer hide the Bases toolbar by themselves. Add `header: false` to existing stats blocks to keep them clean; new ones from the Headline numbers recipe or Paste spec get it automatically.
+- The empty chart view walks you through three steps: start (recipe, LLM prompt or Vega editor), work on it, bring it back.
+- The LLM prompt knows the new stats options.
 
 ## [0.6.0] - 2026-11-09
 

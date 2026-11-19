@@ -32,6 +32,7 @@ function agateKeysInSource(): string[] {
   // Authoring bookkeeping, not something a spec asks for.
   keys.delete("recipe");
   keys.delete("fromRecipe");
+  keys.delete("inlined");
   // app.plugins.plugins.agate.api: the plugin's API object, not a spec key.
   keys.delete("api");
   return [...keys].sort();

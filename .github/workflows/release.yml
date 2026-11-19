@@ -41,12 +41,19 @@ jobs:
             main.js
             manifest.json
             styles.css
+      - name: Release notes from CHANGELOG.md
+        # The tag's own section, without its heading, is the release body.
+        run: |
+          tag="${GITHUB_REF#refs/tags/}"
+          awk -v v="$tag" 'index($0, "## [" v "]") == 1 {f=1; next} /^## \[/ {f=0} f' CHANGELOG.md > release-notes.md
+          test -s release-notes.md || { echo "no CHANGELOG.md section for $tag"; exit 1; }
       - name: Create release
         uses: softprops/action-gh-release@v2
         with:
+          body_path: release-notes.md
           files: |
             main.js
             manifest.json
             styles.css
           draft: true
-          generate_release_notes: true
+          generate_release_notes: false

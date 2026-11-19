@@ -22,6 +22,7 @@ import { inferPropertyTypes, type PropertyInfo } from "../core/recipes";
 import { buildChartPrompt } from "../core/prompt";
 import { RecipeSuggestModal, writeUnique } from "../ui/recipe-modal";
 import { isStatsSpec } from "../core/stats";
+import { EDITOR_ROW_CAP, specForEditor } from "../core/editor";
 import { checkPastedSpec, pastedFileName, type PasteCheck } from "../core/paste";
 import { PasteSpecModal } from "../ui/paste-spec-modal";
 import { renderInspiration } from "../ui/inspiration";
@@ -44,6 +45,8 @@ export class AgateBasesView extends BasesView {
   private renderQueued = false;
   /** Bumped per render, so a slow per-row load cannot overwrite a newer render's data. */
   private renderGen = 0;
+  /** What the last render drew, for Copy for Vega editor; null while the view has no spec. */
+  private lastChart: { spec: AnySpec; mode: ResolvedSpec["mode"]; datasets: Record<string, Row[]> } | null = null;
 
   constructor(
     private readonly plugin: AgatePlugin,
@@ -56,6 +59,9 @@ export class AgateBasesView extends BasesView {
     const edit = parentEl.createEl("button", { cls: "agate-edit-spec clickable-icon", attr: { "aria-label": "Edit spec" } });
     setIcon(edit, "braces");
     edit.addEventListener("click", () => void this.editSpec());
+    const copy = parentEl.createEl("button", { cls: "agate-edit-spec agate-copy-editor clickable-icon", attr: { "aria-label": "Copy for Vega editor" } });
+    setIcon(copy, "clipboard-copy");
+    copy.addEventListener("click", () => void this.copyForEditor());
     this.containerEl = parentEl.createDiv("agate-bases-view");
     this.renderer = new AgateRenderer(this.containerEl, plugin.log, () => plugin.settings.debug);
   }
@@ -259,6 +265,7 @@ export class AgateBasesView extends BasesView {
         const order = this.config.getOrder();
         datasets[cellsName] = tableCells(rows, order, (id) => this.config.getDisplayName(id as BasesPropertyId));
       }
+      this.lastChart = { spec: resolved.spec, mode: resolved.mode, datasets };
 
       const openNote = (path: string, newLeaf: boolean): void => {
         void this.app.workspace.openLinkText(path, "", newLeaf);
@@ -299,21 +306,55 @@ export class AgateBasesView extends BasesView {
     return { mode, spec, specPath: found.specPath };
   }
 
+  /**
+   * Copy the current spec with this base's rows written into it, for the online Vega editor; with
+   * no spec yet, a starter spec over the rows. Paste spec takes the rows out again.
+   */
+  async copyForEditor(): Promise<void> {
+    const chart = this.lastChart ?? {
+      spec: { $schema: "https://vega.github.io/schema/vega-lite/v6.json", mark: "point" },
+      mode: "vega-lite" as const,
+      datasets: { [this.plugin.resolveOptions(this.readChartOptions()).dataset]: this.chartContext().rows },
+    };
+    const { spec, truncated } = specForEditor(chart.spec, chart.mode, chart.datasets);
+    await navigator.clipboard.writeText(JSON.stringify(spec, null, 2));
+    const cut = truncated.length > 0 ? ` Only the first ${EDITOR_ROW_CAP.toLocaleString()} rows of ${truncated.join(", ")}.` : "";
+    new Notice(`Agate: copied for the Vega editor (vega.github.io/editor), with this base's rows.${cut} Paste your edited spec back with Paste spec.`);
+  }
+
+  /** The empty view as three steps (start, work on it elsewhere, bring it back), as in the docs. */
   private renderPlaceholder(): void {
+    this.lastChart = null;
     this.renderer.destroy();
     this.containerEl.empty();
     const box = this.containerEl.createDiv({ cls: "agate-placeholder" });
     box.createDiv({ cls: "agate-placeholder-title", text: "No chart yet" });
-    const actions = box.createDiv({ cls: "agate-placeholder-actions" });
-    const recipe = actions.createEl("button", { cls: "mod-cta", text: "Pick a recipe" });
-    recipe.addEventListener("click", () => void this.openRecipePicker());
-    const prompt = actions.createEl("button", { text: "Copy prompt for an LLM" });
-    prompt.addEventListener("click", () => void this.copyChartPrompt());
-    const paste = actions.createEl("button", { text: "Paste spec" });
-    paste.addEventListener("click", () => void this.pasteSpecFromClipboard());
+    const steps = box.createEl("ol", { cls: "agate-steps" });
+    const step = (title: string): HTMLElement => {
+      const li = steps.createEl("li", { cls: "agate-step" });
+      li.createDiv({ cls: "agate-step-title", text: title });
+      return li;
+    };
+    const button = (parent: HTMLElement, text: string, run: () => Promise<void>, cta = false): void => {
+      parent.createEl("button", { text, cls: cta ? "mod-cta" : "" }).addEventListener("click", () => void run());
+    };
+
+    const start = step("Start from this base").createDiv({ cls: "agate-placeholder-actions" });
+    button(start, "Pick a recipe", () => this.openRecipePicker(), true);
+    button(start, "Copy prompt for an LLM", () => this.copyChartPrompt());
+    button(start, "Copy data for Vega editor", () => this.copyForEditor());
+
+    const work = step("Work on it").createDiv({ cls: "agate-placeholder-hint" });
+    work.appendText("Paste the prompt into any assistant, or the data into the ");
+    work.createEl("a", { text: "Vega editor", href: "https://vega.github.io/editor/", cls: "external-link" });
+    work.appendText(". A recipe skips this step and the next.");
+
+    const back = step("Bring it back").createDiv({ cls: "agate-placeholder-actions" });
+    button(back, "Paste spec", () => this.pasteSpecFromClipboard());
+
     box.createDiv({
       cls: "agate-placeholder-hint",
-      text: "A recipe asks which of this base's properties to use and writes the spec for you. The prompt describes this base for any AI assistant; copy its reply and use Paste spec to save it here. Or set a Spec file in the view options (chevron next to the view name).",
+      text: "Paste spec saves the reply or the edited spec as a file and points this view at it, so the chart follows the base. Or set a Spec file in the view options (chevron next to the view name).",
     });
     renderInspiration(box);
   }

@@ -140,6 +140,17 @@ export default class AgatePlugin extends Plugin {
     });
 
     this.addCommand({
+      id: "copy-for-vega-editor",
+      name: "Copy the current chart for the Vega editor, with its rows",
+      checkCallback: (checking) => {
+        const view = this.targetBasesView();
+        if (!view) return false;
+        if (!checking) void view.copyForEditor();
+        return true;
+      },
+    });
+
+    this.addCommand({
       id: "edit-chart-spec",
       name: "Edit the spec of the current chart (beside it)",
       checkCallback: (checking) => {

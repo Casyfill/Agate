@@ -52,12 +52,14 @@ Agate makes no network requests by default. Everything it draws comes from your 
 
 - **Load remote data** (off by default) lets a spec load data files and images from `http(s)` URLs: remote CSV or JSON, map tiles under a route, pictures in image marks. Agate fetches only the URLs written in your specs, from whichever service they name; it sends no other data and has no telemetry.
 - **API keys** (Advanced settings) are kept in Obsidian's secret storage and sent only to the one host you allow for each key.
+- **Copy for Vega editor** puts your chart's rows on the clipboard. They leave Obsidian only if you paste them into the online editor yourself.
 - Images inside tooltips are an exception: vega-tooltip shows them as ordinary `<img>` elements, so a spec that puts an image URL in a tooltip loads it on hover even with Load remote data off.
 
 ## Making charts
 
 - **Pick a recipe:** an empty Agate view offers thirteen ready-made charts. Agate asks which property goes where and writes the spec.
 - **Ask an assistant:** **Copy prompt for an LLM** copies your base's properties, sample rows and Agate's rules for any chat assistant; **Paste spec** checks the reply and saves it as the view's chart.
+- **Use the Vega editor:** **Copy data for Vega editor** copies the spec with your base's rows for the [online editor](https://vega.github.io/editor/); paste the result back the same way.
 - **With an AI agent that works on your vault** (Claude Code and others): give it the [`agate-chart` skill](skills/agate-chart/SKILL.md). It knows Agate's conventions and extras and checks a spec renders before handing it over. Copy the `skills/agate-chart` folder into your agent's skills folder, for example `~/.claude/skills/`.
 - **By hand:** specs are plain JSON, or [YAML](docs/yaml-specs.md) if you prefer. Install the [JSON Editor](https://community.obsidian.md/plugins/json-editor) community plugin to edit JSON inside Obsidian (or [Code Editor](https://community.obsidian.md/plugins/code-editor) for JSON and YAML); **Edit spec** on a chart opens its spec beside it, and every save redraws the chart.
 

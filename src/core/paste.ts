@@ -3,6 +3,7 @@ import { compile, type TopLevelSpec } from "vega-lite";
 import { detectMode, ensureNamedData, isBareSpec, parseJsonOrYaml, referencedProperties, specTextError } from "./spec";
 import type { AnySpec, Mode } from "./types";
 import { unknownAgateKeys } from "./usermeta";
+import { stripInlined } from "./editor";
 
 /**
  * "Paste spec from clipboard": the other half of "Copy prompt for an LLM" (ADR-0001 D13).
@@ -117,7 +118,8 @@ export function checkPastedSpec(input: PasteCheckInput): PasteCheck {
     result.errors.push("This doesn't look like a Vega or Vega-Lite spec: it has no mark, layer, concat, facet or marks.");
     return result;
   }
-  const spec = parsed as AnySpec;
+  // A spec copied out for the online editor comes back with its rows; the base supplies them here.
+  const spec = stripInlined(parsed);
   const mode = detectMode(spec);
   result.spec = spec;
   result.mode = mode;

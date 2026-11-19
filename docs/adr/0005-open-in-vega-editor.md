@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| Status | Proposed (2026-11-09). Not implemented |
+| Status | Accepted in amended form (2026-11-19, shipped in 0.7.1): see Outcome |
 | Date | 2026-11-09 |
 | Deciders | Philipp (maintainer) |
 | Relates to | ADR-0001 D5 (network posture), D13 (LLM round trip); ADR-0004 (YAML specs, editor plugins) |
@@ -30,7 +30,18 @@ D4. **Explicit, and said so.** Opening the editor puts note data into a browser 
 
 D5. **YAML specs export as JSON.** The editor takes JSON only. Paste spec saves the reply in the format the original spec file used, once ADR-0004 D4 (a format setting for new specs) exists. Until then, it saves JSON.
 
-## Not decided
+## Outcome (2026-11-19)
+
+Built as **Copy for Vega editor**, through the clipboard rather than a URL. Against the proposal:
+
+- D1: built, without the theme. The copy holds the rows of every dataset Agate injects, but not the merged config or environment signal values: the editor shows the spec's own defaults, and nothing Obsidian-specific comes back on paste. On the empty view the same button copies a starter spec over the base's rows.
+- D2: replaced. Agate copies the spec to the clipboard; the user pastes it into the editor. No `lz-string`, no URL size limit to measure, nothing in browser history, and it works whether external links open in Obsidian or the system browser. Rows are capped at 5,000 per dataset, with a notice when cut.
+- D3: built as `usermeta.agate.inlined` (dataset names) instead of `snapshot`. Paste spec removes those datasets' rows and the marker before its checks, leaving the spec's own `datasets` and `values` alone. There is no config to strip. Overwriting the original spec file is not built: Paste spec saves a new file, as for an assistant's reply.
+- D4: not needed in that form. Copying is a click, and data leaves Obsidian only when the user pastes it into a web page; the README's network section says so. No first-use notice or hide setting.
+- D5: as proposed; the copy is JSON.
+- Not decided, now settled: the button is in the hover corner next to Edit spec, plus a command and the empty view's first step. Rows are copied in full (no property stripping), as there is no URL to keep short. Code blocks don't get it.
+
+## Not decided (at proposal time)
 
 - Whether the button lives in the chart's hover corner (like **Edit spec**), in vega-embed's `…` menu, or both.
 - Whether to strip unused properties from the exported rows (only fields the spec refers to) to keep URLs short. This is likely, and `referencedProperties` already exists for it.
