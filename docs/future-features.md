@@ -36,6 +36,18 @@ Ideas parked for after 0.1.0. Not commitments; reviewed when 0.1.0 ships. Each e
 
 **Declarative settings (`getSettingDefinitions`).** Obsidian 1.13 indexes plugin settings for its settings search only when the tab implements the declarative API. The lint rule flags this; adopting it is mechanical. Small; M2 candidate.
 
+## Backlog
+
+Decided to build; not scheduled.
+
+**Custom request headers** (agreed 2026-11-19). Many APIs take the key in a header (`Authorization: Bearer …`), not the URL. Vega's `data.url` has no place for headers, so they go in a setting, not the spec: one `host header` pair per line, next to "API keys in URLs", with `{secret:name}` filled from secret storage under the same host check (`api.github.com Authorization: Bearer {secret:github}`). Specs stay plain Vega, keys stay out of the vault. GET only; POST bodies and GraphQL wait for a real need and would fit a data-scheme add-on. Cost: small (about 30 lines in `core/loader.ts` and one settings field, plus tests).
+
+## Maybe, as separate plugins
+
+Not part of Agate. Each would be its own plugin on the public API (`registerDataScheme`), so Agate stays small.
+
+**SQLite** (considered 2026-11-19). `sqlite://data/finance.db?sql=SELECT …` returning rows. Not in core because sql.js (WebAssembly, about 1 MB) would roughly double `main.js` for a feature most users don't need, and a plugin ships as one file so it can't be loaded on demand. Database files in the vault work on mobile too; files outside the vault are desktop-only and need a folder allowlist, or any shared spec could read any database on disk. Cost: about 150 lines plus bundling the WebAssembly. DuckDB (Parquet, CSV) would be the same shape and even larger.
+
 ## Dropped
 
-**Dataview as a data source.** Decided out of scope on 2026-09-26. The `DataSchemeProvider` interface stays because it is the general hook; nobody is building the Dataview adapter.
+**Dataview as a data source.** Decided out of scope on 2026-09-26, confirmed 2026-11-19. The `DataSchemeProvider` interface stays because it is the general hook; nobody is building the Dataview adapter. Other local sources (SQLite above, a local server) go through that hook as separate plugins.
