@@ -135,9 +135,12 @@
   font-size: 0.9em;
 }
 
-/* `header: false` on an Agate view: no Bases title or toolbar above an embed or base block. */
-.block-language-base.agate-no-header .bases-header,
-.bases-embed.agate-no-header .bases-header {
+/* `header: false` on an Agate view: no Bases title or toolbar above an embed or base block,
+   unless the "Cycle Bases headers" command set the note to show all. That command's "hide"
+   hides every base's header in the note, Agate or not. */
+.block-language-base.agate-no-header:not(.agate-headers-show *) .bases-header,
+.bases-embed.agate-no-header:not(.agate-headers-show *) .bases-header,
+.agate-headers-hide .bases-header {
   display: none;
 }
 /* Stats are a line of numbers, not a database view: no fixed view height around them. */

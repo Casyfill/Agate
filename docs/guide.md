@@ -86,6 +86,8 @@ view: Table
 
 The first is a bare spec. The second adds inline rows. The third pulls rows from a base's query, reusing that view's filters and property order; it renders a hidden Bases view underneath, which is why the Bases toolbar shows above such charts. Add `header: false` to hide it (also a view option, "Bases header in notes"). It only applies in notes: a `.base` tab keeps its header, which holds the view switcher and options.
 
+The command **Agate: Cycle Bases headers in this note** overrides that for the note in front of you, for every base in it, Agate or not. Each run steps through three states: auto (each view's `header` option; shown when unset), all hidden, all shown. Use it to read a note without toolbars, or to bring them back to filter and sort. It is per pane and not saved: nothing in the YAML changes, and closing the pane goes back to auto. Give it a key in Settings → Hotkeys.
+
 Blocks and spec files can be YAML as well as JSON. YAML is often nicer to write by hand: less punctuation, and room for comments. It works especially well for a spec that lives in the note, which you edit with Obsidian's own editor on any device. The spec can carry its own data, or take rows from a base:
 
 ````markdown

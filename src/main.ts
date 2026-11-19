@@ -1,4 +1,4 @@
-import { Notice, Plugin, TFile, TFolder, Vault, addIcon, apiVersion, normalizePath } from "obsidian";
+import { MarkdownView, Notice, Plugin, TFile, TFolder, Vault, addIcon, apiVersion, normalizePath } from "obsidian";
 import { AGATE_ICON_ID, AGATE_ICON_SVG } from "./icon";
 import { CHART_VIEW_ICON_ID, CHART_VIEW_ICON_SVG } from "./chart-icon";
 import { version as vegaVersion, type Config, type Loader } from "vega";
@@ -13,6 +13,7 @@ import { openSpecFile } from "./ui/open-spec";
 import { SpecFileModal } from "./ui/spec-file-modal";
 import { parseJsonOrYaml, resolveVaultFile } from "./core/spec";
 import { resolveChartOptions } from "./core/options";
+import { cycleHeaders } from "./core/headers";
 import { RowDataCache, expandRowData, rowDataDefs } from "./core/data/rowdata";
 import { structureDatasets } from "./core/data/structure";
 import { parseRecipe, type Recipe } from "./core/recipes";
@@ -87,6 +88,21 @@ export default class AgatePlugin extends Plugin {
         }
         view.dumpFirstRow();
         new Notice("Agate: dumped to the developer console (Cmd/Ctrl+Shift+I), at the Verbose level.");
+      },
+    });
+
+    this.addCommand({
+      id: "cycle-bases-headers",
+      name: "Cycle Bases headers in this note: auto, all hidden, all shown",
+      checkCallback: (checking) => {
+        const view = this.app.workspace.getActiveViewOfType(MarkdownView);
+        if (!view) return false;
+        if (!checking) {
+          // Per pane, not saved: auto follows each view's `header` option; the others override it.
+          const next = cycleHeaders(view.containerEl);
+          new Notice(`Agate: Bases headers in this note: ${next === "auto" ? "auto (each view's header option)" : next === "hide" ? "all hidden" : "all shown"}.`);
+        }
+        return true;
       },
     });
 
