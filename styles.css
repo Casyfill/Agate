@@ -104,11 +104,34 @@
 .agate-stat-change.is-up::before { content: "▲ "; font-size: 0.7em; }
 .agate-stat-change.is-down::before { content: "▼ "; font-size: 0.7em; }
 .agate-stat-change.is-good { color: var(--color-green); }
+/* A row's `tone` (stats.ts): its value in one of the theme's colours */
+.agate-stat.has-tone .agate-stat-value { color: var(--agate-stat-tone); }
 .agate-stat-change.is-bad { color: var(--color-red); }
 
 
 .agate-stat-note {
   color: var(--text-faint);
+  font-size: 0.9em;
+}
+
+/* Rows with `size: "small"`: one line of secondary numbers under the big ones, value then label */
+.agate-stats-minor {
+  flex-basis: 100%;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25em 1.8em;
+}
+.agate-stats-minor .agate-stat,
+.agate-stats-minor .agate-stat-top {
+  display: flex;
+  align-items: baseline;
+  gap: 0.4em;
+}
+.agate-stats-minor .agate-stat-value {
+  font-size: 1.2em;
+  font-weight: 650;
+}
+.agate-stats-minor .agate-stat-change {
   font-size: 0.9em;
 }
 

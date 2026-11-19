@@ -186,7 +186,7 @@ Setup, every built-in theme, and which Obsidian themes `auto` recognizes: [Theme
 - Theme `instrument` is `obsidian` redrawn as a monochrome readout, after the demo vault's hike dashboard: the theme's monospace font, ink-colored marks and small filled dots, no axis lines or ticks, dotted grids, numeric y labels inside the plot, axis titles as small labels above each plot, and the accent for selections. It suits dense time series and small multiples; pick it per chart (the view's **Theme** option) or vault-wide.
 - The other themes are Vega's stock themes, most with a fixed white background.
 - A spec that declares a signal (Vega) or param (Vega-Lite) named `agateDark` with a plain `value` gets `true` in dark mode. The horizon examples use it to reverse their color ramp so small changes stay close to the background. In the Vega editor the spec's own default applies.
-- A spec that declares `agateColors` (a plain `value` object, used as the defaults outside Obsidian) gets the active theme's colors by role: `text`, `muted`, `faint`, `background`, `border`, `accent`, and the named colors `red`, `orange`, `yellow`, `green`, `cyan`, `blue`, `purple`, `pink`. Use them in expressions, e.g. `"color": {"expr": "agateColors.yellow"}` or a halo in `agateColors.background`. Charts re-render when the theme changes. The hike dashboard in `demo-vault/charts/` uses no other colors.
+- A spec that declares `agateColors` (a plain `value` object, used as the defaults outside Obsidian) gets the active theme's colors by role: `text`, `muted`, `faint`, `background`, `border`, `accent`, and the named colors `red`, `orange`, `yellow`, `green`, `cyan`, `blue`, `purple`, `pink`. Use them in expressions, e.g. `"color": {"expr": "agateColors.yellow"}` or a halo in `agateColors.background`. Charts re-render when the theme changes. Stats rows take the same names as `tone` (section 11). The hike dashboard in `demo-vault/charts/` uses no other colors.
 
 ### Textures: hatching and dots (SVG only)
 
@@ -305,6 +305,33 @@ A row of headline numbers (books read, mean rating, pages) can be drawn by Vega 
 Agate then runs the spec without drawing it and shows the rows behind its first mark as HTML: each row's `value` large, its `label` small under it, and an optional `note`. Vega still does all the work (filters, aggregates, formatting), the numbers follow the base like any chart, and they wrap and select like note text in the note's own fonts. Outside Agate the spec draws its own marks, so give it a simple text layer as a fallback. `demo-vault/tests/Surfaces/13 Stats.md` shows both approaches side by side; the specs are `tests/charts/stats-row-vega.vl.json` and `stats-row-html.vl.json`.
 
 Rows can also carry a secondary value. A numeric `change` is shown with an arrow for its direction (▲ 0.4, ▼ −3), in the theme's green when it is good news and red when not; up is good unless the row says `better: "down"` (for time, cost, errors). A text `change` such as "+12%" gives its direction by its sign. Put what it is compared against in `note`.
+
+A row with `size: "small"` is a secondary number: all such rows go on one quieter line under the big ones, value then label (`12 new this year`), wherever they sit in the data. Change and note work on them too. Compute `size` in a `calculate` like any other field.
+
+**Styling and conditional formatting.** As with charts, the spec decides and the note shows the result: compute these per row in a `calculate`.
+
+- `tone` colours the value with one of your Obsidian theme's CSS variables, so it follows light/dark and community themes. The colour names are the same as the `agateColors` signal's roles (section 8), so a spec uses one vocabulary for its charts and its numbers. Unknown names, and raw colours such as `#f00`, are ignored.
+
+  | `tone` | Variable |
+  |---|---|
+  | `good`, `bad`, `warn` | `--color-green`, `--color-red`, `--color-orange` |
+  | `text`, `muted`, `faint` | `--text-normal`, `--text-muted`, `--text-faint` |
+  | `accent` | `--color-accent` |
+  | `red`, `orange`, `yellow`, `green`, `cyan`, `blue`, `purple`, `pink` | `--color-red` … `--color-pink` |
+
+- `class` adds CSS classes to the row's cell, for anything beyond colour; style them in a snippet.
+
+```json
+{"calculate": "datum.raw < 3 ? 'bad' : datum.raw >= 4 ? 'good' : null", "as": "tone"},
+{"calculate": "datum.key === 'avg' ? 'focus' : null", "as": "class"}
+```
+
+```css
+/* .obsidian/snippets/stats.css */
+.agate-stat.focus .agate-stat-value { text-decoration: underline 2px var(--color-accent); }
+```
+
+Every part is a stable class to style in a snippet: `.agate-stats` (the block), `.agate-stat` (a cell), `.agate-stat-value`, `.agate-stat-label`, `.agate-stat-note`, `.agate-stat-change` (with `is-up`, `is-down`, `is-good`, `is-bad`) and `.agate-stats-minor` (the line of small numbers). A note's `cssclasses` scopes a snippet to that note.
 
 Stats read better without the Bases title and toolbar above them, so the Headline numbers recipe and Paste spec write `header: false` into the view; add it yourself to a block with `base:`. Delete it to get the header back.
 

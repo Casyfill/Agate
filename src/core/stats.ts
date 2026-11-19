@@ -5,7 +5,7 @@ import { agateMeta } from "./usermeta";
 
 /**
  * Experimental: stats as HTML. A spec with `usermeta.agate.output: "stats"` is run headlessly and
- * the rows behind its first mark (`value`, `label`, optional `note`, `change`, `better`) are shown
+ * the rows behind its first mark (`value`, `label`, optional `note`, `change`, `better`, `size`, `tone`, `class`) are shown
  * as a row of big numbers in note text instead of a chart. Vega does the aggregating; the note gets real text that
  * wraps, selects and uses the note's fonts. Outside Agate the spec still draws its own marks.
  */
@@ -18,6 +18,37 @@ export interface Stat {
   direction?: "up" | "down" | "flat";
   /** Whether the direction is good news: up by default, down when the row says `better: "down"`. */
   good?: boolean;
+  /** `size: "small"` on the row: a secondary number, on a line below the big ones. */
+  small?: boolean;
+  /** CSS variable for the value's colour, from the row's `tone`. */
+  tone?: string;
+  /** Extra classes for the cell, from the row's `class`, for snippets. */
+  classes?: string[];
+}
+
+/**
+ * `tone` names: the meanings, then the same colour names as the `agateColors` signal, so a
+ * spec uses one vocabulary for charts and numbers. All are Obsidian theme variables, so they
+ * follow light/dark and community themes.
+ */
+const TONES: Record<string, string> = {
+  good: "--color-green",
+  bad: "--color-red",
+  warn: "--color-orange",
+  muted: "--text-muted",
+  accent: "--color-accent",
+  text: "--text-normal",
+  faint: "--text-faint",
+  ...Object.fromEntries(["red", "orange", "yellow", "green", "cyan", "blue", "purple", "pink"].map((c) => [c, `--color-${c}`])),
+};
+
+/** A row's `tone` and `class`, keeping only known tones and class names that are safe as written. */
+export function lookOf(tone: unknown, cls: unknown): Pick<Stat, "tone" | "classes"> {
+  const out: Pick<Stat, "tone" | "classes"> = {};
+  if (typeof tone === "string" && Object.prototype.hasOwnProperty.call(TONES, tone)) out.tone = TONES[tone];
+  const classes = typeof cls === "string" ? cls.split(/\s+/).filter((c) => /^[A-Za-z_][\w-]*$/.test(c)) : [];
+  if (classes.length > 0) out.classes = classes;
+  return out;
 }
 
 /** A row's `change`: a number gives the direction by its sign; a string by its leading + or −. */
@@ -75,6 +106,8 @@ export async function computeStats(spec: AnySpec, mode: "vega" | "vega-lite", co
       label: show(r.label),
       ...(r.note != null ? { note: show(r.note) } : {}),
       ...changeOf(r.change, r.better),
+      ...(r.size === "small" ? { small: true } : {}),
+      ...lookOf(r.tone, r.class),
     }));
   } finally {
     view.finalize();
@@ -83,8 +116,8 @@ export async function computeStats(spec: AnySpec, mode: "vega" | "vega-lite", co
 
 /**
  * Draw stats into `el` as HTML numbers, or pass null when `el` holds a chart: either way the
- * base block, embed or view around it is marked, so styles.css can drop the Bases header and
- * fixed height around stats. A class instead of `:has()`, which makes the browser re-check
+ * base block, embed or view around it is marked, so styles.css can drop the fixed height
+ * around stats (the header is the view's explicit `header` option). A class instead of `:has()`, which makes the browser re-check
  * selectors across the whole document on every DOM change.
  */
 export function renderStats(el: HTMLElement, stats: Stat[] | null): void {
@@ -102,16 +135,24 @@ export function renderStats(el: HTMLElement, stats: Stat[] | null): void {
   };
   el.replaceChildren();
   el.classList.add("agate-stats");
-  for (const s of stats) {
-    const cell = add(el, "div", "agate-stat");
-    const top = add(cell, "div", "agate-stat-top");
+  const cell = (parent: HTMLElement, s: Stat): void => {
+    const c = add(parent, "div", ["agate-stat", ...(s.classes ?? []), ...(s.tone ? ["has-tone"] : [])].join(" "));
+    if (s.tone) c.style.setProperty("--agate-stat-tone", `var(${s.tone})`);
+    const top = add(c, "div", "agate-stat-top");
     add(top, "span", "agate-stat-value", s.value);
     if (s.change) {
       const cls = ["agate-stat-change", `is-${s.direction ?? "flat"}`];
       if (s.good !== undefined) cls.push(s.good ? "is-good" : "is-bad");
       add(top, "span", cls.join(" "), s.change);
     }
-    add(cell, "div", "agate-stat-label", s.label);
-    if (s.note) add(cell, "div", "agate-stat-note", s.note);
+    add(c, "div", "agate-stat-label", s.label);
+    if (s.note) add(c, "div", "agate-stat-note", s.note);
+  };
+  for (const s of stats) if (!s.small) cell(el, s);
+  // Small rows go on their own line below the big ones, wherever they sit in the data.
+  const small = stats.filter((s) => s.small);
+  if (small.length > 0) {
+    const minor = add(el, "div", "agate-stats-minor");
+    for (const s of small) cell(minor, s);
   }
 }

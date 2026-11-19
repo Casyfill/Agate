@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { changeOf, computeStats, firstMarkData, isStatsSpec } from "../../src/core/stats";
+import { changeOf, computeStats, firstMarkData, isStatsSpec, lookOf } from "../../src/core/stats";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import type { AnySpec } from "../../src/core/types";
@@ -65,5 +65,14 @@ describe("stats output (experimental)", () => {
       { value: "3", label: "books" },
       { value: "3.7", label: "mean rating" },
     ]);
+  });
+});
+
+describe("lookOf", () => {
+  it("maps tones to theme variables and keeps only safe class names", () => {
+    expect(lookOf("bad", "focus  x;y")).toEqual({ tone: "--color-red", classes: ["focus"] });
+    expect(lookOf("cyan", undefined)).toEqual({ tone: "--color-cyan" });
+    expect(lookOf("#f00", null)).toEqual({});
+    expect(lookOf("constructor", "")).toEqual({});
   });
 });

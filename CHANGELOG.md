@@ -7,6 +7,9 @@ All notable changes to Agate. The format follows [Keep a Changelog](https://keep
 ### Added
 
 - `header: false`, a view option and `agate` block key, hides the Bases title and toolbar above a chart embedded in a note. A `.base` tab keeps its header.
+- Stats rows with `size: "small"` form a line of smaller secondary numbers under the big ones.
+- Stats rows take `tone` to colour the value with an Obsidian theme variable: `good`, `bad`, `warn`, or any `agateColors` role that is a colour (`accent`, `muted`, `blue`, …), so charts and numbers share one vocabulary. Raw colours are ignored, so numbers keep working across light/dark and themes.
+- Stats rows take `class` to add CSS classes to the cell, for snippets. The guide lists every stats class to style.
 
 ### Changed
 
