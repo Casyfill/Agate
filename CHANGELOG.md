@@ -4,6 +4,14 @@ All notable changes to Agate. The format follows [Keep a Changelog](https://keep
 
 ## [Unreleased]
 
+### Added
+
+- `header: false`, a view option and `agate` block key, hides the Bases title and toolbar above a chart embedded in a note. A `.base` tab keeps its header.
+
+### Changed
+
+- Stats no longer hide the Bases header on their own. The Headline numbers recipe and Paste spec write `header: false` for a stats spec instead; add it to existing stats blocks to keep them headerless.
+
 ## [0.6.0] - 2026-11-09
 
 ### Added

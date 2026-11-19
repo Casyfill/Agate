@@ -11,6 +11,7 @@ cssclasses: [agate-area]
 ```agate
 spec: charts/hike-stats.vl.json
 base: bases/Hiking.base
+header: false
 ```
 
 The first 30 miles of the Appalachian Trail, from the southern terminus to the outfitter at Neel Gap. Each day is a note with its GPS track. Every dot is one reading from the watch, which kept logging overnight at camp. Hover the route or any panel to read elevation, speed, heart rate, the sun's height and the temperature at that moment; drag across the elevation panel to zoom into a stretch of time.

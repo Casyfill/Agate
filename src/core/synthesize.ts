@@ -5,7 +5,7 @@ const VIEW_KEYS = ["filters", "order", "groupBy", "limit", "sort", "summaries"] 
 /** Keys copied from the base file's top level. */
 const BASE_KEYS = ["filters", "formulas", "properties", "summaries"] as const;
 /** Envelope keys that become agate view options. */
-const OPTION_KEYS = ["dataset", "theme", "renderer", "actions", "interactive"] as const;
+const OPTION_KEYS = ["dataset", "theme", "renderer", "actions", "interactive", "header"] as const;
 
 export interface SynthesizeInput {
   /** Parsed contents of the .base file. */

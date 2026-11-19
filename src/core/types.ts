@@ -37,6 +37,8 @@ export interface AgateEnvelope extends ChartOptions {
   base?: string;
   /** Name of the view inside that base whose filters/order should apply. */
   view?: string;
+  /** With `base:`, `false` hides the Bases title and toolbar above the chart. */
+  header?: boolean;
   /** Inline rows, either a list (goes into `dataset`) or a map of dataset name to rows. */
   data?: Row[] | Record<string, Row[]>;
 }

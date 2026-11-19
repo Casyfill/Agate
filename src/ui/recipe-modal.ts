@@ -9,6 +9,7 @@ import {
   type Recipe,
 } from "../core/recipes";
 import { errorMessage } from "../util/log";
+import type { AnySpec } from "../core/types";
 
 export interface RecipeTarget {
   /** Properties of the base, with inferred types and display names. */
@@ -16,7 +17,7 @@ export interface RecipeTarget {
   /** Folder new spec files go into. */
   folder: string;
   /** Called with the vault path of the spec that was written. */
-  onCreated: (path: string) => void;
+  onCreated: (path: string, spec: AnySpec) => void;
 }
 
 /** Step 1: pick a recipe (ADR-0001 D13). */
@@ -131,7 +132,7 @@ export class RecipeRolesModal extends Modal {
       const path = await writeUnique(this.app, this.target.folder, this.fileName || "chart.vl.json", JSON.stringify(spec, null, 2) + "\n");
       this.close();
       new Notice(`Agate: created ${path}`);
-      this.target.onCreated(path);
+      this.target.onCreated(path, spec);
     } catch (err) {
       new Notice(`Agate: ${errorMessage(err)}`);
     }

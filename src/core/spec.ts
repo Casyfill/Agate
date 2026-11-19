@@ -29,6 +29,7 @@ const ENVELOPE_KEYS = new Set([
   "renderer",
   "actions",
   "interactive",
+  "header",
   "dataset",
   "mode",
 ]);

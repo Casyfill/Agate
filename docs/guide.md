@@ -84,7 +84,7 @@ view: Table
 ```
 ````
 
-The first is a bare spec. The second adds inline rows. The third pulls rows from a base's query, reusing that view's filters and property order; it renders a hidden Bases view underneath, which is why the Bases toolbar shows above such charts.
+The first is a bare spec. The second adds inline rows. The third pulls rows from a base's query, reusing that view's filters and property order; it renders a hidden Bases view underneath, which is why the Bases toolbar shows above such charts. Add `header: false` to hide it (also a view option, "Bases header in notes"). It only applies in notes: a `.base` tab keeps its header, which holds the view switcher and options.
 
 Blocks and spec files can be YAML as well as JSON. YAML is often nicer to write by hand: less punctuation, and room for comments. It works especially well for a spec that lives in the note, which you edit with Obsidian's own editor on any device. The spec can carry its own data, or take rows from a base:
 
@@ -305,6 +305,8 @@ A row of headline numbers (books read, mean rating, pages) can be drawn by Vega 
 Agate then runs the spec without drawing it and shows the rows behind its first mark as HTML: each row's `value` large, its `label` small under it, and an optional `note`. Vega still does all the work (filters, aggregates, formatting), the numbers follow the base like any chart, and they wrap and select like note text in the note's own fonts. Outside Agate the spec draws its own marks, so give it a simple text layer as a fallback. `demo-vault/tests/Surfaces/13 Stats.md` shows both approaches side by side; the specs are `tests/charts/stats-row-vega.vl.json` and `stats-row-html.vl.json`.
 
 Rows can also carry a secondary value. A numeric `change` is shown with an arrow for its direction (▲ 0.4, ▼ −3), in the theme's green when it is good news and red when not; up is good unless the row says `better: "down"` (for time, cost, errors). A text `change` such as "+12%" gives its direction by its sign. Put what it is compared against in `note`.
+
+Stats read better without the Bases title and toolbar above them, so the Headline numbers recipe and Paste spec write `header: false` into the view; add it yourself to a block with `base:`. Delete it to get the header back.
 
 Two things to know. In Vega-Lite's `aggregate`, a field written `note.rating` is read as one flat name, so copy nested fields out with a `calculate` first. And the format may still change: this is experimental.
 

@@ -11,6 +11,7 @@ cssclasses: [agate-area]
 ```agate
 spec: charts/interview-stats.vl.json
 base: bases/Interview prep.base
+header: false
 ```
 
 <span class="sidenote margin-note">Each attempt is a note: the question, its domain and topic, and three grades from 1 to 5: cold (the first answer, no notes), after read-up, and a cold re-test days later. The dots are cold grades, the grey line a 7-attempt rolling mean; a ring is a re-test.</span>

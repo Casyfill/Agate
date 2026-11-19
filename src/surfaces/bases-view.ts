@@ -21,6 +21,7 @@ import { CHART_VIEW_ICON_ID } from "../chart-icon";
 import { inferPropertyTypes, type PropertyInfo } from "../core/recipes";
 import { buildChartPrompt } from "../core/prompt";
 import { RecipeSuggestModal, writeUnique } from "../ui/recipe-modal";
+import { isStatsSpec } from "../core/stats";
 import { checkPastedSpec, pastedFileName, type PasteCheck } from "../core/paste";
 import { PasteSpecModal } from "../ui/paste-spec-modal";
 import { renderInspiration } from "../ui/inspiration";
@@ -142,8 +143,10 @@ export class AgateBasesView extends BasesView {
     new RecipeSuggestModal(this.app, recipes, {
       properties,
       folder: this.plugin.settings.specFolder || "charts",
-      onCreated: (path) => {
+      onCreated: (path, spec) => {
         this.config.set("specFile", path);
+        // Big numbers read as note text, not a database view: write the choice so it shows in the YAML.
+        if (isStatsSpec(spec)) this.config.set("header", false);
         this.scheduleRender();
       },
     }).open();
@@ -186,6 +189,7 @@ export class AgateBasesView extends BasesView {
         const path = await writeUnique(this.app, folder, fileName, JSON.stringify(spec, null, 2) + "\n");
         const previous = this.specFilePath();
         this.config.set("specFile", path);
+        if (isStatsSpec(spec)) this.config.set("header", false);
         this.scheduleRender();
         new Notice(`Agate: saved ${path}${previous ? ` (${previous} is unchanged)` : ""}.`);
       } catch (err) {
@@ -200,6 +204,17 @@ export class AgateBasesView extends BasesView {
       return;
     }
     new PasteSpecModal(this.app, text, { check, suggestName, folder, save }).open();
+  }
+
+  /**
+   * `header: false` hides the Bases title and toolbar around an embed or base block. Never in a
+   * .base tab, where the header holds the only view switcher and options menu. Relies on Obsidian's
+   * internal `.bases-header` class (styles.css); if that changes, the header just shows again.
+   */
+  private applyHeader(): void {
+    const hide = this.config.get("header") === false;
+    const host = this.containerEl.closest(".block-language-base, .bases-embed");
+    host?.classList.toggle("agate-no-header", hide);
   }
 
   private specFilePath(): string | null {
@@ -220,6 +235,7 @@ export class AgateBasesView extends BasesView {
   private async render(): Promise<void> {
     const { plugin } = this;
     const gen = ++this.renderGen;
+    this.applyHeader();
     try {
       const resolved = await this.resolveSpec();
       if (!resolved) {
@@ -352,6 +368,7 @@ export function agateViewRegistration(plugin: AgatePlugin): BasesViewRegistratio
               default: plugin.settings.interactive,
             },
             { type: "toggle", key: "actions", displayName: "Export menu", default: plugin.settings.actions },
+            { type: "toggle", key: "header", displayName: "Bases header in notes", default: true },
           ],
         },
       ];

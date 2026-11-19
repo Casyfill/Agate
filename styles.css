@@ -112,12 +112,12 @@
   font-size: 0.9em;
 }
 
-/* A base block or embed showing stats is a line of numbers, not a database view: no title or
-   toolbar above it, and no fixed view height around it. */
-.block-language-base.agate-has-stats .bases-header,
-.bases-embed.agate-has-stats .bases-header {
+/* `header: false` on an Agate view: no Bases title or toolbar above an embed or base block. */
+.block-language-base.agate-no-header .bases-header,
+.bases-embed.agate-no-header .bases-header {
   display: none;
 }
+/* Stats are a line of numbers, not a database view: no fixed view height around them. */
 .block-language-base.agate-has-stats .bases-view,
 .bases-embed.agate-has-stats .bases-view,
 .agate-bases-view.agate-has-stats {
