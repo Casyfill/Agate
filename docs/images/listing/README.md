@@ -14,9 +14,9 @@ Slides 05, 07 and 08 use Obsidian windows recreated in HTML around real chart ca
 
 ## Rebuilding
 
-- `src/slides.html`: all slides, one `<section>` each. Fonts: Inter / Inter Display, DejaVu Sans Mono (system).
+- `src/slides.html`: all slides, one `<section>` each. Fonts: Inter / Inter Display, DejaVu Sans Mono (system copies, else rsms.me / jsdelivr).
 - `src/img/`: every image the slides use (crops of `docs/site` captures plus the rendered theme cards).
-- `src/render.py`: renders all slides to PNG at both sizes (`pip install playwright pillow && playwright install chromium`).
+- `src/render.py`: renders all slides to PNG: listing (1200×800 and @2x), mobile (900×1600) and `docs/images/reddit/` (1280×800, the same slides on a wider frame). `uv run --with playwright --with pillow python render.py` (first time: `playwright install chromium`). Fonts load from the web when Inter / DejaVu Sans Mono aren't installed.
 - `src/themes/`: renders the theme cards (`npm i`, then `python3 shoot2.py` and `python3 shoot3.py`) from `demo-vault/charts/theme-sampler.vl.json` and the board-game notes (`data.js`, exported from the vault).
 - `src/themes/configs/*.json`: the Vega configs behind each card. `plotted*`, `instrA/B` and `reading` reference SVG hatch patterns (`url(#q1)` etc.) that the render script injects; as plain Agate theme files they need those colours swapped for solid ones or Agate textures.
 - `src/boardgames.json`: the board-game notes as rows, used to build `data.js`.

@@ -23,3 +23,6 @@ demo-vault/.obsidian/themes/
 docs/images/listing/*
 !docs/images/listing/README.md
 !docs/images/listing/src/
+
+# post screenshots (Reddit etc.), kept local
+docs/images/reddit/
