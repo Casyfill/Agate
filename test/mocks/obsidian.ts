@@ -17,6 +17,11 @@ declare global {
   }
 }
 
+declare global {
+  var activeDocument: Document;
+}
+if (typeof document !== "undefined") globalThis.activeDocument = document;
+
 // Obsidian's createEl, as far as src/core uses it (jsdom tests only).
 if (typeof Node !== "undefined") {
   Node.prototype.createEl = function (this: Node, tag: string, o?: { cls?: string; text?: string }) {

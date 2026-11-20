@@ -354,7 +354,7 @@ export class AgateBasesView extends BasesView {
 
     box.createDiv({
       cls: "agate-placeholder-hint",
-      text: "Paste spec saves the reply or the edited spec as a file and points this view at it, so the chart follows the base. Or set a Spec file in the view options (chevron next to the view name).",
+      text: "Paste spec saves the reply or the edited spec as a file and points this view at it, so the chart follows the base. Or set a spec file in the view options (chevron next to the view name).",
     });
     renderInspiration(box);
   }

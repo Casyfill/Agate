@@ -7,6 +7,7 @@ All notable changes to Agate. The format follows [Keep a Changelog](https://keep
 ### Changed
 
 - Stats cells are built with Obsidian's `createEl` helpers (community review check `obsidianmd/prefer-create-el`).
+- Charts read the theme from `activeDocument` and draw textures into their own window, for pop-out window compatibility.
 
 ## [0.7.1] - 2026-11-19
 

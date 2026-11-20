@@ -1,3 +1,4 @@
+import type {} from "obsidian";
 import { mergeConfig, type Config } from "vega";
 import * as vegaThemes from "vega-themes";
 import type { ThemeSource } from "./types";
@@ -8,7 +9,7 @@ import { colorDistance, mixColors, parseColor, resolvePalette, type ResolvedPale
  * `agateColors` signal; the `obsidian` theme below builds its config from them.
  */
 export function themeColors(): Record<string, string> {
-  const cs = getComputedStyle(document.body);
+  const cs = getComputedStyle(activeDocument.body);
   const v = (name: string, fallback: string): string => {
     const raw = cs.getPropertyValue(name).trim();
     return raw.length > 0 ? raw : fallback;
@@ -33,7 +34,7 @@ export function themeColors(): Record<string, string> {
 
 /** The active Obsidian theme's fonts, read from its CSS variables. Used by the theme-generation prompt. */
 export function themeFonts(): { interface: string; text: string; mono: string; textSize: number } {
-  const cs = getComputedStyle(document.body);
+  const cs = getComputedStyle(activeDocument.body);
   const v = (name: string, fallback: string): string => {
     const raw = cs.getPropertyValue(name).trim();
     return raw.length > 0 ? raw : fallback;
@@ -53,7 +54,7 @@ export function themeFonts(): { interface: string; text: string; mono: string; t
 export function obsidianTheme(): Config {
   const c = themeColors();
   const { text, muted, faint, border, accent } = c;
-  const cs = getComputedStyle(document.body);
+  const cs = getComputedStyle(activeDocument.body);
   const font = cs.getPropertyValue("--font-interface").trim() || "sans-serif";
   const textSize = parseFloat(cs.getPropertyValue("--font-text-size")) || 16;
 
@@ -113,7 +114,7 @@ export function obsidianTheme(): Config {
  */
 export function instrumentTheme(): Config {
   const c = themeColors();
-  const mono = getComputedStyle(document.body).getPropertyValue("--font-monospace").trim() || "ui-monospace, SFMono-Regular, Menlo, Consolas, monospace";
+  const mono = getComputedStyle(activeDocument.body).getPropertyValue("--font-monospace").trim() || "ui-monospace, SFMono-Regular, Menlo, Consolas, monospace";
   const label = { labelFont: mono, labelFontSize: 9, labelColor: c.muted, titleFont: mono, titleFontSize: 9, titleFontWeight: 600, titleColor: c.text };
   return mergeConfig(obsidianTheme(), {
     font: mono,
@@ -152,8 +153,8 @@ export function distinct(colors: string[], min = 8): string[] {
 export function domThemeContext(): ThemeContext {
   return {
     name: "",
-    classes: Array.from(document.body.classList),
-    dark: document.body.classList.contains("theme-dark"),
+    classes: Array.from(activeDocument.body.classList),
+    dark: activeDocument.body.classList.contains("theme-dark"),
     accent: themeColors().accent,
   };
 }
@@ -182,7 +183,7 @@ export function einkTheme(): Config {
   const ink = parseColor(c.text) ? mixColors(c.text, c.text, 0) : "#000000";
   const paper = parseColor(c.background) ? mixColors(c.background, c.background, 0) : "#ffffff";
   const tone = (t: number) => mixColors(ink, paper, t);
-  const cs = getComputedStyle(document.body);
+  const cs = getComputedStyle(activeDocument.body);
   const font = cs.getPropertyValue("--font-interface").trim() || "sans-serif";
   const textSize = parseFloat(cs.getPropertyValue("--font-text-size")) || 16;
   const labelFontSize = Math.round(textSize * 0.75);

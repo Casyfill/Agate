@@ -1,4 +1,5 @@
 // @vitest-environment jsdom
+import "obsidian"; // activeDocument
 import { describe, expect, it } from "vitest";
 import { EINK_TONES, autoTheme, builtinThemes, composeConfig, distinct, einkTheme, instrumentTheme, materialize, obsidianTheme, themeColors } from "../../src/core/theme";
 
