@@ -1,3 +1,4 @@
+import type {} from "obsidian";
 import { parse, View, type Config, type Loader } from "vega";
 import { compile } from "vega-lite";
 import type { AnySpec } from "./types";
@@ -125,14 +126,8 @@ export function renderStats(el: HTMLElement, stats: Stat[] | null): void {
     if (p.matches(".block-language-base, .bases-embed, .agate-bases-view")) p.classList.toggle("agate-has-stats", stats !== null);
   }
   if (!stats) return;
-  // Plain DOM rather than Obsidian's createDiv helpers, so this runs (and is tested) outside Obsidian.
-  const add = (parent: HTMLElement, tag: string, cls: string, text?: string): HTMLElement => {
-    const child = parent.ownerDocument.createElement(tag);
-    child.className = cls;
-    if (text !== undefined) child.textContent = text;
-    parent.appendChild(child);
-    return child;
-  };
+  const add = (parent: HTMLElement, tag: keyof HTMLElementTagNameMap, cls: string, text?: string): HTMLElement =>
+    parent.createEl(tag, { cls, text });
   el.replaceChildren();
   el.classList.add("agate-stats");
   const cell = (parent: HTMLElement, s: Stat): void => {

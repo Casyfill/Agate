@@ -1,4 +1,5 @@
 // @vitest-environment jsdom
+import "obsidian"; // createEl polyfill
 import { expect, it } from "vitest";
 import { renderStats } from "../../src/core/stats";
 

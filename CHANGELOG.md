@@ -4,6 +4,10 @@ All notable changes to Agate. The format follows [Keep a Changelog](https://keep
 
 ## [Unreleased]
 
+### Changed
+
+- Stats cells are built with Obsidian's `createEl` helpers (community review check `obsidianmd/prefer-create-el`).
+
 ## [0.7.1] - 2026-11-19
 
 ### Added
