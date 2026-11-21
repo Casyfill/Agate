@@ -3,5 +3,6 @@
   "cssTheme": "AnuPpuccin",
   "enabledCssSnippets": [
     "agate-demo"
-  ]
+  ],
+  "showRibbon": true
 }

@@ -297,7 +297,7 @@
   counter-increment: agate-step;
   display: grid;
   grid-template-columns: 1.6em 1fr;
-  column-gap: var(--size-4-2);
+  gap: 0 var(--size-4-2);
   align-items: baseline;
 }
 .agate-step::before {
