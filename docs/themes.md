@@ -44,4 +44,4 @@ Each palette uses the theme's own colors. A color too faint on its theme's backg
 
 ## Colors inside a spec
 
-To color a single mark from the theme, declare an `agateColors` param and read roles from it: `{"expr": "agateColors.accent"}`. Roles: `text`, `muted`, `faint`, `background`, `border`, `accent`, `red`, `orange`, `yellow`, `green`, `cyan`, `blue`, `purple`, `pink`. `agateDark` is true in dark mode. See the [guide](guide.md#8-theme-dark-mode-and-color).
+To color a single mark from the theme, declare an `agateColors` param and read roles from it: `{"expr": "agateColors.accent"}`. Roles: `text`, `muted`, `faint`, `background`, `border`, `accent`, `red`, `orange`, `yellow`, `green`, `cyan`, `blue`, `purple`, `pink`. `agateDark` is true in dark mode. Big numbers (stats) take the same role names as a row's `tone`, so charts and numbers share one set of theme colours. See the [guide](guide.md#8-theme-dark-mode-and-color).

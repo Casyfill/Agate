@@ -9,6 +9,29 @@
  */
 import YAML from "yaml";
 
+// --- DOM helpers -------------------------------------------------------------
+
+declare global {
+  interface Node {
+    createEl<K extends keyof HTMLElementTagNameMap>(tag: K, o?: { cls?: string; text?: string }): HTMLElementTagNameMap[K];
+  }
+}
+
+declare global {
+  var activeDocument: Document;
+}
+if (typeof document !== "undefined") globalThis.activeDocument = document;
+
+// Obsidian's createEl, as far as src/core uses it (jsdom tests only).
+if (typeof Node !== "undefined") {
+  Node.prototype.createEl = function (this: Node, tag: string, o?: { cls?: string; text?: string }) {
+    const child = this.appendChild((this.ownerDocument ?? document).createElement(tag));
+    if (o?.cls) child.className = o.cls;
+    if (o?.text !== undefined) child.textContent = o.text;
+    return child;
+  } as never;
+}
+
 // --- YAML / paths ------------------------------------------------------------
 
 export function parseYaml(text: string): unknown {

@@ -54,7 +54,7 @@ function defaultToContainerWidth(spec: AnySpec, mode: "vega" | "vega-lite"): Any
 
 /** Signals a spec can declare to learn about its surroundings (see withSignalValues). */
 function environmentSignals(): Record<string, unknown> {
-  return { agateDark: document.body.classList.contains("theme-dark"), agateColors: themeColors() };
+  return { agateDark: activeDocument.body.classList.contains("theme-dark"), agateColors: themeColors() };
 }
 
 /** Page-unique prefix for each chart's texture ids. */
@@ -163,7 +163,7 @@ export class AgateRenderer {
         if (options.renderer === "svg") {
           const prefix = `agate-tex-${++textureCharts}`;
           spec = bindTextures(spec, textures, prefix);
-          this.hostEl.appendChild(texturesSvg(document, textures, prefix));
+          this.hostEl.appendChild(texturesSvg(this.hostEl.ownerDocument, textures, prefix));
         } else {
           spec = bindTextures(spec, textures, null);
         }

@@ -14,11 +14,12 @@ To try everything in this guide without touching your own vault, open the repo's
 
 ## 2. Your first chart (five minutes)
 
-The fastest way: open a base, add a view, set its layout to **Agate chart**. The empty view offers two buttons.
+The fastest way: open a base, add a view, set its layout to **Agate chart**. The empty view walks you through three steps: start from this base, work on the spec (in an assistant or the online Vega editor), bring it back.
 
 - **Pick a recipe** lists ready-made charts (timeline, bars, headline numbers, scatter, histogram, line over time, calendar heatmap, folder sunburst, link graph, arc diagram, travel globe, sankey, beeswarm). Pick one and Agate asks which of the base's properties to use for each part ("When", "Color by"), offering only properties of the right type, then writes the spec into your spec folder and points the view at it. The same picker is in the command palette: **New chart from recipe**.
 - **Copy prompt for an LLM** copies a description of this base (its properties and their types, three sample rows, how Agate passes data, the extras) to the clipboard. Paste it into any AI assistant and say what chart you want at the end of it.
-- **Paste spec** takes the reply back: copy it and press the button (or run *Paste chart spec from the clipboard*). Agate strips code fences and surrounding text, checks that the spec compiles, saves it as a new file in your spec folder and points the view at it. If the spec uses fields the base doesn't have, inlines its own rows or never reads the base, a window lists that first so you can fix it or save anyway. If the chart still errors, the error box has a **Copy error** button for the next round.
+- **Copy data for Vega editor** copies a starter spec holding this base's rows, to paste into the [online Vega editor](https://vega.github.io/editor/) and build the chart there with live preview. Once a view has a chart, the same copy is the clipboard button that appears on hover next to **Edit spec** (or run *Copy the current chart for the Vega editor*): the chart's spec with its rows written in, so it draws there as it does here. Agate's theme stays behind, so colors and fonts are the editor's defaults. Up to 5,000 rows per dataset; beyond that, the first 5,000 and a notice saying so.
+- **Paste spec** takes the reply back: copy it and press the button (or run *Paste chart spec from the clipboard*). Agate strips code fences and surrounding text, checks that the spec compiles, saves it as a new file in your spec folder and points the view at it. If the spec uses fields the base doesn't have, inlines its own rows or never reads the base, a window lists that first so you can fix it or save anyway. If the chart still errors, the error box has a **Copy error** button for the next round. A spec from the Vega editor comes back the same way: Paste spec removes the rows Agate wrote into it, so the saved chart reads the base again instead of a frozen copy.
 
 - **With an AI agent that works on your vault files** (Claude Code and similar): copy the repository's `skills/agate-chart` folder into the agent's skills folder (for Claude Code, `~/.claude/skills/` or `.claude/skills/` in the vault). The skill teaches the agent Agate's conventions and every extra in this guide, and has it render the spec with Vega's command-line tools before handing it over.
 
@@ -84,7 +85,9 @@ view: Table
 ```
 ````
 
-The first is a bare spec. The second adds inline rows. The third pulls rows from a base's query, reusing that view's filters and property order; it renders a hidden Bases view underneath, which is why the Bases toolbar shows above such charts.
+The first is a bare spec. The second adds inline rows. The third pulls rows from a base's query, reusing that view's filters and property order; it renders a hidden Bases view underneath, which is why the Bases toolbar shows above such charts. Add `header: false` to hide it (also a view option, "Bases header in notes"). It only applies in notes: a `.base` tab keeps its header, which holds the view switcher and options.
+
+The command **Agate: Cycle Bases headers in this note** overrides that for the note in front of you, for every base in it, Agate or not. Each run steps through three states: auto (each view's `header` option; shown when unset), all hidden, all shown. Use it to read a note without toolbars, or to bring them back to filter and sort. It is per pane and not saved: nothing in the YAML changes, and closing the pane goes back to auto. Give it a key in Settings → Hotkeys.
 
 Blocks and spec files can be YAML as well as JSON. YAML is often nicer to write by hand: less punctuation, and room for comments. It works especially well for a spec that lives in the note, which you edit with Obsidian's own editor on any device. The spec can carry its own data, or take rows from a base:
 
@@ -110,7 +113,7 @@ The fastest path is to start from something that already works and change it in 
 2. Replace its `data` with `{ "name": "base" }` and its field names with `note.…`, `file.…` or `formula.…`.
 3. Save it as a file in your spec folder (`.json`, or `.yaml` if you prefer [YAML](yaml-specs.md)), not as an inline spec. Agate watches spec files, so every save redraws every chart that uses it. To edit it in Obsidian, install a code editor plugin once: Agate recommends [JSON Editor](https://community.obsidian.md/plugins/json-editor), a community plugin with source and tree views for JSON, on desktop and mobile. For YAML spec files, or one plugin for both formats, see [editor plugins](yaml-specs.md#editor-plugins). Then hover the chart and click **Edit spec** (`{ }`, top right), or run **Agate: Edit the spec of the current chart**: the file opens to the left of the chart, and every save redraws it. **Agate: Edit a spec file** opens any spec the same way. To see `.json` specs in the file explorer, turn on **Show spec files in the file explorer** in Settings → Agate → Editing specs (Obsidian's own Detect all file extensions).
 4. When a field comes out empty, run **Agate: Debug: dump first Bases row** from the command palette and look at the console (Cmd/Ctrl+Opt+I). It prints the raw Bases values and the converted row, which tells you the exact field names and types.
-5. For harder layouts, prototype in the [Vega editor](https://vega.github.io/editor/): paste the dumped row as inline `values`, get it right there, then switch back to `{ "name": "base" }`.
+5. For harder layouts, prototype in the [Vega editor](https://vega.github.io/editor/), which checks the spec as you type and previews live. Hover the chart and click the clipboard button next to **Edit spec** (or run **Agate: Copy the current chart for the Vega editor**): the spec comes with this base's rows written in. Paste it into the editor, get it right there, copy it, and press **Paste spec**, which takes the rows out again so the saved chart reads the base.
 
 Things that trip people up:
 
@@ -186,7 +189,7 @@ Setup, every built-in theme, and which Obsidian themes `auto` recognizes: [Theme
 - Theme `instrument` is `obsidian` redrawn as a monochrome readout, after the demo vault's hike dashboard: the theme's monospace font, ink-colored marks and small filled dots, no axis lines or ticks, dotted grids, numeric y labels inside the plot, axis titles as small labels above each plot, and the accent for selections. It suits dense time series and small multiples; pick it per chart (the view's **Theme** option) or vault-wide.
 - The other themes are Vega's stock themes, most with a fixed white background.
 - A spec that declares a signal (Vega) or param (Vega-Lite) named `agateDark` with a plain `value` gets `true` in dark mode. The horizon examples use it to reverse their color ramp so small changes stay close to the background. In the Vega editor the spec's own default applies.
-- A spec that declares `agateColors` (a plain `value` object, used as the defaults outside Obsidian) gets the active theme's colors by role: `text`, `muted`, `faint`, `background`, `border`, `accent`, and the named colors `red`, `orange`, `yellow`, `green`, `cyan`, `blue`, `purple`, `pink`. Use them in expressions, e.g. `"color": {"expr": "agateColors.yellow"}` or a halo in `agateColors.background`. Charts re-render when the theme changes. The hike dashboard in `demo-vault/charts/` uses no other colors.
+- A spec that declares `agateColors` (a plain `value` object, used as the defaults outside Obsidian) gets the active theme's colors by role: `text`, `muted`, `faint`, `background`, `border`, `accent`, and the named colors `red`, `orange`, `yellow`, `green`, `cyan`, `blue`, `purple`, `pink`. Use them in expressions, e.g. `"color": {"expr": "agateColors.yellow"}` or a halo in `agateColors.background`. Charts re-render when the theme changes. Stats rows take the same names as `tone` (section 11). The hike dashboard in `demo-vault/charts/` uses no other colors.
 
 ### Textures: hatching and dots (SVG only)
 
@@ -291,6 +294,7 @@ The key stays out of your vault files and Agate's settings file, so sync and git
 | `output` | `"stats"` | Big numbers as note text (experimental) | [11](#11-experimental-big-numbers-as-note-text) |
 | `recipe` | recipe definition | Makes a spec in the recipe folder a recipe | [2](#2-your-first-chart-five-minutes) |
 | `fromRecipe` | `{id, roles}` | Written by Agate: which recipe a spec came from | [2](#2-your-first-chart-five-minutes) |
+| `inlined` | dataset names | Written by Copy for Vega editor: rows that Paste spec removes again | [2](#2-your-first-chart-five-minutes) |
 
 Dataset names must differ from the rows dataset (`base` unless the view sets another). Agate ignores keys not in this table; **Paste spec** warns about them and the console logs them, which catches typos such as `rowdata`.
 
@@ -305,6 +309,35 @@ A row of headline numbers (books read, mean rating, pages) can be drawn by Vega 
 Agate then runs the spec without drawing it and shows the rows behind its first mark as HTML: each row's `value` large, its `label` small under it, and an optional `note`. Vega still does all the work (filters, aggregates, formatting), the numbers follow the base like any chart, and they wrap and select like note text in the note's own fonts. Outside Agate the spec draws its own marks, so give it a simple text layer as a fallback. `demo-vault/tests/Surfaces/13 Stats.md` shows both approaches side by side; the specs are `tests/charts/stats-row-vega.vl.json` and `stats-row-html.vl.json`.
 
 Rows can also carry a secondary value. A numeric `change` is shown with an arrow for its direction (▲ 0.4, ▼ −3), in the theme's green when it is good news and red when not; up is good unless the row says `better: "down"` (for time, cost, errors). A text `change` such as "+12%" gives its direction by its sign. Put what it is compared against in `note`.
+
+A row with `size: "small"` is a secondary number: all such rows go on one quieter line under the big ones, value then label (`12 new this year`), wherever they sit in the data. Change and note work on them too. Compute `size` in a `calculate` like any other field.
+
+**Styling and conditional formatting.** As with charts, the spec decides and the note shows the result: compute these per row in a `calculate`.
+
+- `tone` colours the value with one of your Obsidian theme's CSS variables, so it follows light/dark and community themes. The colour names are the same as the `agateColors` signal's roles (section 8), so a spec uses one vocabulary for its charts and its numbers. Unknown names, and raw colours such as `#f00`, are ignored.
+
+  | `tone` | Variable |
+  |---|---|
+  | `good`, `bad`, `warn` | `--color-green`, `--color-red`, `--color-orange` |
+  | `text`, `muted`, `faint` | `--text-normal`, `--text-muted`, `--text-faint` |
+  | `accent` | `--color-accent` |
+  | `red`, `orange`, `yellow`, `green`, `cyan`, `blue`, `purple`, `pink` | `--color-red` … `--color-pink` |
+
+- `class` adds CSS classes to the row's cell, for anything beyond colour; style them in a snippet.
+
+```json
+{"calculate": "datum.raw < 3 ? 'bad' : datum.raw >= 4 ? 'good' : null", "as": "tone"},
+{"calculate": "datum.key === 'avg' ? 'focus' : null", "as": "class"}
+```
+
+```css
+/* .obsidian/snippets/stats.css */
+.agate-stat.focus .agate-stat-value { text-decoration: underline 2px var(--color-accent); }
+```
+
+Every part is a stable class to style in a snippet: `.agate-stats` (the block), `.agate-stat` (a cell), `.agate-stat-value`, `.agate-stat-label`, `.agate-stat-note`, `.agate-stat-change` (with `is-up`, `is-down`, `is-good`, `is-bad`) and `.agate-stats-minor` (the line of small numbers). A note's `cssclasses` scopes a snippet to that note.
+
+Stats read better without the Bases title and toolbar above them, so the Headline numbers recipe and Paste spec write `header: false` into the view; add it yourself to a block with `base:`. Delete it to get the header back.
 
 Two things to know. In Vega-Lite's `aggregate`, a field written `note.rating` is read as one flat name, so copy nested fields out with a `calculate` first. And the format may still change: this is experimental.
 

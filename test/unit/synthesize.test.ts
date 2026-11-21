@@ -44,7 +44,7 @@ describe("synthesizeBaseConfig (D3 Surface B → A)", () => {
     const out = synthesizeBaseConfig({
       baseConfig,
       baseName: "Books",
-      envelope: { spec: { mark: "bar" }, view: "Table", theme: "quartz", interactive: false },
+      envelope: { spec: { mark: "bar" }, view: "Table", theme: "quartz", interactive: false, header: false },
       viewType: "agate",
     });
     const view = (out.views as Array<Record<string, unknown>>)[0];
@@ -60,6 +60,7 @@ describe("synthesizeBaseConfig (D3 Surface B → A)", () => {
       spec: { mark: "bar" },
       theme: "quartz",
       interactive: false,
+      header: false,
     });
   });
 

@@ -19,6 +19,7 @@ Expected: four big numbers with labels under them, in the chart font. Narrow the
 ```agate
 spec: tests/charts/stats-row-html.vl.json
 base: tests/Library/Books.base
+header: false
 ```
 
 Expected: the same four numbers as note text, in the note's fonts, styled like the static row below. Narrow the pane: the row wraps. Text can be selected and copied. Open the spec in the Vega editor: it draws itself like approach 1.
@@ -30,6 +31,7 @@ Each row may carry a `change`: here, how books published since 2000 differ from 
 ```agate
 spec: tests/charts/stats-change.vl.json
 base: tests/Library/Books.base
+header: false
 ```
 
 Expected: 15 ▲7 (green, "published since 2000"), 4.0 ±0, 351 ▲86 (red).

@@ -7,7 +7,7 @@ Sources: [Submit your plugin](https://docs.obsidian.md/Plugins/Releasing/Submit+
 ## A. Repository state (once)
 
 1. `LICENSE` at the repo root. `package.json` says MIT; add the MIT text with your name and year.
-2. `CHANGELOG.md` in Keep-a-Changelog form with a `## [0.1.0]` section. `make release` refuses a version without one.
+2. `CHANGELOG.md` in Keep-a-Changelog form with a `## [0.1.0]` section. `make release` refuses a version without one. That section, without its heading, becomes the GitHub release notes (`release.yml`), so write it for users: what's new and what to change, no internal details.
 3. `README.md` written for users, not for us. The directory shows an excerpt of it on the listing, with relative image links rewritten to the repo, so a screenshot or two under `docs/images/` and a short "what it does, how to use it" at the top matter. Move the acceptance-criteria and development sections below the user content or into `docs/`.
 4. `manifest.json`: `id` `agate` (unique, must not contain "obsidian"), `name`, `description` in sentence case and under about 250 characters, `author`, `authorUrl`, `minAppVersion` `1.13.0` (the declarative settings API the tab uses), `isDesktopOnly` per the mobile check below. Optional `fundingUrl`. The directory reads the manifest from the HEAD of the default branch, so it must be committed on `main`.
 5. Default branch is `main` and it's protected enough that CI runs before merges (a branch rule requiring the `check` job is enough).

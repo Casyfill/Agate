@@ -104,6 +104,8 @@
 .agate-stat-change.is-up::before { content: "▲ "; font-size: 0.7em; }
 .agate-stat-change.is-down::before { content: "▼ "; font-size: 0.7em; }
 .agate-stat-change.is-good { color: var(--color-green); }
+/* A row's `tone` (stats.ts): its value in one of the theme's colours */
+.agate-stat.has-tone .agate-stat-value { color: var(--agate-stat-tone); }
 .agate-stat-change.is-bad { color: var(--color-red); }
 
 
@@ -112,12 +114,36 @@
   font-size: 0.9em;
 }
 
-/* A base block or embed showing stats is a line of numbers, not a database view: no title or
-   toolbar above it, and no fixed view height around it. */
-.block-language-base.agate-has-stats .bases-header,
-.bases-embed.agate-has-stats .bases-header {
+/* Rows with `size: "small"`: one line of secondary numbers under the big ones, value then label */
+.agate-stats-minor {
+  flex-basis: 100%;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25em 1.8em;
+}
+.agate-stats-minor .agate-stat,
+.agate-stats-minor .agate-stat-top {
+  display: flex;
+  align-items: baseline;
+  gap: 0.4em;
+}
+.agate-stats-minor .agate-stat-value {
+  font-size: 1.2em;
+  font-weight: 650;
+}
+.agate-stats-minor .agate-stat-change {
+  font-size: 0.9em;
+}
+
+/* `header: false` on an Agate view: no Bases title or toolbar above an embed or base block,
+   unless the "Cycle Bases headers" command set the note to show all. That command's "hide"
+   hides every base's header in the note, Agate or not. */
+.block-language-base.agate-no-header:not(.agate-headers-show *) .bases-header,
+.bases-embed.agate-no-header:not(.agate-headers-show *) .bases-header,
+.agate-headers-hide .bases-header {
   display: none;
 }
+/* Stats are a line of numbers, not a database view: no fixed view height around them. */
 .block-language-base.agate-has-stats .bases-view,
 .bases-embed.agate-has-stats .bases-view,
 .agate-bases-view.agate-has-stats {
@@ -145,6 +171,10 @@
 }
 .is-mobile .agate-edit-spec {
   opacity: 0.7;
+}
+/* "Copy for Vega editor", left of "Edit spec" */
+.agate-copy-editor {
+  right: calc(var(--size-4-3) + var(--icon-size, 18px) + var(--size-4-4));
 }
 
 /* Bases view container */
@@ -249,6 +279,49 @@
   font-size: var(--font-ui-small);
   color: var(--text-faint);
   margin-top: var(--size-4-1);
+}
+
+/* The empty view's three steps: start, work on it, bring it back */
+.agate-steps {
+  list-style: none;
+  counter-reset: agate-step;
+  padding: 0;
+  margin: var(--size-4-4) auto var(--size-4-2);
+  max-width: 42em;
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  gap: var(--size-4-4);
+}
+.agate-step {
+  counter-increment: agate-step;
+  display: grid;
+  grid-template-columns: 1.6em 1fr;
+  column-gap: var(--size-4-2);
+  align-items: baseline;
+}
+.agate-step::before {
+  content: counter(agate-step);
+  grid-row: span 2;
+  align-self: start;
+  width: 1.6em;
+  height: 1.6em;
+  border-radius: 50%;
+  background: var(--interactive-accent);
+  color: var(--text-on-accent);
+  font-size: var(--font-ui-smaller);
+  font-weight: var(--font-semibold);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.agate-step-title {
+  color: var(--text-normal);
+  font-weight: var(--font-semibold);
+}
+.agate-step .agate-placeholder-actions {
+  justify-content: flex-start;
+  margin: var(--size-4-2) 0 0;
 }
 
 /* Inspiration links on the empty chart view */
