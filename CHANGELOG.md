@@ -4,6 +4,16 @@ All notable changes to Agate. The format follows [Keep a Changelog](https://keep
 
 ## [Unreleased]
 
+## [0.7.2] - 2026-11-21
+
+### Fixed
+
+- The steps on the empty chart view space their columns with `gap` instead of `column-gap`, which Obsidian's community review flagged as only partly supported. They look the same.
+
+The release workflow copies this section into the GitHub release notes word for word.
+
+If you'd rather leave internals out of the notes, a shorter version: "- Clears a CSS compatibility warning from Obsidian's community review. Nothing changes on screen."
+
 ## [0.7.1] - 2026-11-20
 
 ### Added
