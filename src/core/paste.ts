@@ -119,7 +119,7 @@ export function checkPastedSpec(input: PasteCheckInput): PasteCheck {
     return result;
   }
   // A spec copied out for the online editor comes back with its rows; the base supplies them here.
-  const spec = stripInlined(parsed);
+  const spec = stripInlined(parsed, input.datasetName);
   const mode = detectMode(spec);
   result.spec = spec;
   result.mode = mode;

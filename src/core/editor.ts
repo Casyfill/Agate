@@ -37,11 +37,16 @@ export function specForEditor(
   return { spec: out, truncated };
 }
 
-/** Undo specForEditor on a pasted spec: drop the rows it wrote and its `inlined` marker. Mutates `spec`. */
-export function stripInlined(spec: AnySpec): AnySpec {
+/**
+ * Undo specForEditor on a pasted spec: drop the rows it wrote and its `inlined` marker. Rows under
+ * `baseName` go too, marker or not (an LLM or a rewrite may drop `usermeta`): the base supplies them.
+ * Mutates `spec`.
+ */
+export function stripInlined(spec: AnySpec, baseName?: string): AnySpec {
   const agate = agateMeta(spec);
-  const names = Array.isArray(agate?.inlined) ? (agate.inlined as unknown[]).filter((n): n is string => typeof n === "string") : [];
-  if (!agate || names.length === 0) return spec;
+  const marked = Array.isArray(agate?.inlined) ? (agate.inlined as unknown[]).filter((n): n is string => typeof n === "string") : [];
+  const names = baseName ? [...marked, baseName] : marked;
+  if (names.length === 0) return spec;
   const datasets = spec.datasets as Record<string, unknown> | undefined;
   if (datasets && typeof datasets === "object") {
     for (const n of names) delete datasets[n];
@@ -51,6 +56,7 @@ export function stripInlined(spec: AnySpec): AnySpec {
   for (const d of data as Array<Record<string, unknown>>) {
     if (d && typeof d.name === "string" && names.includes(d.name)) delete d.values;
   }
+  if (!agate || !("inlined" in agate)) return spec;
   delete agate.inlined;
   const usermeta = spec.usermeta as Record<string, unknown>;
   if (Object.keys(agate).length === 0) delete usermeta.agate;

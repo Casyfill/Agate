@@ -40,6 +40,14 @@ describe("stripInlined", () => {
     expect(stripInlined(own)).toEqual({ ...vl, datasets: { lookup: [1] } });
   });
 
+  it("drops the base's rows even when the marker was lost", () => {
+    const { spec } = specForEditor(vl, "vega-lite", { base: rows });
+    delete (spec as Record<string, unknown>).usermeta;
+    expect(stripInlined(spec, "base")).toEqual(vl);
+    const vg = { data: [{ name: "base", values: rows }, { name: "own", values: [1] }], marks: [] };
+    expect(stripInlined(vg, "base")).toEqual({ data: [{ name: "base" }, { name: "own", values: [1] }], marks: [] });
+  });
+
   it("is applied by Paste spec, so the pasted spec reads the base without warnings", () => {
     const text = JSON.stringify(specForEditor(vl, "vega-lite", { base: rows }).spec);
     const check = checkPastedSpec({ text, propertyIds: ["note.n"], datasetName: "base" });
